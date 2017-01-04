@@ -2,7 +2,7 @@
 
 Prometheus exporter for Lustre metrics.
 
-## Buildilng and runing
+## Buildilng and running
 
 TODO
 
