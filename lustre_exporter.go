@@ -28,7 +28,7 @@ import (
 
 var (
 	showVersion	= flag.Bool("version", false, "Print version information.")
-	listenAddress	= flag.String("web.listen-address", ":9119", "Address to use to expose Lustre metrics.")
+	listenAddress	= flag.String("web.listen-address", ":9169", "Address to use to expose Lustre metrics.")
 	metricsPath	= flag.String("web.telemetry-path", "/metrics", "Path to use to expose Lustre metrics.")
 )
 
