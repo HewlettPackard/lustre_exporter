@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	
+
 	"github.com/joehandzik/lustre_exporter/exporter"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -27,9 +27,21 @@ import (
 )
 
 var (
-	showVersion	= flag.Bool("version", false, "Print version information.")
-	listenAddress	= flag.String("web.listen-address", ":9169", "Address to use to expose Lustre metrics.")
-	metricsPath	= flag.String("web.telemetry-path", "/metrics", "Path to use to expose Lustre metrics.")
+	scrapeDurations = prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Namespace: collector.Namespace,
+			Subsystem: "exporter",
+			Name:      "scrape_duration_seconds",
+			Help:      "lustre_exporter: Duration of a scrape job.",
+		},
+		[]string{"source", "result"},
+	)
+)
+
+var (
+	showVersion   = flag.Bool("version", false, "Print version information.")
+	listenAddress = flag.String("web.listen-address", ":9169", "Address to use to expose Lustre metrics.")
+	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path to use to expose Lustre metrics.")
 )
 
 func init() {
@@ -52,7 +64,7 @@ func main() {
 	handler := prometheus.Handler()
 
 	http.Handle(*metricsPath, handler)
-	http.HandleFunc("/" func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>
 			<head><title>Lustre Exporter</title></head>
 			<body>
@@ -68,4 +80,3 @@ func main() {
 		log.Fatal(err)
 	}
 }
-} 
