@@ -10,3 +10,36 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+package sources
+
+import (
+	"errors"
+	"strings"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/common/log"
+)
+
+type lustreProcMetric struct {
+	subsystem string
+	name      string
+	source    string //The node type (OSS, MDS, MGS)
+}
+
+func init() {
+	Factories["procfs"] = NewLustreProcSource
+}
+
+type lustreProcSource struct {
+	lustreProcMetrics []lustreProc
+}
+
+func NewLustreSource() (Source, error) {
+	var l lustreProcSource
+	return &l, nil
+}
+
+func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
+	return nil
+}

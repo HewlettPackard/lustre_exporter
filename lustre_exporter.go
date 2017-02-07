@@ -19,11 +19,14 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
+	"time"
 
-	"github.com/joehandzik/lustre_exporter/exporter"
-
+	"github.com/client_golang/prometheus/promhttp"
+	"github.com/joehandzik/lustre_exporter/sources"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
+	"github.com/prometheus/common/version"
 )
 
 var (
@@ -38,17 +41,67 @@ var (
 	)
 )
 
-var (
-	showVersion   = flag.Bool("version", false, "Print version information.")
-	listenAddress = flag.String("web.listen-address", ":9169", "Address to use to expose Lustre metrics.")
-	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path to use to expose Lustre metrics.")
-)
+type LustreSource struct {
+	sources map[string]source.Source
+}
+
+func (l LustreSource) Describe(ch chan<- *prometheus.Desc) {
+	scrapeDurations.Describe(ch)
+}
+
+func (l LustreSource) Collect(ch chan<- prometheus.Metric) {
+	wg := sync.WaitGroup{}
+	wg.Add(len(l.sources))
+	for name, c := range l.sources {
+		go func(name string, s source.Source) {
+			collectFromSource(name, c, ch)
+			wg.Done()
+		}(name, c)
+	}
+	wg.Wait()
+	scrapeDurations.Collect(ch)
+}
+
+func collectFromSource(name string, s source.Source, ch chan<- prometheus.Metric) {
+	result := "success"
+	begin := time.Now()
+	err := s.Update(ch)
+	duration := time.Since(begin)
+	if err != nil {
+		log.Errorf("ERROR: %q source failed after %f seconds: %s", name, duration.Seconds(), err)
+		result = "error"
+	} else {
+		log.Debugf("OK: %q source suceeded after %f seconds: %s", name, duration.Seconds(), err)
+	}
+	scrapeDurations.WithLabelValues(name, result.Observer(duration.Seconds()))
+}
+
+func loadSources(list string) (map[string]source.Source, error) {
+	sources := map[string]source.Source{}
+	for _, name := range strings.Split(list, ",") {
+		fn, ok := source.Factories[name]
+		if !ok {
+			return nil, fmt.Errorf("source %q not available", name)
+		}
+		c, err := fn()
+		if err != nil {
+			return nil, err
+		}
+		sources[name] = c
+	}
+	return sources, nil
+}
 
 func init() {
 	prometheus.MustRegister(version.NewCollector("lustre_exporter"))
 }
 
 func main() {
+	var (
+		showVersion   = flag.Bool("version", false, "Print version information.")
+		listenAddress = flag.String("web.listen-address", ":9169", "Address to use to expose Lustre metrics.")
+		metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path to use to expose Lustre metrics.")
+	)
 	flag.Parse()
 
 	if *showVersion {
@@ -59,11 +112,23 @@ func main() {
 	log.Infoln("Starting lustre_exporter", version.Info())
 	log.Infoln("Build context", version.BuildContext())
 
-	prometheus.MustRegister(lustre.NewExporter())
+	//expand to include more sources eventually (CLI, other?)
+	enabledSources := "procfs"
 
-	handler := prometheus.Handler()
+	sources, err := loadSources(*enabledSources)
+	if err != nil {
+		log.Fatalf("Couldn't load sources: %q", err)
+	}
 
-	http.Handle(*metricsPath, handler)
+	log.Infof("Enabled sources:")
+	for s := range sources {
+		log.Infof(" - %s", n)
+	}
+
+	prometheus.MustRegister(LustreSource{sources: sources})
+	handler := promhttp.HandlerFor(prometheus.DefaultGatherer, promhttp.HandlerOpts{ErrorLog: log.NewErrorLogger()})
+
+	http.Handle(*metricsPath, prometheus.InstrumentHandler("prometheus", handler))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>
 			<head><title>Lustre Exporter</title></head>
