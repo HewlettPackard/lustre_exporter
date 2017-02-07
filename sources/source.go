@@ -17,25 +17,19 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-type lustreProcMetric struct {
-	subsystem string
-	name      string
-	source    string //The node type (OSS, MDS, MGS)
+const Namespace = "lustre"
+
+var Factories = make(map[string]func() (LustreSource, error))
+
+type LustreSource interface {
+	Update(ch chan<- prometheus.Metric) (err error)
 }
 
-func init() {
-	Factories["procfs"] = NewLustreSource
+type typedDesc struct {
+	desc      *prometheus.Desc
+	valueType prometheus.ValueType
 }
 
-type lustreSource struct {
-	lustreProcMetrics []lustreProcMetric
-}
-
-func NewLustreSource() (LustreSource, error) {
-	var l lustreSource
-	return &l, nil
-}
-
-func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
-	return nil
+func (d *typedDesc) mustNewConstMetric(value float64, labels ...string) prometheus.Metric {
+	return prometheus.MustNewConstMetric(d.desc, d.valueType, value, labels...)
 }

@@ -22,9 +22,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/client_golang/prometheus/promhttp"
 	"github.com/joehandzik/lustre_exporter/sources"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 	"github.com/prometheus/common/version"
 )
@@ -32,7 +32,7 @@ import (
 var (
 	scrapeDurations = prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
-			Namespace: collector.Namespace,
+			Namespace: sources.Namespace,
 			Subsystem: "exporter",
 			Name:      "scrape_duration_seconds",
 			Help:      "lustre_exporter: Duration of a scrape job.",
@@ -42,7 +42,7 @@ var (
 )
 
 type LustreSource struct {
-	sources map[string]source.Source
+	source_list map[string]sources.LustreSource
 }
 
 func (l LustreSource) Describe(ch chan<- *prometheus.Desc) {
@@ -51,9 +51,9 @@ func (l LustreSource) Describe(ch chan<- *prometheus.Desc) {
 
 func (l LustreSource) Collect(ch chan<- prometheus.Metric) {
 	wg := sync.WaitGroup{}
-	wg.Add(len(l.sources))
-	for name, c := range l.sources {
-		go func(name string, s source.Source) {
+	wg.Add(len(l.source_list))
+	for name, c := range l.source_list {
+		go func(name string, s sources.LustreSource) {
 			collectFromSource(name, c, ch)
 			wg.Done()
 		}(name, c)
@@ -62,7 +62,7 @@ func (l LustreSource) Collect(ch chan<- prometheus.Metric) {
 	scrapeDurations.Collect(ch)
 }
 
-func collectFromSource(name string, s source.Source, ch chan<- prometheus.Metric) {
+func collectFromSource(name string, s sources.LustreSource, ch chan<- prometheus.Metric) {
 	result := "success"
 	begin := time.Now()
 	err := s.Update(ch)
@@ -73,13 +73,13 @@ func collectFromSource(name string, s source.Source, ch chan<- prometheus.Metric
 	} else {
 		log.Debugf("OK: %q source suceeded after %f seconds: %s", name, duration.Seconds(), err)
 	}
-	scrapeDurations.WithLabelValues(name, result.Observer(duration.Seconds()))
+	scrapeDurations.WithLabelValues(name, result).Observe(duration.Seconds())
 }
 
-func loadSources(list string) (map[string]source.Source, error) {
-	sources := map[string]source.Source{}
+func loadSources(list string) (map[string]sources.LustreSource, error) {
+	source_list := map[string]sources.LustreSource{}
 	for _, name := range strings.Split(list, ",") {
-		fn, ok := source.Factories[name]
+		fn, ok := sources.Factories[name]
 		if !ok {
 			return nil, fmt.Errorf("source %q not available", name)
 		}
@@ -87,9 +87,9 @@ func loadSources(list string) (map[string]source.Source, error) {
 		if err != nil {
 			return nil, err
 		}
-		sources[name] = c
+		source_list[name] = c
 	}
-	return sources, nil
+	return source_list, nil
 }
 
 func init() {
@@ -115,17 +115,17 @@ func main() {
 	//expand to include more sources eventually (CLI, other?)
 	enabledSources := "procfs"
 
-	sources, err := loadSources(*enabledSources)
+	source_list, err := loadSources(enabledSources)
 	if err != nil {
 		log.Fatalf("Couldn't load sources: %q", err)
 	}
 
 	log.Infof("Enabled sources:")
-	for s := range sources {
-		log.Infof(" - %s", n)
+	for s := range source_list {
+		log.Infof(" - %s", s)
 	}
 
-	prometheus.MustRegister(LustreSource{sources: sources})
+	prometheus.MustRegister(LustreSource{source_list: source_list})
 	handler := promhttp.HandlerFor(prometheus.DefaultGatherer, promhttp.HandlerOpts{ErrorLog: log.NewErrorLogger()})
 
 	http.Handle(*metricsPath, prometheus.InstrumentHandler("prometheus", handler))
