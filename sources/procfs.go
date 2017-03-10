@@ -76,7 +76,7 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 			return err
 		}
 		if paths == nil {
-			return nil
+			continue
 		}
 		for _, path := range paths {
 
