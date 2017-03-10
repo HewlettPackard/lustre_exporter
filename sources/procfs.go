@@ -52,8 +52,29 @@ func newLustreProcMetric(name string, source string, path string, helpText strin
 
 func (s *lustreSource) generateOSSMetricTemplates() error {
 	metricMap := map[string]map[string]string{
-		"obdfilter/*": map[string]string{ //add metrics here for obdfilter
-			"filestotal": "The maximum number of inodes (objects) the filesystem can hold",
+		"obdfilter/*": map[string]string{
+			"blocksize":            "Filesystem block size in bytes",
+			"brw_size":             "Block read/write size in bytes",
+			"degraded":             "Binary indicator as to whether or not the pool is degraded - 0 for not degraded, 1 for degraded",
+			"filesfree":            "The number of inodes (objects) available",
+			"filestotal":           "The maximum number of inodes (objects) the filesystem can hold",
+			"fstype":               "Filesystem type (e.g. 'osd-zfs')",
+			"grant_compat_disable": "Binary indicator as to whether clients with OBD_CONNECT_GRANT_PARAM setting will be granted space",
+			"grant_precreate":      "Maximum space in bytes that clients can preallocate for objects",
+			"job_cleanup_interval": "Interval in seconds between cleanup of tuning statistics",
+			"kbytesavail":          "Number of kilobytes readily available in the pool",
+			"kbytesfree":           "Number of kilobytes allocated to the pool",
+			"kbytestotal":          "Capacity of the pool in kilobytes",
+			"lfsck_speed_limit":    "Maximum operations per second LFSCK (Lustre filesystem verification) can run",
+			"num_exports":          "Total number of times the pool has been exported",
+			"precreate_batch":      "Maximum number of objects that can be included in a single transaction",
+			"recovery_time_hard":   "Maximum timeout 'recover_time_soft' can increment to for a single server",
+			"recovery_time_soft":   "Duration in seconds for a client to attempt to reconnect after a crash (automatically incremented if servers are still in an error state)",
+			"soft_sync_limit":      "Number of RPCs necessary before triggering a sync",
+			"sync_journal":         "Binary indicator as to whether or not the journal is set for asynchronous commits",
+			"tot_dirty":            "Total number of exports that have been marked dirty",
+			"tot_granted":          "Total number of exports that have been marked granted",
+			"tot_pending":          "Total number of exports that have been marked pending",
 		},
 	}
 	for path, _ := range metricMap {
