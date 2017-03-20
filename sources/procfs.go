@@ -28,6 +28,7 @@ type lustreProcMetric struct {
 	name      string
 	source    string //The node type (OSS, MDS, MGS)
 	path      string //Path to retreive metric from
+	helpText  string
 }
 
 func init() {
@@ -39,22 +40,25 @@ type lustreSource struct {
 	basePath          string
 }
 
-func newLustreProcMetric(name string, source string, path string) lustreProcMetric {
+func newLustreProcMetric(name string, source string, path string, helpText string) lustreProcMetric {
 	var m lustreProcMetric
 	m.name = name
 	m.source = source
 	m.path = path
+	m.helpText = helpText
 
 	return m
 }
 
 func (s *lustreSource) generateOSSMetricTemplates() error {
-	metricMap := map[string][]string{
-		"obdfilter/*": []string{"filestotal"}, //add metrics here for obdfilter
+	metricMap := map[string]map[string]string{
+		"obdfilter/*": map[string]string{ //add metrics here for obdfilter
+			"filestotal": "The maximum number of inodes (objects) the filesystem can hold",
+		},
 	}
 	for path, _ := range metricMap {
-		for _, metric := range metricMap[path] {
-			newMetric := newLustreProcMetric(metric, "OSS", path)
+		for metric, helpText := range metricMap[path] {
+			newMetric := newLustreProcMetric(metric, "OSS", path, helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -80,8 +84,8 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 		}
 		for _, path := range paths {
 
-			err = s.parseFile(metric.source, "single", path, func(nodeType string, nodeName string, name string, value uint64) {
-				ch <- s.constMetric(nodeType, nodeName, name, value)
+			err = s.parseFile(metric.source, "single", path, metric.helpText, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
+				ch <- s.constMetric(nodeType, nodeName, name, helpText, value)
 			})
 			if err != nil {
 				return err
@@ -91,7 +95,7 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 	return nil
 }
 
-func (s *lustreSource) parseFile(nodeType string, metricType string, path string, handler func(string, string, string, uint64)) (err error) {
+func (s *lustreSource) parseFile(nodeType string, metricType string, path string, helpText string, handler func(string, string, string, string, uint64)) (err error) {
 	pathElements := strings.Split(path, "/")
 	pathLen := len(pathElements)
 	if pathLen < 1 {
@@ -109,16 +113,16 @@ func (s *lustreSource) parseFile(nodeType string, metricType string, path string
 		if err != nil {
 			return err
 		}
-		handler(nodeType, nodeName, name, convertedValue)
+		handler(nodeType, nodeName, name, helpText, convertedValue)
 	}
 	return nil
 }
 
-func (s *lustreSource) constMetric(nodeType string, nodeName string, name string, value uint64) prometheus.Metric {
+func (s *lustreSource) constMetric(nodeType string, nodeName string, name string, helpText string, value uint64) prometheus.Metric {
 	return prometheus.MustNewConstMetric(
 		prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, "lustre", name),
-			string("Help text here"),
+			helpText,
 			[]string{nodeType},
 			nil,
 		),
