@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -71,6 +72,7 @@ func (s *lustreSource) generateOSSMetricTemplates() error {
 			"recovery_time_hard":   "Maximum timeout 'recover_time_soft' can increment to for a single server",
 			"recovery_time_soft":   "Duration in seconds for a client to attempt to reconnect after a crash (automatically incremented if servers are still in an error state)",
 			"soft_sync_limit":      "Number of RPCs necessary before triggering a sync",
+			"stats":                "A collection of statistics specific to Lustre",
 			"sync_journal":         "Binary indicator as to whether or not the journal is set for asynchronous commits",
 			"tot_dirty":            "Total number of exports that have been marked dirty",
 			"tot_granted":          "Total number of exports that have been marked granted",
@@ -117,6 +119,8 @@ func NewLustreSource() (LustreSource, error) {
 }
 
 func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
+	metricType := "single"
+
 	for _, metric := range s.lustreProcMetrics {
 		paths, err := filepath.Glob(filepath.Join(s.basePath, metric.path, metric.name))
 		if err != nil {
@@ -126,8 +130,14 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 			continue
 		}
 		for _, path := range paths {
+			switch metric.name {
+			case "stats":
+				metricType = "stats"
+			default:
+				metricType = "single"
+			}
 
-			err = s.parseFile(metric.source, "single", path, metric.helpText, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
+			err = s.parseFile(metric.source, metricType, path, metric.helpText, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
 				ch <- s.constMetric(nodeType, nodeName, name, helpText, value)
 			})
 			if err != nil {
@@ -136,6 +146,78 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 		}
 	}
 	return nil
+}
+
+func parseReadWriteBytes(regexString string, statsFile string) (metricMap map[string]uint64, err error) {
+	bytesRegex, err := regexp.Compile(regexString)
+	if err != nil {
+		return nil, err
+	}
+
+	bytesString := bytesRegex.FindString(statsFile)
+	if len(bytesString) == 0 {
+		return nil, nil
+	}
+
+	r, err := regexp.Compile(" +")
+	if err != nil {
+		return nil, err
+	}
+
+	bytesSplit := r.Split(bytesString, -1)
+	// bytesSplit is in the following format:
+	// bytesString: {name} {number of samples} 'samples' [{units}] {minimum} {maximum} {sum}
+	// bytesSplit:   [0]    [1]                 [2]       [3]       [4]       [5]       [6]
+	samples, err := strconv.ParseUint(bytesSplit[1], 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	minimum, err := strconv.ParseUint(bytesSplit[4], 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	maximum, err := strconv.ParseUint(bytesSplit[5], 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	total, err := strconv.ParseUint(bytesSplit[6], 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	metricMap = make(map[string]uint64)
+
+	metricMap["samples_total"] = samples
+	metricMap["minimum_size_bytes"] = minimum
+	metricMap["maximum_size_bytes"] = maximum
+	metricMap["total_bytes"] = total
+
+	return metricMap, nil
+}
+
+func parseStatsFile(path string) (metricMap map[string]map[string]uint64, err error) {
+	statsFileBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	statsFile := string(statsFileBytes[:])
+
+	readStatsMap, err := parseReadWriteBytes("read_bytes .*", statsFile)
+	if err != nil {
+		return nil, err
+	}
+
+	writeStatsMap, err := parseReadWriteBytes("write_bytes .*", statsFile)
+	if err != nil {
+		return nil, err
+	}
+
+	metricMap = make(map[string]map[string]uint64)
+	metricMap["read"] = readStatsMap
+	metricMap["write"] = writeStatsMap
+
+	return metricMap, nil
 }
 
 func (s *lustreSource) parseFile(nodeType string, metricType string, path string, helpText string, handler func(string, string, string, string, uint64)) (err error) {
@@ -157,6 +239,18 @@ func (s *lustreSource) parseFile(nodeType string, metricType string, path string
 			return err
 		}
 		handler(nodeType, nodeName, name, helpText, convertedValue)
+	case "stats":
+		metricMap, err := parseStatsFile(path)
+		if err != nil {
+			return err
+		}
+
+		for statType, statMap := range metricMap {
+			for key, value := range statMap {
+				metricName := statType + "_" + key
+				handler(nodeType, nodeName, metricName, helpText, value)
+			}
+		}
 	}
 	return nil
 }
