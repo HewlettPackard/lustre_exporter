@@ -24,6 +24,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+const (
+	samplesHelp string = "Total number of times the given metric has been collected."
+	maximumHelp string = "The maximum value retrieved for the given metric."
+	minimumHelp string = "The minimum value retrieved for the given metric."
+	totalHelp   string = "The sum of all values collected for the given metric."
+)
+
 type lustreProcMetric struct {
 	subsystem string
 	name      string
@@ -148,7 +155,7 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 	return nil
 }
 
-func parseReadWriteBytes(regexString string, statsFile string) (metricMap map[string]uint64, err error) {
+func parseReadWriteBytes(regexString string, statsFile string) (metricMap map[string]map[string]uint64, err error) {
 	bytesRegex, err := regexp.Compile(regexString)
 	if err != nil {
 		return nil, err
@@ -185,17 +192,17 @@ func parseReadWriteBytes(regexString string, statsFile string) (metricMap map[st
 		return nil, err
 	}
 
-	metricMap = make(map[string]uint64)
+	metricMap = make(map[string]map[string]uint64)
 
-	metricMap["samples_total"] = samples
-	metricMap["minimum_size_bytes"] = minimum
-	metricMap["maximum_size_bytes"] = maximum
-	metricMap["total_bytes"] = total
+	metricMap["samples_total"] = map[string]uint64{samplesHelp: samples}
+	metricMap["minimum_size_bytes"] = map[string]uint64{minimumHelp: minimum}
+	metricMap["maximum_size_bytes"] = map[string]uint64{maximumHelp: maximum}
+	metricMap["total_bytes"] = map[string]uint64{totalHelp: total}
 
 	return metricMap, nil
 }
 
-func parseStatsFile(path string) (metricMap map[string]map[string]uint64, err error) {
+func parseStatsFile(path string) (metricMap map[string]map[string]map[string]uint64, err error) {
 	statsFileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -213,7 +220,7 @@ func parseStatsFile(path string) (metricMap map[string]map[string]uint64, err er
 		return nil, err
 	}
 
-	metricMap = make(map[string]map[string]uint64)
+	metricMap = make(map[string]map[string]map[string]uint64)
 	metricMap["read"] = readStatsMap
 	metricMap["write"] = writeStatsMap
 
@@ -246,9 +253,11 @@ func (s *lustreSource) parseFile(nodeType string, metricType string, path string
 		}
 
 		for statType, statMap := range metricMap {
-			for key, value := range statMap {
+			for key, metricMap := range statMap {
 				metricName := statType + "_" + key
-				handler(nodeType, nodeName, metricName, helpText, value)
+				for detailedHelp, value := range metricMap {
+					handler(nodeType, nodeName, metricName, detailedHelp, value)
+				}
 			}
 		}
 	}
