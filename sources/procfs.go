@@ -58,7 +58,6 @@ func (s *lustreSource) generateOSSMetricTemplates() error {
 			"degraded":             "Binary indicator as to whether or not the pool is degraded - 0 for not degraded, 1 for degraded",
 			"filesfree":            "The number of inodes (objects) available",
 			"filestotal":           "The maximum number of inodes (objects) the filesystem can hold",
-			"fstype":               "Filesystem type (e.g. 'osd-zfs')",
 			"grant_compat_disable": "Binary indicator as to whether clients with OBD_CONNECT_GRANT_PARAM setting will be granted space",
 			"grant_precreate":      "Maximum space in bytes that clients can preallocate for objects",
 			"job_cleanup_interval": "Interval in seconds between cleanup of tuning statistics",
