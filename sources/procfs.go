@@ -106,12 +106,34 @@ func (s *lustreSource) generateMGSMetricTemplates() error {
 	return nil
 }
 
+func (s *lustreSource) generateMDSMetricTemplates() error {
+	metricMap := map[string]map[string]string{
+		"mds/MDS/osd": map[string]string{
+			"blocksize":            "Filesystem block size in bytes",
+			"filesfree":            "The number of inodes (objects) available",
+			"filestotal":           "The maximum number of inodes (objects) the filesystem can hold",
+			"kbytesavail":          "Number of kilobytes readily available in the pool",
+			"kbytesfree":           "Number of kilobytes allocated to the pool",
+			"kbytestotal":          "Capacity of the pool in kilobytes",
+			"quota_iused_estimate": "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated",
+		},
+	}
+	for path, _ := range metricMap {
+		for metric, helpText := range metricMap[path] {
+			newMetric := newLustreProcMetric(metric, "MDS", path, helpText)
+			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
+		}
+	}
+	return nil
+}
+
 func NewLustreSource() (LustreSource, error) {
 	var l lustreSource
 	l.basePath = "/proc/fs/lustre"
 	//control which node metrics you pull via flags
 	l.generateOSSMetricTemplates()
 	l.generateMGSMetricTemplates()
+	l.generateMDSMetricTemplates()
 	return &l, nil
 }
 
