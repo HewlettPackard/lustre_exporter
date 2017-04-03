@@ -63,6 +63,7 @@ func (s *lustreSource) generateOSSMetricTemplates() error {
 		"obdfilter/*": map[string]string{
 			"blocksize":            "Filesystem block size in bytes",
 			"brw_size":             "Block read/write size in bytes",
+			"brw_stats":            "A collection of block read/write statistics",
 			"degraded":             "Binary indicator as to whether or not the pool is degraded - 0 for not degraded, 1 for degraded",
 			"filesfree":            "The number of inodes (objects) available",
 			"filestotal":           "The maximum number of inodes (objects) the filesystem can hold",
@@ -161,6 +162,8 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 			switch metric.name {
 			case "stats":
 				metricType = "stats"
+			case "brw_stats":
+				metricType = "brw_stats"
 			default:
 				metricType = "single"
 			}
@@ -223,6 +226,37 @@ func parseReadWriteBytes(regexString string, statsFile string) (metricMap map[st
 	return metricMap, nil
 }
 
+func splitBRWStats(title string, statBlock string) (metricMap map[string]uint64, err error) {
+	title = strings.Replace(title, " ", "_", -1)
+	title = strings.Replace(title, "/", "", -1)
+	metricMap = make(map[string]uint64)
+
+	if len(statBlock) == 0 || statBlock == "" {
+		return nil, nil
+	}
+
+	// Skip the first line of text as it doesn't contain any metrics
+	for _, line := range strings.Split(statBlock, "\n")[1:] {
+		if len(line) > 1 {
+			fields := strings.Fields(line)
+			// Lines are in the following format:
+			// [size] [# read RPCs] [relative read size (%)] [cumulative read size (%)] | [# write RPCs] [relative write size (%)] [cumulative write size (%)]
+			// [0]    [1]           [2]                      [3]                       [4] [5]           [6]                       [7]
+			size, readRPCs, writeRPCs := fields[0], fields[1], fields[5]
+			size = strings.Replace(size, ":", "", -1)
+			metricMap[title+size+"_read"], err = strconv.ParseUint(readRPCs, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			metricMap[title+size+"_write"], err = strconv.ParseUint(writeRPCs, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return metricMap, nil
+}
+
 func parseStatsFile(path string) (metricMap map[string]map[string]map[string]uint64, err error) {
 	statsFileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -245,6 +279,39 @@ func parseStatsFile(path string) (metricMap map[string]map[string]map[string]uin
 	metricMap["read"] = readStatsMap
 	metricMap["write"] = writeStatsMap
 
+	return metricMap, nil
+}
+
+func extractStatsBlock(title string, statsFile string) (block string) {
+	// The following expressions match the specified block in the text or the end of the string,
+	// whichever comes first.
+	pattern := "(?ms:^" + title + ".*?(\n\n|\\z))"
+	re := regexp.MustCompile(pattern)
+	block = re.FindString(statsFile)
+	return block
+}
+
+func parseBRWStats(path string) (metricMap map[string]uint64, err error) {
+	metricBlocks := []string{"pages per bulk r/w", "discontiguous pages", "disk I/Os in flight", "I/O time", "disk I/O size"}
+	metricMap = make(map[string]uint64)
+
+	statsFileBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	statsFile := string(statsFileBytes[:])
+
+	for _, title := range metricBlocks {
+		block := extractStatsBlock(title, statsFile)
+		mapSubset, err := splitBRWStats(title, block)
+		if err != nil {
+			return nil, err
+		}
+		for key, value := range mapSubset {
+			metricMap[key] = value
+		}
+	}
 	return metricMap, nil
 }
 
@@ -280,6 +347,15 @@ func (s *lustreSource) parseFile(nodeType string, metricType string, path string
 					handler(nodeType, nodeName, metricName, detailedHelp, value)
 				}
 			}
+		}
+	case "brw_stats":
+		metricMap, err := parseBRWStats(path)
+		if err != nil {
+			return err
+		}
+
+		for key, value := range metricMap {
+			handler(nodeType, nodeName, key, helpText, value)
 		}
 	}
 	return nil
