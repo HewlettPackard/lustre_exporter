@@ -25,10 +25,18 @@ import (
 )
 
 const (
+	// Help text dedicated to the 'stats' file
 	samplesHelp string = "Total number of times the given metric has been collected."
 	maximumHelp string = "The maximum value retrieved for the given metric."
 	minimumHelp string = "The minimum value retrieved for the given metric."
 	totalHelp   string = "The sum of all values collected for the given metric."
+
+	// Help text dedicated to the 'brw_stats' file
+	pagesPerBlockRWHelp    string = "Total number of pages per RPC."
+	discontiguousPagesHelp string = "Total number of logical discontinuities per RPC."
+	ioTimeHelp             string = "Total time in milliseconds the filesystem has spent processing various object sizes."
+	diskIOSizeHelp         string = "Total number of operations the filesystem has performed for the given size."
+	diskIOsInFlightHelp    string = "Current number of I/O operations that are processing during the snapshot."
 )
 
 type lustreProcMetric struct {
@@ -63,6 +71,7 @@ func (s *lustreSource) generateOSSMetricTemplates() error {
 		"obdfilter/*": map[string]string{
 			"blocksize":            "Filesystem block size in bytes",
 			"brw_size":             "Block read/write size in bytes",
+			"brw_stats":            "A collection of block read/write statistics",
 			"degraded":             "Binary indicator as to whether or not the pool is degraded - 0 for not degraded, 1 for degraded",
 			"filesfree":            "The number of inodes (objects) available",
 			"filestotal":           "The maximum number of inodes (objects) the filesystem can hold",
@@ -159,17 +168,23 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 		}
 		for _, path := range paths {
 			switch metric.name {
-			case "stats":
-				metricType = "stats"
+			case "brw_stats":
+				err = s.parseBRWStats(metric.source, "brw_stats", path, metric.helpText, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64) {
+					ch <- s.brwMetric(nodeType, brwOperation, brwSize, nodeName, name, helpText, value)
+				})
+				if err != nil {
+					return err
+				}
 			default:
-				metricType = "single"
-			}
-
-			err = s.parseFile(metric.source, metricType, path, metric.helpText, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
-				ch <- s.constMetric(nodeType, nodeName, name, helpText, value)
-			})
-			if err != nil {
-				return err
+				if metric.name == "stats" {
+					metricType = "stats"
+				}
+				err = s.parseFile(metric.source, metricType, path, metric.helpText, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
+					ch <- s.constMetric(nodeType, nodeName, name, helpText, value)
+				})
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -223,6 +238,31 @@ func parseReadWriteBytes(regexString string, statsFile string) (metricMap map[st
 	return metricMap, nil
 }
 
+func splitBRWStats(title string, statBlock string) (metricMap map[string]map[string]string, err error) {
+	title = strings.Replace(title, " ", "_", -1)
+	title = strings.Replace(title, "/", "", -1)
+	metricMap = make(map[string]map[string]string)
+
+	if len(statBlock) == 0 || statBlock == "" {
+		return nil, nil
+	}
+
+	// Skip the first line of text as it doesn't contain any metrics
+	for _, line := range strings.Split(statBlock, "\n")[1:] {
+		if len(line) > 1 {
+			fields := strings.Fields(line)
+			// Lines are in the following format:
+			// [size] [# read RPCs] [relative read size (%)] [cumulative read size (%)] | [# write RPCs] [relative write size (%)] [cumulative write size (%)]
+			// [0]    [1]           [2]                      [3]                       [4] [5]           [6]                       [7]
+			size, readRPCs, writeRPCs := fields[0], fields[1], fields[5]
+			size = strings.Replace(size, ":", "", -1)
+			metricMap[title+"_"+size+"_read"] = map[string]string{"value": readRPCs, "size": size, "operation": "read", "name": title}
+			metricMap[title+"_"+size+"_write"] = map[string]string{"value": writeRPCs, "size": size, "operation": "write", "name": title}
+		}
+	}
+	return metricMap, nil
+}
+
 func parseStatsFile(path string) (metricMap map[string]map[string]map[string]uint64, err error) {
 	statsFileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -248,14 +288,65 @@ func parseStatsFile(path string) (metricMap map[string]map[string]map[string]uin
 	return metricMap, nil
 }
 
-func (s *lustreSource) parseFile(nodeType string, metricType string, path string, helpText string, handler func(string, string, string, string, uint64)) (err error) {
+func extractStatsBlock(title string, statsFile string) (block string) {
+	// The following expressions match the specified block in the text or the end of the string,
+	// whichever comes first.
+	pattern := "(?ms:^" + title + ".*?(\n\n|\\z))"
+	re := regexp.MustCompile(pattern)
+	block = re.FindString(statsFile)
+	return block
+}
+
+func parseFileElements(path string) (name string, nodeName string, err error) {
 	pathElements := strings.Split(path, "/")
 	pathLen := len(pathElements)
 	if pathLen < 1 {
-		return fmt.Errorf("path did not return at least one element")
+		return "", "", fmt.Errorf("path did not return at least one element")
 	}
-	name := pathElements[pathLen-1]
-	nodeName := pathElements[pathLen-2]
+	name = pathElements[pathLen-1]
+	nodeName = pathElements[pathLen-2]
+	return name, nodeName, nil
+}
+
+func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path string, helpText string, handler func(string, string, string, string, string, string, uint64)) (err error) {
+	_, nodeName, err := parseFileElements(path)
+	if err != nil {
+		return err
+	}
+	metricBlocks := map[string]string{
+		"pages per bulk r/w":  pagesPerBlockRWHelp,
+		"discontiguous pages": discontiguousPagesHelp,
+		"disk I/Os in flight": diskIOsInFlightHelp,
+		"I/O time":            ioTimeHelp,
+		"disk I/O size":       diskIOSizeHelp,
+	}
+	statsFileBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	statsFile := string(statsFileBytes[:])
+	for title, help := range metricBlocks {
+		block := extractStatsBlock(title, statsFile)
+		mapSubset, err := splitBRWStats(title, block)
+		if err != nil {
+			return err
+		}
+		for _, metricMap := range mapSubset {
+			value, err := strconv.ParseUint(metricMap["value"], 10, 64)
+			if err != nil {
+				return err
+			}
+			handler(nodeType, metricMap["operation"], metricMap["size"], nodeName, metricMap["name"], help, value)
+		}
+	}
+	return nil
+}
+
+func (s *lustreSource) parseFile(nodeType string, metricType string, path string, helpText string, handler func(string, string, string, string, uint64)) (err error) {
+	name, nodeName, err := parseFileElements(path)
+	if err != nil {
+		return err
+	}
 	switch metricType {
 	case "single":
 		value, err := ioutil.ReadFile(path)
@@ -296,5 +387,21 @@ func (s *lustreSource) constMetric(nodeType string, nodeName string, name string
 		prometheus.CounterValue,
 		float64(value),
 		nodeName,
+	)
+}
+
+func (s *lustreSource) brwMetric(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64) prometheus.Metric {
+	return prometheus.MustNewConstMetric(
+		prometheus.NewDesc(
+			prometheus.BuildFQName(Namespace, "lustre", name),
+			helpText,
+			[]string{nodeType, "operation", "size"},
+			nil,
+		),
+		prometheus.CounterValue,
+		float64(value),
+		nodeName,
+		brwOperation,
+		brwSize,
 	)
 }
