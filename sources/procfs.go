@@ -25,10 +25,18 @@ import (
 )
 
 const (
+	// Help text dedicated to the 'stats' file
 	samplesHelp string = "Total number of times the given metric has been collected."
 	maximumHelp string = "The maximum value retrieved for the given metric."
 	minimumHelp string = "The minimum value retrieved for the given metric."
 	totalHelp   string = "The sum of all values collected for the given metric."
+
+	// Help text dedicated to the 'brw_stats' file
+	pagesPerBlockRWHelp    string = "Total number of pages per RPC."
+	discontiguousPagesHelp string = "Total number of logical discontinuities per RPC."
+	ioTimeHelp             string = "Total time in milliseconds the filesystem has spent processing various object sizes."
+	diskIOSizeHelp         string = "Total number of operations the filesystem has performed for the given size."
+	diskIOsInFlightHelp    string = "Current number of I/O operations that are processing during the snapshot."
 )
 
 type lustreProcMetric struct {
@@ -305,13 +313,19 @@ func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path st
 	if err != nil {
 		return err
 	}
-	metricBlocks := []string{"pages per bulk r/w", "discontiguous pages", "disk I/Os in flight", "I/O time", "disk I/O size"}
+	metricBlocks := map[string]string{
+		"pages per bulk r/w":  pagesPerBlockRWHelp,
+		"discontiguous pages": discontiguousPagesHelp,
+		"disk I/Os in flight": diskIOsInFlightHelp,
+		"I/O time":            ioTimeHelp,
+		"disk I/O size":       diskIOSizeHelp,
+	}
 	statsFileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
 	}
 	statsFile := string(statsFileBytes[:])
-	for _, title := range metricBlocks {
+	for title, help := range metricBlocks {
 		block := extractStatsBlock(title, statsFile)
 		mapSubset, err := splitBRWStats(title, block)
 		if err != nil {
@@ -322,7 +336,7 @@ func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path st
 			if err != nil {
 				return err
 			}
-			handler(nodeType, metricMap["operation"], metricMap["size"], nodeName, metricMap["name"], helpText, value)
+			handler(nodeType, metricMap["operation"], metricMap["size"], nodeName, metricMap["name"], help, value)
 		}
 	}
 	return nil
