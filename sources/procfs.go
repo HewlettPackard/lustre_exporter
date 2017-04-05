@@ -191,7 +191,7 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 	return nil
 }
 
-func parseReadWriteBytes(regexString string, statsFile string) (metricMap map[string]map[string]uint64, err error) {
+func parseReadWriteBytes(operation string, regexString string, statsFile string) (metricMap map[string]map[string]string, err error) {
 	bytesRegex, err := regexp.Compile(regexString)
 	if err != nil {
 		return nil, err
@@ -207,33 +207,15 @@ func parseReadWriteBytes(regexString string, statsFile string) (metricMap map[st
 		return nil, err
 	}
 
+	metricMap = make(map[string]map[string]string)
 	bytesSplit := r.Split(bytesString, -1)
 	// bytesSplit is in the following format:
 	// bytesString: {name} {number of samples} 'samples' [{units}] {minimum} {maximum} {sum}
 	// bytesSplit:   [0]    [1]                 [2]       [3]       [4]       [5]       [6]
-	samples, err := strconv.ParseUint(bytesSplit[1], 10, 64)
-	if err != nil {
-		return nil, err
-	}
-	minimum, err := strconv.ParseUint(bytesSplit[4], 10, 64)
-	if err != nil {
-		return nil, err
-	}
-	maximum, err := strconv.ParseUint(bytesSplit[5], 10, 64)
-	if err != nil {
-		return nil, err
-	}
-	total, err := strconv.ParseUint(bytesSplit[6], 10, 64)
-	if err != nil {
-		return nil, err
-	}
-
-	metricMap = make(map[string]map[string]uint64)
-
-	metricMap["samples_total"] = map[string]uint64{samplesHelp: samples}
-	metricMap["minimum_size_bytes"] = map[string]uint64{minimumHelp: minimum}
-	metricMap["maximum_size_bytes"] = map[string]uint64{maximumHelp: maximum}
-	metricMap["total_bytes"] = map[string]uint64{totalHelp: total}
+	metricMap[operation+"_samples_total"] = map[string]string{"help": samplesHelp, "value": bytesSplit[1]}
+	metricMap[operation+"_minimum_size_bytes"] = map[string]string{"help": minimumHelp, "value": bytesSplit[4]}
+	metricMap[operation+"_maximum_size_bytes"] = map[string]string{"help": maximumHelp, "value": bytesSplit[5]}
+	metricMap[operation+"_total_bytes"] = map[string]string{"help": totalHelp, "value": bytesSplit[6]}
 
 	return metricMap, nil
 }
@@ -263,27 +245,25 @@ func splitBRWStats(title string, statBlock string) (metricMap map[string]map[str
 	return metricMap, nil
 }
 
-func parseStatsFile(path string) (metricMap map[string]map[string]map[string]uint64, err error) {
+func parseStatsFile(path string) (metricMap map[string]map[string]string, err error) {
 	statsFileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-
 	statsFile := string(statsFileBytes[:])
 
-	readStatsMap, err := parseReadWriteBytes("read_bytes .*", statsFile)
+	metricMap, err = parseReadWriteBytes("read", "read_bytes .*", statsFile)
 	if err != nil {
 		return nil, err
 	}
 
-	writeStatsMap, err := parseReadWriteBytes("write_bytes .*", statsFile)
+	writeStatsMap, err := parseReadWriteBytes("write", "write_bytes .*", statsFile)
 	if err != nil {
 		return nil, err
 	}
-
-	metricMap = make(map[string]map[string]map[string]uint64)
-	metricMap["read"] = readStatsMap
-	metricMap["write"] = writeStatsMap
+	for key, value := range writeStatsMap {
+		metricMap[key] = value
+	}
 
 	return metricMap, nil
 }
@@ -364,13 +344,12 @@ func (s *lustreSource) parseFile(nodeType string, metricType string, path string
 			return err
 		}
 
-		for statType, statMap := range metricMap {
-			for key, metricMap := range statMap {
-				metricName := statType + "_" + key
-				for detailedHelp, value := range metricMap {
-					handler(nodeType, nodeName, metricName, detailedHelp, value)
-				}
+		for key, statMap := range metricMap {
+			value, err := strconv.ParseUint(statMap["value"], 10, 64)
+			if err != nil {
+				return err
 			}
+			handler(nodeType, nodeName, key, statMap["help"], value)
 		}
 	}
 	return nil
