@@ -358,7 +358,7 @@ func (s *lustreSource) parseFile(nodeType string, metricType string, path string
 func (s *lustreSource) constMetric(nodeType string, nodeName string, name string, helpText string, value uint64) prometheus.Metric {
 	return prometheus.MustNewConstMetric(
 		prometheus.NewDesc(
-			prometheus.BuildFQName(Namespace, "lustre", name),
+			prometheus.BuildFQName(Namespace, "", name),
 			helpText,
 			[]string{nodeType},
 			nil,
@@ -372,7 +372,7 @@ func (s *lustreSource) constMetric(nodeType string, nodeName string, name string
 func (s *lustreSource) brwMetric(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64) prometheus.Metric {
 	return prometheus.MustNewConstMetric(
 		prometheus.NewDesc(
-			prometheus.BuildFQName(Namespace, "lustre", name),
+			prometheus.BuildFQName(Namespace, "", name),
 			helpText,
 			[]string{nodeType, "operation", "size"},
 			nil,
