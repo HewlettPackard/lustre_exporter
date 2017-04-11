@@ -114,6 +114,21 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 	return nil
 }
 
+func (s *lustreSource) generateMDTMetricTemplates() error {
+	metricMap := map[string]map[string]string{
+		"mdt/*": map[string]string{
+			"num_exports": "Total number of times the pool has been exported",
+		},
+	}
+	for path, _ := range metricMap {
+		for metric, helpText := range metricMap[path] {
+			newMetric := newLustreProcMetric(metric, "MDT", path, helpText)
+			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
+		}
+	}
+	return nil
+}
+
 func (s *lustreSource) generateMGSMetricTemplates() error {
 	metricMap := map[string]map[string]string{
 		"mgs/MGS/osd/": map[string]string{
@@ -161,6 +176,7 @@ func NewLustreSource() (LustreSource, error) {
 	l.basePath = "/proc/fs/lustre"
 	//control which node metrics you pull via flags
 	l.generateOSTMetricTemplates()
+	l.generateMDTMetricTemplates()
 	l.generateMGSMetricTemplates()
 	l.generateMDSMetricTemplates()
 	return &l, nil
