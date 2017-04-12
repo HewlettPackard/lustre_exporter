@@ -246,23 +246,31 @@ func splitBRWStats(title string, statBlock string) (metricMap map[string]map[str
 }
 
 func parseStatsFile(path string) (metricMap map[string]map[string]string, err error) {
+	metricMap = make(map[string]map[string]string)
 	statsFileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 	statsFile := string(statsFileBytes[:])
 
-	metricMap, err = parseReadWriteBytes("read", "read_bytes .*", statsFile)
+	readStatsMap, err := parseReadWriteBytes("read", "read_bytes .*", statsFile)
 	if err != nil {
 		return nil, err
+	}
+	if readStatsMap != nil {
+		for key, value := range readStatsMap {
+			metricMap[key] = value
+		}
 	}
 
 	writeStatsMap, err := parseReadWriteBytes("write", "write_bytes .*", statsFile)
 	if err != nil {
 		return nil, err
 	}
-	for key, value := range writeStatsMap {
-		metricMap[key] = value
+	if writeStatsMap != nil {
+		for key, value := range writeStatsMap {
+			metricMap[key] = value
+		}
 	}
 
 	return metricMap, nil
