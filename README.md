@@ -4,12 +4,13 @@ Prometheus exporter for Lustre metrics.
 
 ## Getting
 
-'go get github.com/joehandzik/lustre_exporter'
+go get github.com/joehandzik/lustre_exporter
 
 ## Building
 
-'cd $GOPATH/src/github.com/joehandzik/lustre_exporter'
-'make'
+cd $GOPATH/src/github.com/joehandzik/lustre_exporter
+
+make
 
 ## Running
 
@@ -24,11 +25,12 @@ TODO, but the current plan is to create flags that would define what node metric
 Design plans
 
 1. Export all proc data from all nodes running the Lustre Exporter that can function as a counter type (will save histogram-type work for later).
-  - STATUS: In progress
+  - STATUS: Mostly complete as far as we can tell. We still want to parse rpcstats and jobstats at minimum before calling this complete.
 2. Identify redundant data (if it exists).
   - Deduplication would be done, at first, by enabling flags to identify the node type with a configuration flag.
-  - STATUS: In progress
+  - STATUS: No problems so far, saving for future work.
 3. Add in:
   - Histogram data
+    - STATUS: We have some of this via the 'brw_stats' file. We have created the histograms within Grafana in early tests.
   - Other data sources (CLI data that isn't present in /proc, for example). Users will be able to disable non-proc sources via a configuration flag.
   - STATUS: Not yet started
