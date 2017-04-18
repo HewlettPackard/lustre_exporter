@@ -1,7 +1,7 @@
 go:
     cgo: true
 repository:
-    path: github.com/joehandzik/lustre_exporter
+    path: github.com/HewlettPackard/lustre_exporter
 build:
     flags: -a -tags 'netgo static_build'
     ldflags: |

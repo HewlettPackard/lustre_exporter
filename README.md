@@ -4,11 +4,11 @@ Prometheus exporter for Lustre metrics.
 
 ## Getting
 
-go get github.com/joehandzik/lustre_exporter
+go get github.com/HewlettPackard/lustre_exporter
 
 ## Building
 
-cd $GOPATH/src/github.com/joehandzik/lustre_exporter
+cd $GOPATH/src/github.com/HewlettPackard/lustre_exporter
 
 make
 
