@@ -15,6 +15,7 @@ GO     ?= GO15VENDOREXPERIMENT=1 go
 GOPATH := $(firstword $(subst :, ,$(GOPATH)))
 PROMU  ?= $(GOPATH)/bin/promu
 pkgs    = $(shell $(GO) list ./... | grep -v /vendor/)
+TARGET	?= lustre_exporter
 
 PREFIX			?= $(shell pwd)
 BIN_DIR			?= $(shell pwd)
@@ -33,10 +34,14 @@ build: $(PROMU)
 	@echo ">> building binaries"
 	@$(PROMU) build --prefix $(PREFIX)
 
+clean:
+	@echo ">> Cleaning up"
+	@$(RM) $(TARGET)
+
 $(GOPATH)/bin/promu promu:
 	@GOOS=$(shell uname -s | tr A-Z a-z) \
 		GOARCH=$(subst x86_64,amd64,$(patsubst i%86,386,$(shell uname -m))) \
 		$(GO) get -u github.com/prometheus/promu
 
 
-.PHONY: all format build test promu $(GOPATH)/bin/promu
+.PHONY: all format build test promu clean $(GOPATH)/bin/promu
