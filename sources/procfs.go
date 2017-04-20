@@ -93,6 +93,16 @@ func (s *lustreSource) generateOSSMetricTemplates() error {
 			"tot_granted":          "Total number of exports that have been marked granted",
 			"tot_pending":          "Total number of exports that have been marked pending",
 		},
+		"ldlm/namespaces/filter-*": map[string]string{
+			"lock_count":         "Number of locks",
+			"lock_timeouts":      "Number of lock timeouts",
+			"contended_locks":    "Number of contended locks",
+			"contention_seconds": "Time in seconds during which locks were contended",
+			"pool/granted":       "Number of granted locks",
+			"pool/grant_rate":    "Lock grant rate",
+			"pool/cancel_rate":   "Lock cancel rate",
+			"pool/grant_speed":   "Lock grant speed",
+		},
 	}
 	for path, _ := range metricMap {
 		for metric, helpText := range metricMap[path] {
@@ -157,8 +167,10 @@ func NewLustreSource() (LustreSource, error) {
 
 func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 	metricType := "single"
+	directoryDepth := 0
 
 	for _, metric := range s.lustreProcMetrics {
+		directoryDepth = strings.Count(metric.name, "/")
 		paths, err := filepath.Glob(filepath.Join(s.basePath, metric.path, metric.name))
 		if err != nil {
 			return err
@@ -170,7 +182,7 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 			metricType = "single"
 			switch metric.name {
 			case "brw_stats":
-				err = s.parseBRWStats(metric.source, "brw_stats", path, metric.helpText, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64) {
+				err = s.parseBRWStats(metric.source, "brw_stats", path, directoryDepth, metric.helpText, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64) {
 					ch <- s.brwMetric(nodeType, brwOperation, brwSize, nodeName, name, helpText, value)
 				})
 				if err != nil {
@@ -180,7 +192,7 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 				if metric.name == "stats" {
 					metricType = "stats"
 				}
-				err = s.parseFile(metric.source, metricType, path, metric.helpText, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
+				err = s.parseFile(metric.source, metricType, path, directoryDepth, metric.helpText, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
 					ch <- s.constMetric(nodeType, nodeName, name, helpText, value)
 				})
 				if err != nil {
@@ -286,19 +298,21 @@ func extractStatsBlock(title string, statsFile string) (block string) {
 	return block
 }
 
-func parseFileElements(path string) (name string, nodeName string, err error) {
+func parseFileElements(path string, directoryDepth int) (name string, nodeName string, err error) {
 	pathElements := strings.Split(path, "/")
 	pathLen := len(pathElements)
 	if pathLen < 1 {
 		return "", "", fmt.Errorf("path did not return at least one element")
 	}
 	name = pathElements[pathLen-1]
-	nodeName = pathElements[pathLen-2]
+	nodeName = pathElements[pathLen-2-directoryDepth]
+	nodeName = strings.TrimPrefix(nodeName, "filter-")
+	nodeName = strings.TrimSuffix(nodeName, "_UUID")
 	return name, nodeName, nil
 }
 
-func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path string, helpText string, handler func(string, string, string, string, string, string, uint64)) (err error) {
-	_, nodeName, err := parseFileElements(path)
+func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, handler func(string, string, string, string, string, string, uint64)) (err error) {
+	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
 	}
@@ -331,8 +345,8 @@ func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path st
 	return nil
 }
 
-func (s *lustreSource) parseFile(nodeType string, metricType string, path string, helpText string, handler func(string, string, string, string, uint64)) (err error) {
-	name, nodeName, err := parseFileElements(path)
+func (s *lustreSource) parseFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, handler func(string, string, string, string, uint64)) (err error) {
+	name, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
 	}
