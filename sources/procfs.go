@@ -167,6 +167,7 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 			continue
 		}
 		for _, path := range paths {
+			metricType = "single"
 			switch metric.name {
 			case "brw_stats":
 				err = s.parseBRWStats(metric.source, "brw_stats", path, metric.helpText, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64) {
