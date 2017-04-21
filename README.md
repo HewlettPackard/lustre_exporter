@@ -34,3 +34,7 @@ Design plans
     - STATUS: We have some of this via the 'brw_stats' file. We have created the histograms within Grafana in early tests.
   - Other data sources (CLI data that isn't present in /proc, for example). Users will be able to disable non-proc sources via a configuration flag.
     - STATUS: Not yet started
+    
+### Contributing
+
+To contribute to this HPE project, you'll need to fill out a CLA (Contributor License Agreement). If you would like to contribute anything more than a bug fix (feature, architectural change, etc), please file an issue and we'll get in touch with you to have you fill out the CLA. 
