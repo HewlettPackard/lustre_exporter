@@ -78,6 +78,7 @@ func (s *lustreSource) generateOSSMetricTemplates() error {
 			"grant_compat_disable": "Binary indicator as to whether clients with OBD_CONNECT_GRANT_PARAM setting will be granted space",
 			"grant_precreate":      "Maximum space in bytes that clients can preallocate for objects",
 			"job_cleanup_interval": "Interval in seconds between cleanup of tuning statistics",
+			"job_stats":            "A collection of read/write statistics listed by jobid",
 			"kbytesavail":          "Number of kilobytes readily available in the pool",
 			"kbytesfree":           "Number of kilobytes allocated to the pool",
 			"kbytestotal":          "Capacity of the pool in kilobytes",
@@ -188,6 +189,13 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 				if err != nil {
 					return err
 				}
+			case "job_stats":
+				err = s.parseJobStats(metric.source, "job_stats", path, directoryDepth, metric.helpText, func(nodeType string, jobid string, jobOperation string, nodeName string, name string, helpText string, value uint64) {
+					ch <- s.jobStatsMetric(nodeType, jobid, jobOperation, nodeName, name, helpText, value)
+				})
+				if err != nil {
+					return err
+				}
 			default:
 				if metric.name == "stats" {
 					metricType = "stats"
@@ -287,6 +295,139 @@ func parseStatsFile(path string) (metricMap map[string]map[string]string, err er
 	}
 
 	return metricMap, nil
+}
+
+func getJobStatsByOperation(jobBlock string, jobID string, operation string) (metricMap map[string]map[string]string, err error) {
+	opRegex, err := regexp.Compile(operation + "_bytes: .*")
+	if err != nil {
+		return nil, err
+	}
+	numbersRegex, err := regexp.Compile("[0-9]*.[0-9]+|[0-9]+")
+	if err != nil {
+		return nil, err
+	}
+
+	opStat := opRegex.FindString(jobBlock)
+	if len(opStat) == 0 {
+		return nil, nil
+	}
+	opNumbers := numbersRegex.FindAllString(opStat, -1)
+	if len(opNumbers) == 0 {
+		return nil, nil
+	}
+
+	metricMap = make(map[string]map[string]string)
+
+	metricMap["job_id_"+operation+"_samples"] = map[string]string{"help": samplesHelp, "value": strings.TrimSpace(opNumbers[0]), "jobID": jobID, "operation": operation, "name": "job_id_" + operation + "_samples"}
+	metricMap["job_id_"+operation+"_minimum"] = map[string]string{"help": minimumHelp, "value": strings.TrimSpace(opNumbers[1]), "jobID": jobID, "operation": operation, "name": "job_id_" + operation + "_minimum"}
+	metricMap["job_id_"+operation+"_maximum"] = map[string]string{"help": maximumHelp, "value": strings.TrimSpace(opNumbers[2]), "jobID": jobID, "operation": operation, "name": "job_id_" + operation + "_maximum"}
+	metricMap["job_id_"+operation+"_total"] = map[string]string{"help": totalHelp, "value": strings.TrimSpace(opNumbers[3]), "jobID": jobID, "operation": operation, "name": "job_id_" + operation + "_total"}
+
+	return metricMap, err
+}
+
+func getJobStats(jobBlock string, jobID string) (metricMap map[string]map[string]string, err error) {
+	metricMap = make(map[string]map[string]string)
+	readStatsMap, err := getJobStatsByOperation(jobBlock, jobID, "read")
+	if err != nil {
+		return nil, err
+	}
+	if readStatsMap != nil {
+		for key, value := range readStatsMap {
+			metricMap[key] = value
+		}
+	}
+
+	writeStatsMap, err := getJobStatsByOperation(jobBlock, jobID, "write")
+	if err != nil {
+		return nil, err
+	}
+	if writeStatsMap != nil {
+		for key, value := range writeStatsMap {
+			metricMap[key] = value
+		}
+	}
+
+	return metricMap, nil
+}
+
+func getJobNum(jobBlock string) (jobID string, err error) {
+	numbersRegex, err := regexp.Compile("[0-9]*.[0-9]+|[0-9]+")
+	if err != nil {
+		return "", err
+	}
+	jobIDRegex, err := regexp.Compile("job_id: .*")
+	if err != nil {
+		return "", err
+	}
+
+	jobID = jobIDRegex.FindString(jobBlock)
+	if len(jobID) == 0 {
+		return "", nil
+	}
+	jobID = numbersRegex.FindString(jobID)
+	if len(jobID) == 0 {
+		return "", nil
+	}
+
+	return strings.Trim(jobID, " "), nil
+}
+
+func parseJobStatsText(jobStats string) (metricMap map[string]map[string]string, err error) {
+	metricMap = make(map[string]map[string]string)
+	pattern := "(?ms:job_id:.*?(-|\\z))"
+	jobRegex, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	jobs := jobRegex.FindAllString(jobStats, -1)
+	if len(jobs) == 0 {
+		return nil, nil
+	}
+
+	for _, job := range jobs {
+		jobID, err := getJobNum(job)
+		if err != nil {
+			return nil, err
+		}
+		jobMap, err := getJobStats(job, jobID)
+		if err != nil {
+			return nil, err
+		}
+		for key, value := range jobMap {
+			metricMap[key+"_"+jobID] = value
+		}
+	}
+	return metricMap, nil
+}
+
+func (s *lustreSource) parseJobStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, handler func(string, string, string, string, string, string, uint64)) (err error) {
+	metricMap := make(map[string]map[string]string)
+	_, nodeName, err := parseFileElements(path, directoryDepth)
+	if err != nil {
+		return err
+	}
+	jobStatsBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	jobStatsFile := string(jobStatsBytes[:])
+
+	metricMap, err = parseJobStatsText(jobStatsFile)
+	if err != nil {
+		return err
+	}
+
+	for _, value := range metricMap {
+		result, err := strconv.ParseUint(value["value"], 10, 64)
+		if err != nil {
+			return err
+		}
+		handler(nodeType, value["jobID"], value["operation"], nodeName, value["name"], value["help"], result)
+	}
+	return nil
 }
 
 func extractStatsBlock(title string, statsFile string) (block string) {
@@ -405,5 +546,21 @@ func (s *lustreSource) brwMetric(nodeType string, brwOperation string, brwSize s
 		nodeName,
 		brwOperation,
 		brwSize,
+	)
+}
+
+func (s *lustreSource) jobStatsMetric(nodeType string, jobid string, jobOperation string, nodeName string, name string, helpText string, value uint64) prometheus.Metric {
+	return prometheus.MustNewConstMetric(
+		prometheus.NewDesc(
+			prometheus.BuildFQName(Namespace, "", name),
+			helpText,
+			[]string{nodeType, "jobid", "operation"},
+			nil,
+		),
+		prometheus.CounterValue,
+		float64(value),
+		nodeName,
+		jobid,
+		jobOperation,
 	)
 }
