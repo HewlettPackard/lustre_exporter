@@ -42,7 +42,7 @@ const (
 type lustreProcMetric struct {
 	subsystem string
 	name      string
-	source    string //The node type (OSS, MDS, MGS)
+	source    string //The parent data source (OST, MDS, MGS, etc)
 	path      string //Path to retreive metric from
 	helpText  string
 }
@@ -66,7 +66,7 @@ func newLustreProcMetric(name string, source string, path string, helpText strin
 	return m
 }
 
-func (s *lustreSource) generateOSSMetricTemplates() error {
+func (s *lustreSource) generateOSTMetricTemplates() error {
 	metricMap := map[string]map[string]string{
 		"obdfilter/*": map[string]string{
 			"blocksize":            "Filesystem block size in bytes",
@@ -107,7 +107,7 @@ func (s *lustreSource) generateOSSMetricTemplates() error {
 	}
 	for path, _ := range metricMap {
 		for metric, helpText := range metricMap[path] {
-			newMetric := newLustreProcMetric(metric, "OSS", path, helpText)
+			newMetric := newLustreProcMetric(metric, "OST", path, helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -160,7 +160,7 @@ func NewLustreSource() (LustreSource, error) {
 	var l lustreSource
 	l.basePath = "/proc/fs/lustre"
 	//control which node metrics you pull via flags
-	l.generateOSSMetricTemplates()
+	l.generateOSTMetricTemplates()
 	l.generateMGSMetricTemplates()
 	l.generateMDSMetricTemplates()
 	return &l, nil
