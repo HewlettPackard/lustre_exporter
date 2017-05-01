@@ -53,6 +53,12 @@ type lustreStatsMetric struct {
 	value uint64
 }
 
+type lustreJobsMetric struct {
+	jobID     string
+	operation string
+	lustreStatsMetric
+}
+
 func init() {
 	Factories["procfs"] = newLustreSource
 }
@@ -326,7 +332,7 @@ func parseStatsFile(path string) (metricList []lustreStatsMetric, err error) {
 	return metricList, nil
 }
 
-func getJobStatsByOperation(jobBlock string, jobID string, operation string) (metricMap map[string]map[string]string, err error) {
+func getJobStatsByOperation(jobBlock string, jobID string, operation string) (metricList []lustreJobsMetric, err error) {
 	opRegex, err := regexp.Compile(operation + "_bytes: .*")
 	if err != nil {
 		return nil, err
@@ -345,39 +351,50 @@ func getJobStatsByOperation(jobBlock string, jobID string, operation string) (me
 		return nil, nil
 	}
 
-	metricMap = make(map[string]map[string]string)
+	opMap := map[string]map[string]string{
+		"_samples": {"help": samplesHelp, "value": opNumbers[0]},
+		"_minimum": {"help": minimumHelp, "value": opNumbers[1]},
+		"_maximum": {"help": maximumHelp, "value": opNumbers[2]},
+		"_total":   {"help": totalHelp, "value": opNumbers[3]},
+	}
+	for name, valueMap := range opMap {
+		result, err := strconv.ParseUint(strings.TrimSpace(valueMap["value"]), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		l := lustreStatsMetric{
+			title: "job_id_" + operation + name,
+			help:  valueMap["help"],
+			value: result,
+		}
+		metricList = append(metricList, lustreJobsMetric{jobID, operation, l})
+	}
 
-	metricMap["job_id_"+operation+"_samples"] = map[string]string{"help": samplesHelp, "value": strings.TrimSpace(opNumbers[0]), "jobID": jobID, "operation": operation, "name": "job_id_" + operation + "_samples"}
-	metricMap["job_id_"+operation+"_minimum"] = map[string]string{"help": minimumHelp, "value": strings.TrimSpace(opNumbers[1]), "jobID": jobID, "operation": operation, "name": "job_id_" + operation + "_minimum"}
-	metricMap["job_id_"+operation+"_maximum"] = map[string]string{"help": maximumHelp, "value": strings.TrimSpace(opNumbers[2]), "jobID": jobID, "operation": operation, "name": "job_id_" + operation + "_maximum"}
-	metricMap["job_id_"+operation+"_total"] = map[string]string{"help": totalHelp, "value": strings.TrimSpace(opNumbers[3]), "jobID": jobID, "operation": operation, "name": "job_id_" + operation + "_total"}
-
-	return metricMap, err
+	return metricList, err
 }
 
-func getJobStats(jobBlock string, jobID string) (metricMap map[string]map[string]string, err error) {
-	metricMap = make(map[string]map[string]string)
-	readStatsMap, err := getJobStatsByOperation(jobBlock, jobID, "read")
+func getJobStats(jobBlock string, jobID string) (metricList []lustreJobsMetric, err error) {
+	readStatsList, err := getJobStatsByOperation(jobBlock, jobID, "read")
 	if err != nil {
 		return nil, err
 	}
-	if readStatsMap != nil {
-		for key, value := range readStatsMap {
-			metricMap[key] = value
+	if readStatsList != nil {
+		for _, item := range readStatsList {
+			metricList = append(metricList, item)
 		}
 	}
 
-	writeStatsMap, err := getJobStatsByOperation(jobBlock, jobID, "write")
+	writeStatsList, err := getJobStatsByOperation(jobBlock, jobID, "write")
 	if err != nil {
 		return nil, err
 	}
-	if writeStatsMap != nil {
-		for key, value := range writeStatsMap {
-			metricMap[key] = value
+	if writeStatsList != nil {
+		for _, item := range writeStatsList {
+			metricList = append(metricList, item)
 		}
 	}
 
-	return metricMap, nil
+	return metricList, nil
 }
 
 func getJobNum(jobBlock string) (jobID string, err error) {
@@ -402,8 +419,7 @@ func getJobNum(jobBlock string) (jobID string, err error) {
 	return strings.Trim(jobID, " "), nil
 }
 
-func parseJobStatsText(jobStats string) (metricMap map[string]map[string]string, err error) {
-	metricMap = make(map[string]map[string]string)
+func parseJobStatsText(jobStats string) (metricList []lustreJobsMetric, err error) {
 	pattern := "(?ms:job_id:.*?(-|\\z))"
 	jobRegex, err := regexp.Compile(pattern)
 	if err != nil {
@@ -420,19 +436,18 @@ func parseJobStatsText(jobStats string) (metricMap map[string]map[string]string,
 		if err != nil {
 			return nil, err
 		}
-		jobMap, err := getJobStats(job, jobID)
+		jobList, err := getJobStats(job, jobID)
 		if err != nil {
 			return nil, err
 		}
-		for key, value := range jobMap {
-			metricMap[key+"_"+jobID] = value
+		for _, item := range jobList {
+			metricList = append(metricList, item)
 		}
 	}
-	return metricMap, nil
+	return metricList, nil
 }
 
 func (s *lustreSource) parseJobStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, handler func(string, string, string, string, string, string, uint64)) (err error) {
-	metricMap := make(map[string]map[string]string)
 	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
@@ -444,17 +459,13 @@ func (s *lustreSource) parseJobStats(nodeType string, metricType string, path st
 
 	jobStatsFile := string(jobStatsBytes[:])
 
-	metricMap, err = parseJobStatsText(jobStatsFile)
+	metricList, err := parseJobStatsText(jobStatsFile)
 	if err != nil {
 		return err
 	}
 
-	for _, value := range metricMap {
-		result, err := strconv.ParseUint(value["value"], 10, 64)
-		if err != nil {
-			return err
-		}
-		handler(nodeType, value["jobID"], value["operation"], nodeName, value["name"], value["help"], result)
+	for _, item := range metricList {
+		handler(nodeType, item.jobID, item.operation, nodeName, item.lustreStatsMetric.title, item.lustreStatsMetric.help, item.lustreStatsMetric.value)
 	}
 	return nil
 }
