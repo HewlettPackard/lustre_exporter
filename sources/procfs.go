@@ -305,29 +305,22 @@ func splitBRWStats(statBlock string) (metricList []lustreBRWMetric, err error) {
 }
 
 func parseStatsFile(path string) (metricList []lustreStatsMetric, err error) {
+	operations := map[string]string{"read": "read_bytes .*", "write": "write_bytes .*"}
 	statsFileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 	statsFile := string(statsFileBytes[:])
 
-	readStatsList, err := parseReadWriteBytes("read", "read_bytes .*", statsFile)
-	if err != nil {
-		return nil, err
-	}
-	if readStatsList != nil {
-		for _, item := range readStatsList {
-			metricList = append(metricList, item)
+	for operation, regexString := range operations {
+		statsList, err := parseReadWriteBytes(operation, regexString, statsFile)
+		if err != nil {
+			return nil, err
 		}
-	}
-
-	writeStatsList, err := parseReadWriteBytes("write", "write_bytes .*", statsFile)
-	if err != nil {
-		return nil, err
-	}
-	if writeStatsList != nil {
-		for _, item := range writeStatsList {
-			metricList = append(metricList, item)
+		if statsList != nil {
+			for _, item := range statsList {
+				metricList = append(metricList, item)
+			}
 		}
 	}
 
@@ -376,23 +369,16 @@ func getJobStatsByOperation(jobBlock string, jobID string, operation string) (me
 }
 
 func getJobStats(jobBlock string, jobID string) (metricList []lustreJobsMetric, err error) {
-	readStatsList, err := getJobStatsByOperation(jobBlock, jobID, "read")
-	if err != nil {
-		return nil, err
-	}
-	if readStatsList != nil {
-		for _, item := range readStatsList {
-			metricList = append(metricList, item)
+	operations := []string{"read", "write"}
+	for _, operation := range operations {
+		statsList, err := getJobStatsByOperation(jobBlock, jobID, operation)
+		if err != nil {
+			return nil, err
 		}
-	}
-
-	writeStatsList, err := getJobStatsByOperation(jobBlock, jobID, "write")
-	if err != nil {
-		return nil, err
-	}
-	if writeStatsList != nil {
-		for _, item := range writeStatsList {
-			metricList = append(metricList, item)
+		if statsList != nil {
+			for _, item := range statsList {
+				metricList = append(metricList, item)
+			}
 		}
 	}
 
