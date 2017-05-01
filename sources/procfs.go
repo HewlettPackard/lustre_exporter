@@ -47,6 +47,24 @@ type lustreProcMetric struct {
 	helpText  string
 }
 
+type lustreStatsMetric struct {
+	title string
+	help  string
+	value uint64
+}
+
+type lustreJobsMetric struct {
+	jobID     string
+	operation string
+	lustreStatsMetric
+}
+
+type lustreBRWMetric struct {
+	size      string
+	operation string
+	value     string
+}
+
 func init() {
 	Factories["procfs"] = newLustreSource
 }
@@ -228,7 +246,7 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 	return nil
 }
 
-func parseReadWriteBytes(operation string, regexString string, statsFile string) (metricMap map[string]map[string]string, err error) {
+func parseReadWriteBytes(operation string, regexString string, statsFile string) (metricList []lustreStatsMetric, err error) {
 	bytesRegex, err := regexp.Compile(regexString)
 	if err != nil {
 		return nil, err
@@ -244,24 +262,28 @@ func parseReadWriteBytes(operation string, regexString string, statsFile string)
 		return nil, err
 	}
 
-	metricMap = make(map[string]map[string]string)
 	bytesSplit := r.Split(bytesString, -1)
 	// bytesSplit is in the following format:
 	// bytesString: {name} {number of samples} 'samples' [{units}] {minimum} {maximum} {sum}
 	// bytesSplit:   [0]    [1]                 [2]       [3]       [4]       [5]       [6]
-	metricMap[operation+"_samples_total"] = map[string]string{"help": samplesHelp, "value": bytesSplit[1]}
-	metricMap[operation+"_minimum_size_bytes"] = map[string]string{"help": minimumHelp, "value": bytesSplit[4]}
-	metricMap[operation+"_maximum_size_bytes"] = map[string]string{"help": maximumHelp, "value": bytesSplit[5]}
-	metricMap[operation+"_total_bytes"] = map[string]string{"help": totalHelp, "value": bytesSplit[6]}
+	bytesMap := map[string]map[string]string{
+		"_samples_total":      {"help": samplesHelp, "value": bytesSplit[1]},
+		"_minimum_size_bytes": {"help": minimumHelp, "value": bytesSplit[4]},
+		"_maximum_size_bytes": {"help": maximumHelp, "value": bytesSplit[5]},
+		"_total_bytes":        {"help": totalHelp, "value": bytesSplit[6]},
+	}
+	for name, valueMap := range bytesMap {
+		result, err := strconv.ParseUint(valueMap["value"], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		metricList = append(metricList, lustreStatsMetric{title: operation + name, help: valueMap["help"], value: result})
+	}
 
-	return metricMap, nil
+	return metricList, nil
 }
 
-func splitBRWStats(title string, statBlock string) (metricMap map[string]map[string]string, err error) {
-	title = strings.Replace(title, " ", "_", -1)
-	title = strings.Replace(title, "/", "", -1)
-	metricMap = make(map[string]map[string]string)
-
+func splitBRWStats(statBlock string) (metricList []lustreBRWMetric, err error) {
 	if len(statBlock) == 0 || statBlock == "" {
 		return nil, nil
 	}
@@ -275,45 +297,44 @@ func splitBRWStats(title string, statBlock string) (metricMap map[string]map[str
 			// [0]    [1]           [2]                      [3]                       [4] [5]           [6]                       [7]
 			size, readRPCs, writeRPCs := fields[0], fields[1], fields[5]
 			size = strings.Replace(size, ":", "", -1)
-			metricMap[title+"_"+size+"_read"] = map[string]string{"value": readRPCs, "size": size, "operation": "read", "name": title}
-			metricMap[title+"_"+size+"_write"] = map[string]string{"value": writeRPCs, "size": size, "operation": "write", "name": title}
+			metricList = append(metricList, lustreBRWMetric{size: size, operation: "read", value: readRPCs})
+			metricList = append(metricList, lustreBRWMetric{size: size, operation: "write", value: writeRPCs})
 		}
 	}
-	return metricMap, nil
+	return metricList, nil
 }
 
-func parseStatsFile(path string) (metricMap map[string]map[string]string, err error) {
-	metricMap = make(map[string]map[string]string)
+func parseStatsFile(path string) (metricList []lustreStatsMetric, err error) {
 	statsFileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 	statsFile := string(statsFileBytes[:])
 
-	readStatsMap, err := parseReadWriteBytes("read", "read_bytes .*", statsFile)
+	readStatsList, err := parseReadWriteBytes("read", "read_bytes .*", statsFile)
 	if err != nil {
 		return nil, err
 	}
-	if readStatsMap != nil {
-		for key, value := range readStatsMap {
-			metricMap[key] = value
+	if readStatsList != nil {
+		for _, item := range readStatsList {
+			metricList = append(metricList, item)
 		}
 	}
 
-	writeStatsMap, err := parseReadWriteBytes("write", "write_bytes .*", statsFile)
+	writeStatsList, err := parseReadWriteBytes("write", "write_bytes .*", statsFile)
 	if err != nil {
 		return nil, err
 	}
-	if writeStatsMap != nil {
-		for key, value := range writeStatsMap {
-			metricMap[key] = value
+	if writeStatsList != nil {
+		for _, item := range writeStatsList {
+			metricList = append(metricList, item)
 		}
 	}
 
-	return metricMap, nil
+	return metricList, nil
 }
 
-func getJobStatsByOperation(jobBlock string, jobID string, operation string) (metricMap map[string]map[string]string, err error) {
+func getJobStatsByOperation(jobBlock string, jobID string, operation string) (metricList []lustreJobsMetric, err error) {
 	opRegex, err := regexp.Compile(operation + "_bytes: .*")
 	if err != nil {
 		return nil, err
@@ -332,39 +353,50 @@ func getJobStatsByOperation(jobBlock string, jobID string, operation string) (me
 		return nil, nil
 	}
 
-	metricMap = make(map[string]map[string]string)
+	opMap := map[string]map[string]string{
+		"_samples": {"help": samplesHelp, "value": opNumbers[0]},
+		"_minimum": {"help": minimumHelp, "value": opNumbers[1]},
+		"_maximum": {"help": maximumHelp, "value": opNumbers[2]},
+		"_total":   {"help": totalHelp, "value": opNumbers[3]},
+	}
+	for name, valueMap := range opMap {
+		result, err := strconv.ParseUint(strings.TrimSpace(valueMap["value"]), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		l := lustreStatsMetric{
+			title: "job_id_" + operation + name,
+			help:  valueMap["help"],
+			value: result,
+		}
+		metricList = append(metricList, lustreJobsMetric{jobID, operation, l})
+	}
 
-	metricMap["job_id_"+operation+"_samples"] = map[string]string{"help": samplesHelp, "value": strings.TrimSpace(opNumbers[0]), "jobID": jobID, "operation": operation, "name": "job_id_" + operation + "_samples"}
-	metricMap["job_id_"+operation+"_minimum"] = map[string]string{"help": minimumHelp, "value": strings.TrimSpace(opNumbers[1]), "jobID": jobID, "operation": operation, "name": "job_id_" + operation + "_minimum"}
-	metricMap["job_id_"+operation+"_maximum"] = map[string]string{"help": maximumHelp, "value": strings.TrimSpace(opNumbers[2]), "jobID": jobID, "operation": operation, "name": "job_id_" + operation + "_maximum"}
-	metricMap["job_id_"+operation+"_total"] = map[string]string{"help": totalHelp, "value": strings.TrimSpace(opNumbers[3]), "jobID": jobID, "operation": operation, "name": "job_id_" + operation + "_total"}
-
-	return metricMap, err
+	return metricList, err
 }
 
-func getJobStats(jobBlock string, jobID string) (metricMap map[string]map[string]string, err error) {
-	metricMap = make(map[string]map[string]string)
-	readStatsMap, err := getJobStatsByOperation(jobBlock, jobID, "read")
+func getJobStats(jobBlock string, jobID string) (metricList []lustreJobsMetric, err error) {
+	readStatsList, err := getJobStatsByOperation(jobBlock, jobID, "read")
 	if err != nil {
 		return nil, err
 	}
-	if readStatsMap != nil {
-		for key, value := range readStatsMap {
-			metricMap[key] = value
+	if readStatsList != nil {
+		for _, item := range readStatsList {
+			metricList = append(metricList, item)
 		}
 	}
 
-	writeStatsMap, err := getJobStatsByOperation(jobBlock, jobID, "write")
+	writeStatsList, err := getJobStatsByOperation(jobBlock, jobID, "write")
 	if err != nil {
 		return nil, err
 	}
-	if writeStatsMap != nil {
-		for key, value := range writeStatsMap {
-			metricMap[key] = value
+	if writeStatsList != nil {
+		for _, item := range writeStatsList {
+			metricList = append(metricList, item)
 		}
 	}
 
-	return metricMap, nil
+	return metricList, nil
 }
 
 func getJobNum(jobBlock string) (jobID string, err error) {
@@ -389,8 +421,7 @@ func getJobNum(jobBlock string) (jobID string, err error) {
 	return strings.Trim(jobID, " "), nil
 }
 
-func parseJobStatsText(jobStats string) (metricMap map[string]map[string]string, err error) {
-	metricMap = make(map[string]map[string]string)
+func parseJobStatsText(jobStats string) (metricList []lustreJobsMetric, err error) {
 	pattern := "(?ms:job_id:.*?(-|\\z))"
 	jobRegex, err := regexp.Compile(pattern)
 	if err != nil {
@@ -407,19 +438,18 @@ func parseJobStatsText(jobStats string) (metricMap map[string]map[string]string,
 		if err != nil {
 			return nil, err
 		}
-		jobMap, err := getJobStats(job, jobID)
+		jobList, err := getJobStats(job, jobID)
 		if err != nil {
 			return nil, err
 		}
-		for key, value := range jobMap {
-			metricMap[key+"_"+jobID] = value
+		for _, item := range jobList {
+			metricList = append(metricList, item)
 		}
 	}
-	return metricMap, nil
+	return metricList, nil
 }
 
 func (s *lustreSource) parseJobStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, handler func(string, string, string, string, string, string, uint64)) (err error) {
-	metricMap := make(map[string]map[string]string)
 	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
@@ -431,17 +461,13 @@ func (s *lustreSource) parseJobStats(nodeType string, metricType string, path st
 
 	jobStatsFile := string(jobStatsBytes[:])
 
-	metricMap, err = parseJobStatsText(jobStatsFile)
+	metricList, err := parseJobStatsText(jobStatsFile)
 	if err != nil {
 		return err
 	}
 
-	for _, value := range metricMap {
-		result, err := strconv.ParseUint(value["value"], 10, 64)
-		if err != nil {
-			return err
-		}
-		handler(nodeType, value["jobID"], value["operation"], nodeName, value["name"], value["help"], result)
+	for _, item := range metricList {
+		handler(nodeType, item.jobID, item.operation, nodeName, item.lustreStatsMetric.title, item.lustreStatsMetric.help, item.lustreStatsMetric.value)
 	}
 	return nil
 }
@@ -487,16 +513,18 @@ func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path st
 	statsFile := string(statsFileBytes[:])
 	for title, help := range metricBlocks {
 		block := extractStatsBlock(title, statsFile)
-		mapSubset, err := splitBRWStats(title, block)
+		title = strings.Replace(title, " ", "_", -1)
+		title = strings.Replace(title, "/", "", -1)
+		metricList, err := splitBRWStats(block)
 		if err != nil {
 			return err
 		}
-		for _, metricMap := range mapSubset {
-			value, err := strconv.ParseUint(metricMap["value"], 10, 64)
+		for _, item := range metricList {
+			value, err := strconv.ParseUint(item.value, 10, 64)
 			if err != nil {
 				return err
 			}
-			handler(nodeType, metricMap["operation"], metricMap["size"], nodeName, metricMap["name"], help, value)
+			handler(nodeType, item.operation, item.size, nodeName, title, help, value)
 		}
 	}
 	return nil
@@ -519,17 +547,13 @@ func (s *lustreSource) parseFile(nodeType string, metricType string, path string
 		}
 		handler(nodeType, nodeName, name, helpText, convertedValue)
 	case "stats":
-		metricMap, err := parseStatsFile(path)
+		metricList, err := parseStatsFile(path)
 		if err != nil {
 			return err
 		}
 
-		for key, statMap := range metricMap {
-			value, err := strconv.ParseUint(statMap["value"], 10, 64)
-			if err != nil {
-				return err
-			}
-			handler(nodeType, nodeName, key, statMap["help"], value)
+		for _, metric := range metricList {
+			handler(nodeType, nodeName, metric.title, metric.help, metric.value)
 		}
 	}
 	return nil
