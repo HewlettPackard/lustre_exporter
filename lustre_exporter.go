@@ -41,18 +41,21 @@ var (
 	)
 )
 
+//LustreSource is a list of all sources that the user would like to collect.
 type LustreSource struct {
-	source_list map[string]sources.LustreSource
+	sourceList map[string]sources.LustreSource
 }
 
+//Describe implements the prometheus.Describe interface
 func (l LustreSource) Describe(ch chan<- *prometheus.Desc) {
 	scrapeDurations.Describe(ch)
 }
 
+//Collect implements the prometheus.Collect interface
 func (l LustreSource) Collect(ch chan<- prometheus.Metric) {
 	wg := sync.WaitGroup{}
-	wg.Add(len(l.source_list))
-	for name, c := range l.source_list {
+	wg.Add(len(l.sourceList))
+	for name, c := range l.sourceList {
 		go func(name string, s sources.LustreSource) {
 			collectFromSource(name, c, ch)
 			wg.Done()
@@ -77,7 +80,7 @@ func collectFromSource(name string, s sources.LustreSource, ch chan<- prometheus
 }
 
 func loadSources(list string) (map[string]sources.LustreSource, error) {
-	source_list := map[string]sources.LustreSource{}
+	sourceList := map[string]sources.LustreSource{}
 	for _, name := range strings.Split(list, ",") {
 		fn, ok := sources.Factories[name]
 		if !ok {
@@ -87,9 +90,9 @@ func loadSources(list string) (map[string]sources.LustreSource, error) {
 		if err != nil {
 			return nil, err
 		}
-		source_list[name] = c
+		sourceList[name] = c
 	}
-	return source_list, nil
+	return sourceList, nil
 }
 
 func init() {
@@ -115,17 +118,17 @@ func main() {
 	//expand to include more sources eventually (CLI, other?)
 	enabledSources := "procfs"
 
-	source_list, err := loadSources(enabledSources)
+	sourceList, err := loadSources(enabledSources)
 	if err != nil {
 		log.Fatalf("Couldn't load sources: %q", err)
 	}
 
 	log.Infof("Enabled sources:")
-	for s := range source_list {
+	for s := range sourceList {
 		log.Infof(" - %s", s)
 	}
 
-	prometheus.MustRegister(LustreSource{source_list: source_list})
+	prometheus.MustRegister(LustreSource{sourceList: sourceList})
 	handler := promhttp.HandlerFor(prometheus.DefaultGatherer, promhttp.HandlerOpts{ErrorLog: log.NewErrorLogger()})
 
 	http.Handle(*metricsPath, prometheus.InstrumentHandler("prometheus", handler))

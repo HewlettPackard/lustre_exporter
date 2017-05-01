@@ -48,7 +48,7 @@ type lustreProcMetric struct {
 }
 
 func init() {
-	Factories["procfs"] = NewLustreSource
+	Factories["procfs"] = newLustreSource
 }
 
 type lustreSource struct {
@@ -105,7 +105,7 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 			"pool/grant_speed":   "Lock grant speed",
 		},
 	}
-	for path, _ := range metricMap {
+	for path := range metricMap {
 		for metric, helpText := range metricMap[path] {
 			newMetric := newLustreProcMetric(metric, "OST", path, helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
@@ -120,7 +120,7 @@ func (s *lustreSource) generateMDTMetricTemplates() error {
 			"num_exports": "Total number of times the pool has been exported",
 		},
 	}
-	for path, _ := range metricMap {
+	for path := range metricMap {
 		for metric, helpText := range metricMap[path] {
 			newMetric := newLustreProcMetric(metric, "MDT", path, helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
@@ -141,7 +141,7 @@ func (s *lustreSource) generateMGSMetricTemplates() error {
 			"quota_iused_estimate": "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated",
 		},
 	}
-	for path, _ := range metricMap {
+	for path := range metricMap {
 		for metric, helpText := range metricMap[path] {
 			newMetric := newLustreProcMetric(metric, "MGS", path, helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
@@ -162,7 +162,7 @@ func (s *lustreSource) generateMDSMetricTemplates() error {
 			"quota_iused_estimate": "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated",
 		},
 	}
-	for path, _ := range metricMap {
+	for path := range metricMap {
 		for metric, helpText := range metricMap[path] {
 			newMetric := newLustreProcMetric(metric, "MDS", path, helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
@@ -171,7 +171,7 @@ func (s *lustreSource) generateMDSMetricTemplates() error {
 	return nil
 }
 
-func NewLustreSource() (LustreSource, error) {
+func newLustreSource() (LustreSource, error) {
 	var l lustreSource
 	l.basePath = "/proc/fs/lustre"
 	//control which node metrics you pull via flags
