@@ -97,7 +97,11 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 		"obdfilter/*": {
 			{"blocksize", "blocksize", "Filesystem block size in bytes"},
 			{"brw_size", "brw_size", "Block read/write size in bytes"},
-			{"brw_stats", "brw_stats", "A collection of block read/write statistics"},
+			{"brw_stats", "pages_per_bulk_rw", pagesPerBlockRWHelp},
+			{"brw_stats", "discontiguous_pages", discontiguousPagesHelp},
+			{"brw_stats", "disk_ios_in_flight", diskIOsInFlightHelp},
+			{"brw_stats", "io_time", ioTimeHelp},
+			{"brw_stats", "disk_io_size", diskIOSizeHelp},
 			{"degraded", "degraded", "Binary indicator as to whether or not the pool is degraded - 0 for not degraded, 1 for degraded"},
 			{"filesfree", "filesfree", "The number of inodes (objects) available"},
 			{"filestotal", "filestotal", "The maximum number of inodes (objects) the filesystem can hold"},
@@ -225,7 +229,7 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 			metricType = "single"
 			switch metric.filename {
 			case "brw_stats":
-				err = s.parseBRWStats(metric.source, "brw_stats", path, directoryDepth, metric.helpText, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64) {
+				err = s.parseBRWStats(metric.source, "brw_stats", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64) {
 					ch <- s.brwMetric(nodeType, brwOperation, brwSize, nodeName, name, helpText, value)
 				})
 				if err != nil {
@@ -450,38 +454,34 @@ func parseFileElements(path string, directoryDepth int) (name string, nodeName s
 	return name, nodeName, nil
 }
 
-func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, handler func(string, string, string, string, string, string, uint64)) (err error) {
+func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, string, string, uint64)) (err error) {
 	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
 	}
 	metricBlocks := map[string]string{
-		"pages per bulk r/w":  pagesPerBlockRWHelp,
-		"discontiguous pages": discontiguousPagesHelp,
-		"disk I/Os in flight": diskIOsInFlightHelp,
-		"I/O time":            ioTimeHelp,
-		"disk I/O size":       diskIOSizeHelp,
+		pagesPerBlockRWHelp:    "pages per bulk r/w",
+		discontiguousPagesHelp: "discontiguous pages",
+		diskIOsInFlightHelp:    "disk I/Os in flight",
+		ioTimeHelp:             "I/O time",
+		diskIOSizeHelp:         "disk I/O size",
 	}
 	statsFileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
 	}
 	statsFile := string(statsFileBytes[:])
-	for title, help := range metricBlocks {
-		block := regexCaptureString("(?ms:^"+title+".*?(\n\n|\\z))", statsFile)
-		title = strings.Replace(title, " ", "_", -1)
-		title = strings.Replace(title, "/", "", -1)
-		metricList, err := splitBRWStats(block)
+	block := regexCaptureString("(?ms:^"+metricBlocks[helpText]+".*?(\n\n|\\z))", statsFile)
+	metricList, err := splitBRWStats(block)
+	if err != nil {
+		return err
+	}
+	for _, item := range metricList {
+		value, err := strconv.ParseUint(item.value, 10, 64)
 		if err != nil {
 			return err
 		}
-		for _, item := range metricList {
-			value, err := strconv.ParseUint(item.value, 10, 64)
-			if err != nil {
-				return err
-			}
-			handler(nodeType, item.operation, item.size, nodeName, title, help, value)
-		}
+		handler(nodeType, item.operation, item.size, nodeName, promName, helpText, value)
 	}
 	return nil
 }
