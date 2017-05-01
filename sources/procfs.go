@@ -43,7 +43,7 @@ type lustreProcMetric struct {
 	subsystem string
 	name      string
 	source    string //The parent data source (OST, MDS, MGS, etc)
-	path      string //Path to retreive metric from
+	path      string //Path to retrieve metric from
 	helpText  string
 }
 
