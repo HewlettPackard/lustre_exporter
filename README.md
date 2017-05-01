@@ -1,6 +1,8 @@
 # Lustre Metrics Exporter
 
-Prometheus exporter for Lustre metrics.
+[![Go Report Card](https://goreportcard.com/badge/github.com/HewlettPackard/lustre_exporter)](https://goreportcard.com/report/github.com/HewlettPackard/lustre_exporter)
+
+[Prometheus](https://prometheus.io/) exporter for Lustre metrics.
 
 ## Getting
 
@@ -25,7 +27,7 @@ TODO, but the current plan is to create flags that would define what node metric
 Design plans
 
 1. Export all proc data from all nodes running the Lustre Exporter that can function as a counter type (will save histogram-type work for later).
-  - STATUS: Mostly complete as far as we can tell. We still want to parse rpcstats and jobstats at minimum before calling this complete.
+  - STATUS: Mostly complete as far as we can tell. If anything you want is missing, please file an issue!
 2. Identify redundant data (if it exists).
   - Deduplication would be done, at first, by enabling flags to identify the node type with a configuration flag.
   - STATUS: No problems so far, saving for future work.
