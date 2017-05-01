@@ -68,7 +68,7 @@ func newLustreProcMetric(name string, source string, path string, helpText strin
 
 func (s *lustreSource) generateOSTMetricTemplates() error {
 	metricMap := map[string]map[string]string{
-		"obdfilter/*": map[string]string{
+		"obdfilter/*": {
 			"blocksize":            "Filesystem block size in bytes",
 			"brw_size":             "Block read/write size in bytes",
 			"brw_stats":            "A collection of block read/write statistics",
@@ -94,7 +94,7 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 			"tot_granted":          "Total number of exports that have been marked granted",
 			"tot_pending":          "Total number of exports that have been marked pending",
 		},
-		"ldlm/namespaces/filter-*": map[string]string{
+		"ldlm/namespaces/filter-*": {
 			"lock_count":         "Number of locks",
 			"lock_timeouts":      "Number of lock timeouts",
 			"contended_locks":    "Number of contended locks",
@@ -116,7 +116,7 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 
 func (s *lustreSource) generateMDTMetricTemplates() error {
 	metricMap := map[string]map[string]string{
-		"mdt/*": map[string]string{
+		"mdt/*": {
 			"num_exports": "Total number of times the pool has been exported",
 		},
 	}
@@ -131,7 +131,7 @@ func (s *lustreSource) generateMDTMetricTemplates() error {
 
 func (s *lustreSource) generateMGSMetricTemplates() error {
 	metricMap := map[string]map[string]string{
-		"mgs/MGS/osd/": map[string]string{
+		"mgs/MGS/osd/": {
 			"blocksize":            "Filesystem block size in bytes",
 			"filesfree":            "The number of inodes (objects) available",
 			"filestotal":           "The maximum number of inodes (objects) the filesystem can hold",
@@ -152,7 +152,7 @@ func (s *lustreSource) generateMGSMetricTemplates() error {
 
 func (s *lustreSource) generateMDSMetricTemplates() error {
 	metricMap := map[string]map[string]string{
-		"mds/MDS/osd": map[string]string{
+		"mds/MDS/osd": {
 			"blocksize":            "Filesystem block size in bytes",
 			"filesfree":            "The number of inodes (objects) available",
 			"filestotal":           "The maximum number of inodes (objects) the filesystem can hold",
