@@ -247,21 +247,14 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 }
 
 func parseReadWriteBytes(operation string, regexString string, statsFile string) (metricList []lustreStatsMetric, err error) {
-	bytesRegex, err := regexp.Compile(regexString)
-	if err != nil {
-		return nil, err
-	}
-
-	bytesString := bytesRegex.FindString(statsFile)
-	if len(bytesString) == 0 {
+	bytesString := regexCaptureString(regexString, statsFile)
+	if len(bytesString) < 1 {
 		return nil, nil
 	}
-
 	r, err := regexp.Compile(" +")
 	if err != nil {
 		return nil, err
 	}
-
 	bytesSplit := r.Split(bytesString, -1)
 	// bytesSplit is in the following format:
 	// bytesString: {name} {number of samples} 'samples' [{units}] {minimum} {maximum} {sum}
@@ -305,29 +298,22 @@ func splitBRWStats(statBlock string) (metricList []lustreBRWMetric, err error) {
 }
 
 func parseStatsFile(path string) (metricList []lustreStatsMetric, err error) {
+	operations := map[string]string{"read": "read_bytes .*", "write": "write_bytes .*"}
 	statsFileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 	statsFile := string(statsFileBytes[:])
 
-	readStatsList, err := parseReadWriteBytes("read", "read_bytes .*", statsFile)
-	if err != nil {
-		return nil, err
-	}
-	if readStatsList != nil {
-		for _, item := range readStatsList {
-			metricList = append(metricList, item)
+	for operation, regexString := range operations {
+		statsList, err := parseReadWriteBytes(operation, regexString, statsFile)
+		if err != nil {
+			return nil, err
 		}
-	}
-
-	writeStatsList, err := parseReadWriteBytes("write", "write_bytes .*", statsFile)
-	if err != nil {
-		return nil, err
-	}
-	if writeStatsList != nil {
-		for _, item := range writeStatsList {
-			metricList = append(metricList, item)
+		if statsList != nil {
+			for _, item := range statsList {
+				metricList = append(metricList, item)
+			}
 		}
 	}
 
@@ -335,23 +321,8 @@ func parseStatsFile(path string) (metricList []lustreStatsMetric, err error) {
 }
 
 func getJobStatsByOperation(jobBlock string, jobID string, operation string) (metricList []lustreJobsMetric, err error) {
-	opRegex, err := regexp.Compile(operation + "_bytes: .*")
-	if err != nil {
-		return nil, err
-	}
-	numbersRegex, err := regexp.Compile("[0-9]*.[0-9]+|[0-9]+")
-	if err != nil {
-		return nil, err
-	}
-
-	opStat := opRegex.FindString(jobBlock)
-	if len(opStat) == 0 {
-		return nil, nil
-	}
-	opNumbers := numbersRegex.FindAllString(opStat, -1)
-	if len(opNumbers) == 0 {
-		return nil, nil
-	}
+	opStat := regexCaptureString(operation+"_bytes: .*", jobBlock)
+	opNumbers := regexCaptureStrings("[0-9*.[0-9]+|[0-9]+", opStat)
 
 	opMap := map[string]map[string]string{
 		"_samples": {"help": samplesHelp, "value": opNumbers[0]},
@@ -376,23 +347,16 @@ func getJobStatsByOperation(jobBlock string, jobID string, operation string) (me
 }
 
 func getJobStats(jobBlock string, jobID string) (metricList []lustreJobsMetric, err error) {
-	readStatsList, err := getJobStatsByOperation(jobBlock, jobID, "read")
-	if err != nil {
-		return nil, err
-	}
-	if readStatsList != nil {
-		for _, item := range readStatsList {
-			metricList = append(metricList, item)
+	operations := []string{"read", "write"}
+	for _, operation := range operations {
+		statsList, err := getJobStatsByOperation(jobBlock, jobID, operation)
+		if err != nil {
+			return nil, err
 		}
-	}
-
-	writeStatsList, err := getJobStatsByOperation(jobBlock, jobID, "write")
-	if err != nil {
-		return nil, err
-	}
-	if writeStatsList != nil {
-		for _, item := range writeStatsList {
-			metricList = append(metricList, item)
+		if statsList != nil {
+			for _, item := range statsList {
+				metricList = append(metricList, item)
+			}
 		}
 	}
 
@@ -400,36 +364,14 @@ func getJobStats(jobBlock string, jobID string) (metricList []lustreJobsMetric, 
 }
 
 func getJobNum(jobBlock string) (jobID string, err error) {
-	numbersRegex, err := regexp.Compile("[0-9]*.[0-9]+|[0-9]+")
-	if err != nil {
-		return "", err
-	}
-	jobIDRegex, err := regexp.Compile("job_id: .*")
-	if err != nil {
-		return "", err
-	}
-
-	jobID = jobIDRegex.FindString(jobBlock)
-	if len(jobID) == 0 {
-		return "", nil
-	}
-	jobID = numbersRegex.FindString(jobID)
-	if len(jobID) == 0 {
-		return "", nil
-	}
-
+	jobID = regexCaptureString("job_id: .*", jobBlock)
+	jobID = regexCaptureString("[0-9]*.[0-9]+|[0-9]+", jobID)
 	return strings.Trim(jobID, " "), nil
 }
 
 func parseJobStatsText(jobStats string) (metricList []lustreJobsMetric, err error) {
-	pattern := "(?ms:job_id:.*?(-|\\z))"
-	jobRegex, err := regexp.Compile(pattern)
-	if err != nil {
-		return nil, err
-	}
-
-	jobs := jobRegex.FindAllString(jobStats, -1)
-	if len(jobs) == 0 {
+	jobs := regexCaptureStrings("(?ms:job_id:.*?(-|\\z))", jobStats)
+	if len(jobs) < 1 {
 		return nil, nil
 	}
 
@@ -472,13 +414,19 @@ func (s *lustreSource) parseJobStats(nodeType string, metricType string, path st
 	return nil
 }
 
-func extractStatsBlock(title string, statsFile string) (block string) {
-	// The following expressions match the specified block in the text or the end of the string,
-	// whichever comes first.
-	pattern := "(?ms:^" + title + ".*?(\n\n|\\z))"
+func regexCaptureString(pattern string, textToMatch string) (matchedString string) {
+	// Return the first string in a list of matched strings if found
+	strings := regexCaptureStrings(pattern, textToMatch)
+	if len(strings) < 1 {
+		return ""
+	}
+	return strings[0]
+}
+
+func regexCaptureStrings(pattern string, textToMatch string) (matchedStrings []string) {
 	re := regexp.MustCompile(pattern)
-	block = re.FindString(statsFile)
-	return block
+	matchedStrings = re.FindAllString(textToMatch, -1)
+	return matchedStrings
 }
 
 func parseFileElements(path string, directoryDepth int) (name string, nodeName string, err error) {
@@ -512,7 +460,7 @@ func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path st
 	}
 	statsFile := string(statsFileBytes[:])
 	for title, help := range metricBlocks {
-		block := extractStatsBlock(title, statsFile)
+		block := regexCaptureString("(?ms:^"+title+".*?(\n\n|\\z))", statsFile)
 		title = strings.Replace(title, " ", "_", -1)
 		title = strings.Replace(title, "/", "", -1)
 		metricList, err := splitBRWStats(block)
