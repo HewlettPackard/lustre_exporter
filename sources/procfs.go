@@ -41,7 +41,8 @@ const (
 
 type lustreProcMetric struct {
 	subsystem string
-	name      string
+	filename  string
+	promName  string
 	source    string //The parent data source (OST, MDS, MGS, etc)
 	path      string //Path to retrieve metric from
 	helpText  string
@@ -80,9 +81,10 @@ type lustreSource struct {
 	basePath          string
 }
 
-func newLustreProcMetric(name string, source string, path string, helpText string) lustreProcMetric {
+func newLustreProcMetric(filename string, promName string, source string, path string, helpText string) lustreProcMetric {
 	var m lustreProcMetric
-	m.name = name
+	m.filename = filename
+	m.promName = promName
 	m.source = source
 	m.path = path
 	m.helpText = helpText
@@ -131,7 +133,7 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 	}
 	for path := range metricMap {
 		for _, item := range metricMap[path] {
-			newMetric := newLustreProcMetric(item.filename, "OST", path, item.helpText)
+			newMetric := newLustreProcMetric(item.filename, item.promName, "OST", path, item.helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -145,8 +147,8 @@ func (s *lustreSource) generateMDTMetricTemplates() error {
 		},
 	}
 	for path := range metricMap {
-		for metric, helpText := range metricMap[path] {
-			newMetric := newLustreProcMetric(metric, "MDT", path, helpText)
+		for _, item := range metricMap[path] {
+			newMetric := newLustreProcMetric(item.filename, item.promName, "MDT", path, item.helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -167,7 +169,7 @@ func (s *lustreSource) generateMGSMetricTemplates() error {
 	}
 	for path := range metricMap {
 		for _, item := range metricMap[path] {
-			newMetric := newLustreProcMetric(item.filename, "MGS", path, item.helpText)
+			newMetric := newLustreProcMetric(item.filename, item.promName, "MGS", path, item.helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -188,7 +190,7 @@ func (s *lustreSource) generateMDSMetricTemplates() error {
 	}
 	for path := range metricMap {
 		for _, item := range metricMap[path] {
-			newMetric := newLustreProcMetric(item.filename, "MDS", path, item.helpText)
+			newMetric := newLustreProcMetric(item.filename, item.promName, "MDS", path, item.helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -211,8 +213,8 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 	directoryDepth := 0
 
 	for _, metric := range s.lustreProcMetrics {
-		directoryDepth = strings.Count(metric.name, "/")
-		paths, err := filepath.Glob(filepath.Join(s.basePath, metric.path, metric.name))
+		directoryDepth = strings.Count(metric.filename, "/")
+		paths, err := filepath.Glob(filepath.Join(s.basePath, metric.path, metric.filename))
 		if err != nil {
 			return err
 		}
@@ -221,7 +223,7 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 		}
 		for _, path := range paths {
 			metricType = "single"
-			switch metric.name {
+			switch metric.filename {
 			case "brw_stats":
 				err = s.parseBRWStats(metric.source, "brw_stats", path, directoryDepth, metric.helpText, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64) {
 					ch <- s.brwMetric(nodeType, brwOperation, brwSize, nodeName, name, helpText, value)
@@ -237,10 +239,10 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 					return err
 				}
 			default:
-				if metric.name == "stats" {
+				if metric.filename == "stats" {
 					metricType = "stats"
 				}
-				err = s.parseFile(metric.source, metricType, path, directoryDepth, metric.helpText, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
+				err = s.parseFile(metric.source, metricType, path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
 					ch <- s.constMetric(nodeType, nodeName, name, helpText, value)
 				})
 				if err != nil {
@@ -484,8 +486,8 @@ func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path st
 	return nil
 }
 
-func (s *lustreSource) parseFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, handler func(string, string, string, string, uint64)) (err error) {
-	name, nodeName, err := parseFileElements(path, directoryDepth)
+func (s *lustreSource) parseFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, uint64)) (err error) {
+	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
 	}
@@ -499,7 +501,7 @@ func (s *lustreSource) parseFile(nodeType string, metricType string, path string
 		if err != nil {
 			return err
 		}
-		handler(nodeType, nodeName, name, helpText, convertedValue)
+		handler(nodeType, nodeName, promName, helpText, convertedValue)
 	case "stats":
 		metricList, err := parseStatsFile(path)
 		if err != nil {
