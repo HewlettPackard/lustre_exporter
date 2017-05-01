@@ -59,6 +59,12 @@ type lustreJobsMetric struct {
 	lustreStatsMetric
 }
 
+type lustreBRWMetric struct {
+	size      string
+	operation string
+	value     string
+}
+
 func init() {
 	Factories["procfs"] = newLustreSource
 }
@@ -277,11 +283,7 @@ func parseReadWriteBytes(operation string, regexString string, statsFile string)
 	return metricList, nil
 }
 
-func splitBRWStats(title string, statBlock string) (metricMap map[string]map[string]string, err error) {
-	title = strings.Replace(title, " ", "_", -1)
-	title = strings.Replace(title, "/", "", -1)
-	metricMap = make(map[string]map[string]string)
-
+func splitBRWStats(statBlock string) (metricList []lustreBRWMetric, err error) {
 	if len(statBlock) == 0 || statBlock == "" {
 		return nil, nil
 	}
@@ -295,11 +297,11 @@ func splitBRWStats(title string, statBlock string) (metricMap map[string]map[str
 			// [0]    [1]           [2]                      [3]                       [4] [5]           [6]                       [7]
 			size, readRPCs, writeRPCs := fields[0], fields[1], fields[5]
 			size = strings.Replace(size, ":", "", -1)
-			metricMap[title+"_"+size+"_read"] = map[string]string{"value": readRPCs, "size": size, "operation": "read", "name": title}
-			metricMap[title+"_"+size+"_write"] = map[string]string{"value": writeRPCs, "size": size, "operation": "write", "name": title}
+			metricList = append(metricList, lustreBRWMetric{size: size, operation: "read", value: readRPCs})
+			metricList = append(metricList, lustreBRWMetric{size: size, operation: "write", value: writeRPCs})
 		}
 	}
-	return metricMap, nil
+	return metricList, nil
 }
 
 func parseStatsFile(path string) (metricList []lustreStatsMetric, err error) {
@@ -511,16 +513,18 @@ func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path st
 	statsFile := string(statsFileBytes[:])
 	for title, help := range metricBlocks {
 		block := extractStatsBlock(title, statsFile)
-		mapSubset, err := splitBRWStats(title, block)
+		title = strings.Replace(title, " ", "_", -1)
+		title = strings.Replace(title, "/", "", -1)
+		metricList, err := splitBRWStats(block)
 		if err != nil {
 			return err
 		}
-		for _, metricMap := range mapSubset {
-			value, err := strconv.ParseUint(metricMap["value"], 10, 64)
+		for _, item := range metricList {
+			value, err := strconv.ParseUint(item.value, 10, 64)
 			if err != nil {
 				return err
 			}
-			handler(nodeType, metricMap["operation"], metricMap["size"], nodeName, metricMap["name"], help, value)
+			handler(nodeType, item.operation, item.size, nodeName, title, help, value)
 		}
 	}
 	return nil
