@@ -50,6 +50,12 @@ const (
 	syncHelp           string = "Number of sync operations the filesystem has performed."
 	samedirRenameHelp  string = "Number of samedir_rename operations the filesystem has performed."
 	crossdirRenameHelp string = "Number of crossdir_rename operations the filesystem has performed."
+	punchHelp          string = "Number of punch operations the filesystem has performed."
+	destroyHelp        string = "Number of destroy operations the filesystem has performed."
+	createHelp         string = "Number of create operations the filesystem has performed."
+	getInfoHelp        string = "Number of get_info operations the filesystem has performed."
+	setInfoHelp        string = "Number of set_info operations the filesystem has performed."
+	quotactlHelp       string = "Number of quotactl operations the filesystem has performed."
 
 	// Help text dedicated to the 'brw_stats' file
 	pagesPerBlockRWHelp    string = "Total number of pages per RPC."
@@ -140,6 +146,16 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 			{"job_stats", "job_id_write_minimum", writeMinimumHelp},
 			{"job_stats", "job_id_write_maximum", writeMaximumHelp},
 			{"job_stats", "job_id_write_total", writeTotalHelp},
+			{"job_stats", "job_id_num_getattr", getattrHelp},
+			{"job_stats", "job_id_num_setattr", setattrHelp},
+			{"job_stats", "job_id_num_punch", punchHelp},
+			{"job_stats", "job_id_num_sync", syncHelp},
+			{"job_stats", "job_id_num_destroy", destoryHelp},
+			{"job_stats", "job_id_num_create", createHelp},
+			{"job_stats", "job_id_num_statfs", statfsHelp},
+			{"job_stats", "job_id_num_get_info", getInfoHelp},
+			{"job_stats", "job_id_num_set_info", setInfoHelp},
+			{"job_stats", "job_id_num_quotactl", quotactlHelp},
 			{"kbytesavail", "kbytesavail", "Number of kilobytes readily available in the pool"},
 			{"kbytesfree", "kbytesfree", "Number of kilobytes allocated to the pool"},
 			{"kbytestotal", "kbytestotal", "Capacity of the pool in kilobytes"},
@@ -414,6 +430,12 @@ func getJobStatsByOperation(jobBlock string, jobID string, promName string, help
 		syncHelp:           {index: 0, pattern: "sync"},
 		samedirRenameHelp:  {index: 0, pattern: "samedir_rename"},
 		crossdirRenameHelp: {index: 0, pattern: "crossdir_rename"},
+		punchHelp:          {index: 0, pattern: "punch"},
+		destroyHelp:        {index: 0, pattern: "destroy"},
+		createHelp:         {index: 0, pattern: "create"},
+		getInfoHelp:        {index: 0, pattern: "get_info"},
+		setInfoHelp:        {index: 0, pattern: "set_info"},
+		quotactlHelp:       {index: 0, pattern: "quotactl"},
 	}
 	pattern := opMap[helpText].pattern
 	opStat := regexCaptureString(pattern+": .*", jobBlock)
