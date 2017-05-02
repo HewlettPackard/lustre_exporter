@@ -41,7 +41,8 @@ const (
 
 type lustreProcMetric struct {
 	subsystem string
-	name      string
+	filename  string
+	promName  string
 	source    string //The parent data source (OST, MDS, MGS, etc)
 	path      string //Path to retrieve metric from
 	helpText  string
@@ -65,6 +66,12 @@ type lustreBRWMetric struct {
 	value     string
 }
 
+type lustreHelpStruct struct {
+	filename string
+	promName string // Name to be used in Prometheus
+	helpText string
+}
+
 func init() {
 	Factories["procfs"] = newLustreSource
 }
@@ -74,9 +81,10 @@ type lustreSource struct {
 	basePath          string
 }
 
-func newLustreProcMetric(name string, source string, path string, helpText string) lustreProcMetric {
+func newLustreProcMetric(filename string, promName string, source string, path string, helpText string) lustreProcMetric {
 	var m lustreProcMetric
-	m.name = name
+	m.filename = filename
+	m.promName = promName
 	m.source = source
 	m.path = path
 	m.helpText = helpText
@@ -85,47 +93,47 @@ func newLustreProcMetric(name string, source string, path string, helpText strin
 }
 
 func (s *lustreSource) generateOSTMetricTemplates() error {
-	metricMap := map[string]map[string]string{
+	metricMap := map[string][]lustreHelpStruct{
 		"obdfilter/*": {
-			"blocksize":            "Filesystem block size in bytes",
-			"brw_size":             "Block read/write size in bytes",
-			"brw_stats":            "A collection of block read/write statistics",
-			"degraded":             "Binary indicator as to whether or not the pool is degraded - 0 for not degraded, 1 for degraded",
-			"filesfree":            "The number of inodes (objects) available",
-			"filestotal":           "The maximum number of inodes (objects) the filesystem can hold",
-			"grant_compat_disable": "Binary indicator as to whether clients with OBD_CONNECT_GRANT_PARAM setting will be granted space",
-			"grant_precreate":      "Maximum space in bytes that clients can preallocate for objects",
-			"job_cleanup_interval": "Interval in seconds between cleanup of tuning statistics",
-			"job_stats":            "A collection of read/write statistics listed by jobid",
-			"kbytesavail":          "Number of kilobytes readily available in the pool",
-			"kbytesfree":           "Number of kilobytes allocated to the pool",
-			"kbytestotal":          "Capacity of the pool in kilobytes",
-			"lfsck_speed_limit":    "Maximum operations per second LFSCK (Lustre filesystem verification) can run",
-			"num_exports":          "Total number of times the pool has been exported",
-			"precreate_batch":      "Maximum number of objects that can be included in a single transaction",
-			"recovery_time_hard":   "Maximum timeout 'recover_time_soft' can increment to for a single server",
-			"recovery_time_soft":   "Duration in seconds for a client to attempt to reconnect after a crash (automatically incremented if servers are still in an error state)",
-			"soft_sync_limit":      "Number of RPCs necessary before triggering a sync",
-			"stats":                "A collection of statistics specific to Lustre",
-			"sync_journal":         "Binary indicator as to whether or not the journal is set for asynchronous commits",
-			"tot_dirty":            "Total number of exports that have been marked dirty",
-			"tot_granted":          "Total number of exports that have been marked granted",
-			"tot_pending":          "Total number of exports that have been marked pending",
+			{"blocksize", "blocksize", "Filesystem block size in bytes"},
+			{"brw_size", "brw_size", "Block read/write size in bytes"},
+			{"brw_stats", "brw_stats", "A collection of block read/write statistics"},
+			{"degraded", "degraded", "Binary indicator as to whether or not the pool is degraded - 0 for not degraded, 1 for degraded"},
+			{"filesfree", "filesfree", "The number of inodes (objects) available"},
+			{"filestotal", "filestotal", "The maximum number of inodes (objects) the filesystem can hold"},
+			{"grant_compat_disable", "grant_compat_disable", "Binary indicator as to whether clients with OBD_CONNECT_GRANT_PARAM setting will be granted space"},
+			{"grant_precreate", "grant_precreate", "Maximum space in bytes that clients can preallocate for objects"},
+			{"job_cleanup_interval", "job_cleanup_interval", "Interval in seconds between cleanup of tuning statistics"},
+			{"job_stats", "job_stats", "A collection of read/write statistics listed by jobid"},
+			{"kbytesavail", "kbytesavail", "Number of kilobytes readily available in the pool"},
+			{"kbytesfree", "kbytesfree", "Number of kilobytes allocated to the pool"},
+			{"kbytestotal", "kbytestotal", "Capacity of the pool in kilobytes"},
+			{"lfsck_speed_limit", "lfsck_speed_limit", "Maximum operations per second LFSCK (Lustre filesystem verification) can run"},
+			{"num_exports", "num_exports", "Total number of times the pool has been exported"},
+			{"precreate_batch", "precreate_batch", "Maximum number of objects that can be included in a single transaction"},
+			{"recovery_time_hard", "recovery_time_hard", "Maximum timeout 'recover_time_soft' can increment to for a single server"},
+			{"recovery_time_soft", "recovery_time_soft", "Duration in seconds for a client to attempt to reconnect after a crash (automatically incremented if servers are still in an error state)"},
+			{"soft_sync_limit", "soft_sync_limit", "Number of RPCs necessary before triggering a sync"},
+			{"stats", "stats", "A collection of statistics specific to Lustre"},
+			{"sync_journal", "sync_journal", "Binary indicator as to whether or not the journal is set for asynchronous commits"},
+			{"tot_dirty", "tot_dirty", "Total number of exports that have been marked dirty"},
+			{"tot_granted", "tot_granted", "Total number of exports that have been marked granted"},
+			{"tot_pending", "tot_pending", "Total number of exports that have been marked pending"},
 		},
 		"ldlm/namespaces/filter-*": {
-			"lock_count":         "Number of locks",
-			"lock_timeouts":      "Number of lock timeouts",
-			"contended_locks":    "Number of contended locks",
-			"contention_seconds": "Time in seconds during which locks were contended",
-			"pool/granted":       "Number of granted locks",
-			"pool/grant_rate":    "Lock grant rate",
-			"pool/cancel_rate":   "Lock cancel rate",
-			"pool/grant_speed":   "Lock grant speed",
+			{"lock_count", "lock_count", "Number of locks"},
+			{"lock_timeouts", "lock_timeouts", "Number of lock timeouts"},
+			{"contended_locks", "contended_locks", "Number of contended locks"},
+			{"contention_seconds", "contention_seconds", "Time in seconds during which locks were contended"},
+			{"pool/granted", "granted", "Number of granted locks"},
+			{"pool/grant_rate", "grant_rate", "Lock grant rate"},
+			{"pool/cancel_rate", "cancel_rate", "Lock cancel rate"},
+			{"pool/grant_speed", "grant_speed", "Lock grant speed"},
 		},
 	}
 	for path := range metricMap {
-		for metric, helpText := range metricMap[path] {
-			newMetric := newLustreProcMetric(metric, "OST", path, helpText)
+		for _, item := range metricMap[path] {
+			newMetric := newLustreProcMetric(item.filename, item.promName, "OST", path, item.helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -133,14 +141,14 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 }
 
 func (s *lustreSource) generateMDTMetricTemplates() error {
-	metricMap := map[string]map[string]string{
+	metricMap := map[string][]lustreHelpStruct{
 		"mdt/*": {
-			"num_exports": "Total number of times the pool has been exported",
+			{"num_exports", "num_exports", "Total number of times the pool has been exported"},
 		},
 	}
 	for path := range metricMap {
-		for metric, helpText := range metricMap[path] {
-			newMetric := newLustreProcMetric(metric, "MDT", path, helpText)
+		for _, item := range metricMap[path] {
+			newMetric := newLustreProcMetric(item.filename, item.promName, "MDT", path, item.helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -148,20 +156,20 @@ func (s *lustreSource) generateMDTMetricTemplates() error {
 }
 
 func (s *lustreSource) generateMGSMetricTemplates() error {
-	metricMap := map[string]map[string]string{
+	metricMap := map[string][]lustreHelpStruct{
 		"mgs/MGS/osd/": {
-			"blocksize":            "Filesystem block size in bytes",
-			"filesfree":            "The number of inodes (objects) available",
-			"filestotal":           "The maximum number of inodes (objects) the filesystem can hold",
-			"kbytesavail":          "Number of kilobytes readily available in the pool",
-			"kbytesfree":           "Number of kilobytes allocated to the pool",
-			"kbytestotal":          "Capacity of the pool in kilobytes",
-			"quota_iused_estimate": "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated",
+			{"blocksize", "blocksize", "Filesystem block size in bytes"},
+			{"filesfree", "filesfree", "The number of inodes (objects) available"},
+			{"filestotal", "filestotal", "The maximum number of inodes (objects) the filesystem can hold"},
+			{"kbytesavail", "kbytesavail", "Number of kilobytes readily available in the pool"},
+			{"kbytesfree", "kbytesfree", "Number of kilobytes allocated to the pool"},
+			{"kbytestotal", "kbytestotal", "Capacity of the pool in kilobytes"},
+			{"quota_iused_estimate", "quota_iused_estimate", "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated"},
 		},
 	}
 	for path := range metricMap {
-		for metric, helpText := range metricMap[path] {
-			newMetric := newLustreProcMetric(metric, "MGS", path, helpText)
+		for _, item := range metricMap[path] {
+			newMetric := newLustreProcMetric(item.filename, item.promName, "MGS", path, item.helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -169,20 +177,20 @@ func (s *lustreSource) generateMGSMetricTemplates() error {
 }
 
 func (s *lustreSource) generateMDSMetricTemplates() error {
-	metricMap := map[string]map[string]string{
+	metricMap := map[string][]lustreHelpStruct{
 		"mds/MDS/osd": {
-			"blocksize":            "Filesystem block size in bytes",
-			"filesfree":            "The number of inodes (objects) available",
-			"filestotal":           "The maximum number of inodes (objects) the filesystem can hold",
-			"kbytesavail":          "Number of kilobytes readily available in the pool",
-			"kbytesfree":           "Number of kilobytes allocated to the pool",
-			"kbytestotal":          "Capacity of the pool in kilobytes",
-			"quota_iused_estimate": "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated",
+			{"blocksize", "blocksize", "Filesystem block size in bytes"},
+			{"filesfree", "filesfree", "The number of inodes (objects) available"},
+			{"filestotal", "filestotal", "The maximum number of inodes (objects) the filesystem can hold"},
+			{"kbytesavail", "kbytesavail", "Number of kilobytes readily available in the pool"},
+			{"kbytesfree", "kbytesfree", "Number of kilobytes allocated to the pool"},
+			{"kbytestotal", "kbytestotal", "Capacity of the pool in kilobytes"},
+			{"quota_iused_estimate", "quota_iused_estimate", "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated"},
 		},
 	}
 	for path := range metricMap {
-		for metric, helpText := range metricMap[path] {
-			newMetric := newLustreProcMetric(metric, "MDS", path, helpText)
+		for _, item := range metricMap[path] {
+			newMetric := newLustreProcMetric(item.filename, item.promName, "MDS", path, item.helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -205,8 +213,8 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 	directoryDepth := 0
 
 	for _, metric := range s.lustreProcMetrics {
-		directoryDepth = strings.Count(metric.name, "/")
-		paths, err := filepath.Glob(filepath.Join(s.basePath, metric.path, metric.name))
+		directoryDepth = strings.Count(metric.filename, "/")
+		paths, err := filepath.Glob(filepath.Join(s.basePath, metric.path, metric.filename))
 		if err != nil {
 			return err
 		}
@@ -215,7 +223,7 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 		}
 		for _, path := range paths {
 			metricType = "single"
-			switch metric.name {
+			switch metric.filename {
 			case "brw_stats":
 				err = s.parseBRWStats(metric.source, "brw_stats", path, directoryDepth, metric.helpText, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64) {
 					ch <- s.brwMetric(nodeType, brwOperation, brwSize, nodeName, name, helpText, value)
@@ -231,10 +239,10 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 					return err
 				}
 			default:
-				if metric.name == "stats" {
+				if metric.filename == "stats" {
 					metricType = "stats"
 				}
-				err = s.parseFile(metric.source, metricType, path, directoryDepth, metric.helpText, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
+				err = s.parseFile(metric.source, metricType, path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
 					ch <- s.constMetric(nodeType, nodeName, name, helpText, value)
 				})
 				if err != nil {
@@ -478,8 +486,8 @@ func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path st
 	return nil
 }
 
-func (s *lustreSource) parseFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, handler func(string, string, string, string, uint64)) (err error) {
-	name, nodeName, err := parseFileElements(path, directoryDepth)
+func (s *lustreSource) parseFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, uint64)) (err error) {
+	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
 	}
@@ -493,7 +501,7 @@ func (s *lustreSource) parseFile(nodeType string, metricType string, path string
 		if err != nil {
 			return err
 		}
-		handler(nodeType, nodeName, name, helpText, convertedValue)
+		handler(nodeType, nodeName, promName, helpText, convertedValue)
 	case "stats":
 		metricList, err := parseStatsFile(path)
 		if err != nil {
