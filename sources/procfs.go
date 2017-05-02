@@ -26,10 +26,14 @@ import (
 
 const (
 	// Help text dedicated to the 'stats' file
-	samplesHelp string = "Total number of times the given metric has been collected."
-	maximumHelp string = "The maximum value retrieved for the given metric."
-	minimumHelp string = "The minimum value retrieved for the given metric."
-	totalHelp   string = "The sum of all values collected for the given metric."
+	readSamplesHelp  string = "Total number of reads that have been recorded for the given job."
+	readMaximumHelp  string = "The maximum read size in bytes for the given job."
+	readMinimumHelp  string = "The minimum read size in bytes for the given job."
+	readTotalHelp    string = "The total number of bytes that have been read for the given job."
+	writeSamplesHelp string = "Total number of writes that have been recorded for the given job."
+	writeMaximumHelp string = "The maximum write size in bytes for the given job."
+	writeMinimumHelp string = "The minimum write size in bytes for the given job."
+	writeTotalHelp   string = "The total number of bytes that have been written for the given job."
 
 	// Help text dedicated to the 'brw_stats' file
 	pagesPerBlockRWHelp    string = "Total number of pages per RPC."
@@ -55,8 +59,7 @@ type lustreStatsMetric struct {
 }
 
 type lustreJobsMetric struct {
-	jobID     string
-	operation string
+	jobID string
 	lustreStatsMetric
 }
 
@@ -70,6 +73,11 @@ type lustreHelpStruct struct {
 	filename string
 	promName string // Name to be used in Prometheus
 	helpText string
+}
+
+type multistatParsingStruct struct {
+	index   int
+	pattern string
 }
 
 func init() {
@@ -108,7 +116,14 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 			{"grant_compat_disable", "grant_compat_disable", "Binary indicator as to whether clients with OBD_CONNECT_GRANT_PARAM setting will be granted space"},
 			{"grant_precreate", "grant_precreate", "Maximum space in bytes that clients can preallocate for objects"},
 			{"job_cleanup_interval", "job_cleanup_interval", "Interval in seconds between cleanup of tuning statistics"},
-			{"job_stats", "job_stats", "A collection of read/write statistics listed by jobid"},
+			{"job_stats", "job_id_read_samples", readSamplesHelp},
+			{"job_stats", "job_id_read_minimum", readMinimumHelp},
+			{"job_stats", "job_id_read_maximum", readMaximumHelp},
+			{"job_stats", "job_id_read_total", readTotalHelp},
+			{"job_stats", "job_id_write_samples", writeSamplesHelp},
+			{"job_stats", "job_id_write_minimum", writeMinimumHelp},
+			{"job_stats", "job_id_write_maximum", writeMaximumHelp},
+			{"job_stats", "job_id_write_total", writeTotalHelp},
 			{"kbytesavail", "kbytesavail", "Number of kilobytes readily available in the pool"},
 			{"kbytesfree", "kbytesfree", "Number of kilobytes allocated to the pool"},
 			{"kbytestotal", "kbytestotal", "Capacity of the pool in kilobytes"},
@@ -236,8 +251,8 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 					return err
 				}
 			case "job_stats":
-				err = s.parseJobStats(metric.source, "job_stats", path, directoryDepth, metric.helpText, func(nodeType string, jobid string, jobOperation string, nodeName string, name string, helpText string, value uint64) {
-					ch <- s.jobStatsMetric(nodeType, jobid, jobOperation, nodeName, name, helpText, value)
+				err = s.parseJobStats(metric.source, "job_stats", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, jobid string, nodeName string, name string, helpText string, value uint64) {
+					ch <- s.jobStatsMetric(nodeType, jobid, nodeName, name, helpText, value)
 				})
 				if err != nil {
 					return err
@@ -272,10 +287,10 @@ func parseReadWriteBytes(operation string, regexString string, statsFile string)
 	// bytesString: {name} {number of samples} 'samples' [{units}] {minimum} {maximum} {sum}
 	// bytesSplit:   [0]    [1]                 [2]       [3]       [4]       [5]       [6]
 	bytesMap := map[string]map[string]string{
-		"_samples_total":      {"help": samplesHelp, "value": bytesSplit[1]},
-		"_minimum_size_bytes": {"help": minimumHelp, "value": bytesSplit[4]},
-		"_maximum_size_bytes": {"help": maximumHelp, "value": bytesSplit[5]},
-		"_total_bytes":        {"help": totalHelp, "value": bytesSplit[6]},
+		"_samples_total":      {"help": readSamplesHelp, "value": bytesSplit[1]},
+		"_minimum_size_bytes": {"help": readMinimumHelp, "value": bytesSplit[4]},
+		"_maximum_size_bytes": {"help": readMaximumHelp, "value": bytesSplit[5]},
+		"_total_bytes":        {"help": readTotalHelp, "value": bytesSplit[6]},
 	}
 	for name, valueMap := range bytesMap {
 		result, err := strconv.ParseUint(valueMap["value"], 10, 64)
@@ -332,43 +347,45 @@ func parseStatsFile(path string) (metricList []lustreStatsMetric, err error) {
 	return metricList, nil
 }
 
-func getJobStatsByOperation(jobBlock string, jobID string, operation string) (metricList []lustreJobsMetric, err error) {
-	opStat := regexCaptureString(operation+"_bytes: .*", jobBlock)
-	opNumbers := regexCaptureStrings("[0-9*.[0-9]+|[0-9]+", opStat)
-
-	opMap := map[string]map[string]string{
-		"_samples": {"help": samplesHelp, "value": opNumbers[0]},
-		"_minimum": {"help": minimumHelp, "value": opNumbers[1]},
-		"_maximum": {"help": maximumHelp, "value": opNumbers[2]},
-		"_total":   {"help": totalHelp, "value": opNumbers[3]},
+func getJobStatsByOperation(jobBlock string, jobID string, promName string, helpText string) (metricList []lustreJobsMetric, err error) {
+	// opMap matches the given helpText value with the placement of the numeric fields within each metric line.
+	// For example, the number of samples is the first number in the line and has a helpText of readSamplesHelp,
+	// hence the 'index' value of 0. 'pattern' is the regex capture pattern for the desired line.
+	opMap := map[string]multistatParsingStruct{
+		readSamplesHelp:  {index: 0, pattern: "read_bytes"},
+		readMinimumHelp:  {index: 1, pattern: "read_bytes"},
+		readMaximumHelp:  {index: 2, pattern: "read_bytes"},
+		readTotalHelp:    {index: 3, pattern: "read_bytes"},
+		writeSamplesHelp: {index: 0, pattern: "write_bytes"},
+		writeMinimumHelp: {index: 1, pattern: "write_bytes"},
+		writeMaximumHelp: {index: 2, pattern: "write_bytes"},
+		writeTotalHelp:   {index: 3, pattern: "write_bytes"},
 	}
-	for name, valueMap := range opMap {
-		result, err := strconv.ParseUint(strings.TrimSpace(valueMap["value"]), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		l := lustreStatsMetric{
-			title: "job_id_" + operation + name,
-			help:  valueMap["help"],
-			value: result,
-		}
-		metricList = append(metricList, lustreJobsMetric{jobID, operation, l})
+	pattern := opMap[helpText].pattern
+	opStat := regexCaptureString(pattern+": .*", jobBlock)
+	opNumbers := regexCaptureStrings("[0-9]*.[0-9]+|[0-9]+", opStat)
+	result, err := strconv.ParseUint(strings.TrimSpace(opNumbers[opMap[helpText].index]), 10, 64)
+	if err != nil {
+		return nil, err
 	}
+	l := lustreStatsMetric{
+		title: promName,
+		help:  helpText,
+		value: result,
+	}
+	metricList = append(metricList, lustreJobsMetric{jobID, l})
 
 	return metricList, err
 }
 
-func getJobStats(jobBlock string, jobID string) (metricList []lustreJobsMetric, err error) {
-	operations := []string{"read", "write"}
-	for _, operation := range operations {
-		statsList, err := getJobStatsByOperation(jobBlock, jobID, operation)
-		if err != nil {
-			return nil, err
-		}
-		if statsList != nil {
-			for _, item := range statsList {
-				metricList = append(metricList, item)
-			}
+func getJobStats(jobBlock string, jobID string, promName string, helpText string) (metricList []lustreJobsMetric, err error) {
+	statsList, err := getJobStatsByOperation(jobBlock, jobID, promName, helpText)
+	if err != nil {
+		return nil, err
+	}
+	if statsList != nil {
+		for _, item := range statsList {
+			metricList = append(metricList, item)
 		}
 	}
 
@@ -381,7 +398,7 @@ func getJobNum(jobBlock string) (jobID string, err error) {
 	return strings.Trim(jobID, " "), nil
 }
 
-func parseJobStatsText(jobStats string) (metricList []lustreJobsMetric, err error) {
+func parseJobStatsText(jobStats string, promName string, helpText string) (metricList []lustreJobsMetric, err error) {
 	jobs := regexCaptureStrings("(?ms:job_id:.*?(-|\\z))", jobStats)
 	if len(jobs) < 1 {
 		return nil, nil
@@ -392,7 +409,7 @@ func parseJobStatsText(jobStats string) (metricList []lustreJobsMetric, err erro
 		if err != nil {
 			return nil, err
 		}
-		jobList, err := getJobStats(job, jobID)
+		jobList, err := getJobStats(job, jobID, promName, helpText)
 		if err != nil {
 			return nil, err
 		}
@@ -403,7 +420,7 @@ func parseJobStatsText(jobStats string) (metricList []lustreJobsMetric, err erro
 	return metricList, nil
 }
 
-func (s *lustreSource) parseJobStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, handler func(string, string, string, string, string, string, uint64)) (err error) {
+func (s *lustreSource) parseJobStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, string, uint64)) (err error) {
 	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
@@ -415,13 +432,13 @@ func (s *lustreSource) parseJobStats(nodeType string, metricType string, path st
 
 	jobStatsFile := string(jobStatsBytes[:])
 
-	metricList, err := parseJobStatsText(jobStatsFile)
+	metricList, err := parseJobStatsText(jobStatsFile, promName, helpText)
 	if err != nil {
 		return err
 	}
 
 	for _, item := range metricList {
-		handler(nodeType, item.jobID, item.operation, nodeName, item.lustreStatsMetric.title, item.lustreStatsMetric.help, item.lustreStatsMetric.value)
+		handler(nodeType, item.jobID, nodeName, item.lustreStatsMetric.title, item.lustreStatsMetric.help, item.lustreStatsMetric.value)
 	}
 	return nil
 }
@@ -545,18 +562,17 @@ func (s *lustreSource) brwMetric(nodeType string, brwOperation string, brwSize s
 	)
 }
 
-func (s *lustreSource) jobStatsMetric(nodeType string, jobid string, jobOperation string, nodeName string, name string, helpText string, value uint64) prometheus.Metric {
+func (s *lustreSource) jobStatsMetric(nodeType string, jobid string, nodeName string, name string, helpText string, value uint64) prometheus.Metric {
 	return prometheus.MustNewConstMetric(
 		prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, "", name),
 			helpText,
-			[]string{nodeType, "jobid", "operation"},
+			[]string{nodeType, "jobid"},
 			nil,
 		),
 		prometheus.CounterValue,
 		float64(value),
 		nodeName,
 		jobid,
-		jobOperation,
 	)
 }
