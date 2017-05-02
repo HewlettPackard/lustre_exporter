@@ -26,14 +26,30 @@ import (
 
 const (
 	// Help text dedicated to the 'stats' files
-	readSamplesHelp  string = "Total number of reads that have been recorded."
-	readMaximumHelp  string = "The maximum read size in bytes."
-	readMinimumHelp  string = "The minimum read size in bytes."
-	readTotalHelp    string = "The total number of bytes that have been read."
-	writeSamplesHelp string = "Total number of writes that have been recorded."
-	writeMaximumHelp string = "The maximum write size in bytes."
-	writeMinimumHelp string = "The minimum write size in bytes."
-	writeTotalHelp   string = "The total number of bytes that have been written."
+	readSamplesHelp    string = "Total number of reads that have been recorded."
+	readMaximumHelp    string = "The maximum read size in bytes."
+	readMinimumHelp    string = "The minimum read size in bytes."
+	readTotalHelp      string = "The total number of bytes that have been read."
+	writeSamplesHelp   string = "Total number of writes that have been recorded."
+	writeMaximumHelp   string = "The maximum write size in bytes."
+	writeMinimumHelp   string = "The minimum write size in bytes."
+	writeTotalHelp     string = "The total number of bytes that have been written."
+	openHelp           string = "Number of open operations the filesystem has performed."
+	closeHelp          string = "Number of close operations the filesystem has performed."
+	mknodHelp          string = "Number of mknod operations the filesystem has performed."
+	linkHelp           string = "Number of link operations the filesystem has performed."
+	unlinkHelp         string = "Number of unlink operations the filesystem has performed."
+	mkdirHelp          string = "Number of mkdir operations the filesystem has performed."
+	rmdirHelp          string = "Number of rmdir operations the filesystem has performed."
+	renameHelp         string = "Number of rename operations the filesystem has performed."
+	getattrHelp        string = "Number of getattr operations the filesystem has performed."
+	setattrHelp        string = "Number of setattr operations the filesystem has performed."
+	getxattrHelp       string = "Number of getxattr operations the filesystem has performed."
+	setxattrHelp       string = "Number of setxattr operations the filesystem has performed."
+	statfsHelp         string = "Number of statfs operations the filesystem has performed."
+	syncHelp           string = "Number of sync operations the filesystem has performed."
+	samedirRenameHelp  string = "Number of samedir_rename operations the filesystem has performed."
+	crossdirRenameHelp string = "Number of crossdir_rename operations the filesystem has performed."
 
 	// Help text dedicated to the 'brw_stats' file
 	pagesPerBlockRWHelp    string = "Total number of pages per RPC."
@@ -170,6 +186,22 @@ func (s *lustreSource) generateMDTMetricTemplates() error {
 	metricMap := map[string][]lustreHelpStruct{
 		"mdt/*": {
 			{"num_exports", "num_exports", "Total number of times the pool has been exported"},
+			{"job_stats", "num_opens", openHelp},
+			{"job_stats", "num_closes", closeHelp},
+			{"job_stats", "num_mknod", mknodHelp},
+			{"job_stats", "num_link", linkHelp},
+			{"job_stats", "num_unlink", unlinkHelp},
+			{"job_stats", "num_mkdir", mkdirHelp},
+			{"job_stats", "num_rmdir", rmdirHelp},
+			{"job_stats", "num_rename", renameHelp},
+			{"job_stats", "num_getattr", getattrHelp},
+			{"job_stats", "num_setattr", setattrHelp},
+			{"job_stats", "num_getxattr", getxattrHelp},
+			{"job_stats", "num_setxattr", setxattrHelp},
+			{"job_stats", "num_statfs", statfsHelp},
+			{"job_stats", "num_sync", syncHelp},
+			{"job_stats", "num_samedir_rename", samedirRenameHelp},
+			{"job_stats", "num_crossdir_rename", crossdirRenameHelp},
 		},
 	}
 	for path := range metricMap {
@@ -358,14 +390,30 @@ func getJobStatsByOperation(jobBlock string, jobID string, promName string, help
 	// For example, the number of samples is the first number in the line and has a helpText of readSamplesHelp,
 	// hence the 'index' value of 0. 'pattern' is the regex capture pattern for the desired line.
 	opMap := map[string]multistatParsingStruct{
-		readSamplesHelp:  {index: 0, pattern: "read_bytes"},
-		readMinimumHelp:  {index: 1, pattern: "read_bytes"},
-		readMaximumHelp:  {index: 2, pattern: "read_bytes"},
-		readTotalHelp:    {index: 3, pattern: "read_bytes"},
-		writeSamplesHelp: {index: 0, pattern: "write_bytes"},
-		writeMinimumHelp: {index: 1, pattern: "write_bytes"},
-		writeMaximumHelp: {index: 2, pattern: "write_bytes"},
-		writeTotalHelp:   {index: 3, pattern: "write_bytes"},
+		readSamplesHelp:    {index: 0, pattern: "read_bytes"},
+		readMinimumHelp:    {index: 1, pattern: "read_bytes"},
+		readMaximumHelp:    {index: 2, pattern: "read_bytes"},
+		readTotalHelp:      {index: 3, pattern: "read_bytes"},
+		writeSamplesHelp:   {index: 0, pattern: "write_bytes"},
+		writeMinimumHelp:   {index: 1, pattern: "write_bytes"},
+		writeMaximumHelp:   {index: 2, pattern: "write_bytes"},
+		writeTotalHelp:     {index: 3, pattern: "write_bytes"},
+		openHelp:           {index: 0, pattern: "open"},
+		closeHelp:          {index: 0, pattern: "close"},
+		mknodHelp:          {index: 0, pattern: "mknod"},
+		linkHelp:           {index: 0, pattern: "link"},
+		unlinkHelp:         {index: 0, pattern: "unlink"},
+		mkdirHelp:          {index: 0, pattern: "mkdir"},
+		rmdirHelp:          {index: 0, pattern: "rmdir"},
+		renameHelp:         {index: 0, pattern: "rename"},
+		getattrHelp:        {index: 0, pattern: "getattr"},
+		setattrHelp:        {index: 0, pattern: "setattr"},
+		getxattrHelp:       {index: 0, pattern: "getxattr"},
+		setxattrHelp:       {index: 0, pattern: "setxattr"},
+		statfsHelp:         {index: 0, pattern: "statfs"},
+		syncHelp:           {index: 0, pattern: "sync"},
+		samedirRenameHelp:  {index: 0, pattern: "samedir_rename"},
+		crossdirRenameHelp: {index: 0, pattern: "crossdir_rename"},
 	}
 	pattern := opMap[helpText].pattern
 	opStat := regexCaptureString(pattern+": .*", jobBlock)
