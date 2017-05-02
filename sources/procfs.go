@@ -201,6 +201,13 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 func (s *lustreSource) generateMDTMetricTemplates() error {
 	metricMap := map[string][]lustreHelpStruct{
 		"mdt/*": {
+			{"md_stats", "mdt_opens", openHelp},
+			{"md_stats", "mdt_closes", closeHelp},
+			{"md_stats", "mdt_getattrs", getattrHelp},
+			{"md_stats", "mdt_setattrs", setattrHelp},
+			{"md_stats", "mdt_getxattrs", getxattrHelp},
+			{"md_stats", "mdt_setxattrs", setxattrHelp},
+			{"md_stats", "mdt_statfs", statfsHelp},
 			{"num_exports", "num_exports", "Total number of times the pool has been exported"},
 			{"job_stats", "num_opens", openHelp},
 			{"job_stats", "num_closes", closeHelp},
@@ -315,6 +322,8 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 			default:
 				if metric.filename == "stats" {
 					metricType = "stats"
+				} else if metric.filename == "md_stats" {
+					metricType = "md_stats"
 				}
 				err = s.parseFile(metric.source, metricType, path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
 					ch <- s.constMetric(nodeType, nodeName, name, helpText, value)
@@ -341,6 +350,13 @@ func parseReadWriteBytes(statsFile string, helpText string, promName string) (me
 		writeMinimumHelp: {pattern: "write_bytes .*", index: 4},
 		writeMaximumHelp: {pattern: "write_bytes .*", index: 5},
 		writeTotalHelp:   {pattern: "write_bytes .*", index: 6},
+		openHelp:         {pattern: "open .*", index: 1},
+		closeHelp:        {pattern: "close .*", index: 1},
+		getattrHelp:      {pattern: "getattr .*", index: 1},
+		setattrHelp:      {pattern: "setattr .*", index: 1},
+		getxattrHelp:     {pattern: "getxattr .*", index: 1},
+		setxattrHelp:     {pattern: "setxattr .*", index: 1},
+		statfsHelp:       {pattern: "statfs .*", index: 1},
 	}
 	bytesString := regexCaptureString(bytesMap[helpText].pattern, statsFile)
 	if len(bytesString) < 1 {
@@ -596,6 +612,15 @@ func (s *lustreSource) parseFile(nodeType string, metricType string, path string
 		}
 		handler(nodeType, nodeName, promName, helpText, convertedValue)
 	case "stats":
+		metricList, err := parseStatsFile(helpText, promName, path)
+		if err != nil {
+			return err
+		}
+
+		for _, metric := range metricList {
+			handler(nodeType, nodeName, metric.title, helpText, metric.value)
+		}
+	case "md_stats":
 		metricList, err := parseStatsFile(helpText, promName, path)
 		if err != nil {
 			return err
