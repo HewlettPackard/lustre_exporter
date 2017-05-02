@@ -150,7 +150,7 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 			{"job_stats", "job_num_setattr", setattrHelp},
 			{"job_stats", "job_num_punch", punchHelp},
 			{"job_stats", "job_num_sync", syncHelp},
-			{"job_stats", "job_num_destroy", destoryHelp},
+			{"job_stats", "job_num_destroy", destroyHelp},
 			{"job_stats", "job_num_create", createHelp},
 			{"job_stats", "job_num_statfs", statfsHelp},
 			{"job_stats", "job_num_get_info", getInfoHelp},
