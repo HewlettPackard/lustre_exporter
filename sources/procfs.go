@@ -25,15 +25,15 @@ import (
 )
 
 const (
-	// Help text dedicated to the 'stats' file
-	readSamplesHelp  string = "Total number of reads that have been recorded for the given job."
-	readMaximumHelp  string = "The maximum read size in bytes for the given job."
-	readMinimumHelp  string = "The minimum read size in bytes for the given job."
-	readTotalHelp    string = "The total number of bytes that have been read for the given job."
-	writeSamplesHelp string = "Total number of writes that have been recorded for the given job."
-	writeMaximumHelp string = "The maximum write size in bytes for the given job."
-	writeMinimumHelp string = "The minimum write size in bytes for the given job."
-	writeTotalHelp   string = "The total number of bytes that have been written for the given job."
+	// Help text dedicated to the 'stats' files
+	readSamplesHelp  string = "Total number of reads that have been recorded."
+	readMaximumHelp  string = "The maximum read size in bytes."
+	readMinimumHelp  string = "The minimum read size in bytes."
+	readTotalHelp    string = "The total number of bytes that have been read."
+	writeSamplesHelp string = "Total number of writes that have been recorded."
+	writeMaximumHelp string = "The maximum write size in bytes."
+	writeMinimumHelp string = "The minimum write size in bytes."
+	writeTotalHelp   string = "The total number of bytes that have been written."
 
 	// Help text dedicated to the 'brw_stats' file
 	pagesPerBlockRWHelp    string = "Total number of pages per RPC."
@@ -133,7 +133,14 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 			{"recovery_time_hard", "recovery_time_hard", "Maximum timeout 'recover_time_soft' can increment to for a single server"},
 			{"recovery_time_soft", "recovery_time_soft", "Duration in seconds for a client to attempt to reconnect after a crash (automatically incremented if servers are still in an error state)"},
 			{"soft_sync_limit", "soft_sync_limit", "Number of RPCs necessary before triggering a sync"},
-			{"stats", "stats", "A collection of statistics specific to Lustre"},
+			{"stats", "read_samples_total", readSamplesHelp},
+			{"stats", "read_minimum_size_bytes", readMinimumHelp},
+			{"stats", "read_maximum_size_bytes", readMaximumHelp},
+			{"stats", "read_total_bytes", readTotalHelp},
+			{"stats", "write_samples_total", writeSamplesHelp},
+			{"stats", "write_minimum_size_bytes", writeMinimumHelp},
+			{"stats", "write_maximum_size_bytes", writeMaximumHelp},
+			{"stats", "write_total_bytes", writeTotalHelp},
 			{"sync_journal", "sync_journal", "Binary indicator as to whether or not the journal is set for asynchronous commits"},
 			{"tot_dirty", "tot_dirty", "Total number of exports that have been marked dirty"},
 			{"tot_granted", "tot_granted", "Total number of exports that have been marked granted"},
@@ -273,8 +280,21 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 	return nil
 }
 
-func parseReadWriteBytes(operation string, regexString string, statsFile string) (metricList []lustreStatsMetric, err error) {
-	bytesString := regexCaptureString(regexString, statsFile)
+func parseReadWriteBytes(statsFile string, helpText string, promName string) (metricList []lustreStatsMetric, err error) {
+	// bytesSplit is in the following format:
+	// bytesString: {name} {number of samples} 'samples' [{units}] {minimum} {maximum} {sum}
+	// bytesSplit:   [0]    [1]                 [2]       [3]       [4]       [5]       [6]
+	bytesMap := map[string]multistatParsingStruct{
+		readSamplesHelp:  {pattern: "read_bytes .*", index: 1},
+		readMinimumHelp:  {pattern: "read_bytes .*", index: 4},
+		readMaximumHelp:  {pattern: "read_bytes .*", index: 5},
+		readTotalHelp:    {pattern: "read_bytes .*", index: 6},
+		writeSamplesHelp: {pattern: "write_bytes .*", index: 1},
+		writeMinimumHelp: {pattern: "write_bytes .*", index: 4},
+		writeMaximumHelp: {pattern: "write_bytes .*", index: 5},
+		writeTotalHelp:   {pattern: "write_bytes .*", index: 6},
+	}
+	bytesString := regexCaptureString(bytesMap[helpText].pattern, statsFile)
 	if len(bytesString) < 1 {
 		return nil, nil
 	}
@@ -283,22 +303,11 @@ func parseReadWriteBytes(operation string, regexString string, statsFile string)
 		return nil, err
 	}
 	bytesSplit := r.Split(bytesString, -1)
-	// bytesSplit is in the following format:
-	// bytesString: {name} {number of samples} 'samples' [{units}] {minimum} {maximum} {sum}
-	// bytesSplit:   [0]    [1]                 [2]       [3]       [4]       [5]       [6]
-	bytesMap := map[string]map[string]string{
-		"_samples_total":      {"help": readSamplesHelp, "value": bytesSplit[1]},
-		"_minimum_size_bytes": {"help": readMinimumHelp, "value": bytesSplit[4]},
-		"_maximum_size_bytes": {"help": readMaximumHelp, "value": bytesSplit[5]},
-		"_total_bytes":        {"help": readTotalHelp, "value": bytesSplit[6]},
+	result, err := strconv.ParseUint(bytesSplit[bytesMap[helpText].index], 10, 64)
+	if err != nil {
+		return nil, err
 	}
-	for name, valueMap := range bytesMap {
-		result, err := strconv.ParseUint(valueMap["value"], 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		metricList = append(metricList, lustreStatsMetric{title: operation + name, help: valueMap["help"], value: result})
-	}
+	metricList = append(metricList, lustreStatsMetric{title: promName, help: helpText, value: result})
 
 	return metricList, nil
 }
@@ -324,23 +333,20 @@ func splitBRWStats(statBlock string) (metricList []lustreBRWMetric, err error) {
 	return metricList, nil
 }
 
-func parseStatsFile(path string) (metricList []lustreStatsMetric, err error) {
-	operations := map[string]string{"read": "read_bytes .*", "write": "write_bytes .*"}
+func parseStatsFile(helpText string, promName string, path string) (metricList []lustreStatsMetric, err error) {
 	statsFileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 	statsFile := string(statsFileBytes[:])
 
-	for operation, regexString := range operations {
-		statsList, err := parseReadWriteBytes(operation, regexString, statsFile)
-		if err != nil {
-			return nil, err
-		}
-		if statsList != nil {
-			for _, item := range statsList {
-				metricList = append(metricList, item)
-			}
+	statsList, err := parseReadWriteBytes(statsFile, helpText, promName)
+	if err != nil {
+		return nil, err
+	}
+	if statsList != nil {
+		for _, item := range statsList {
+			metricList = append(metricList, item)
 		}
 	}
 
@@ -520,13 +526,13 @@ func (s *lustreSource) parseFile(nodeType string, metricType string, path string
 		}
 		handler(nodeType, nodeName, promName, helpText, convertedValue)
 	case "stats":
-		metricList, err := parseStatsFile(path)
+		metricList, err := parseStatsFile(helpText, promName, path)
 		if err != nil {
 			return err
 		}
 
 		for _, metric := range metricList {
-			handler(nodeType, nodeName, metric.title, metric.help, metric.value)
+			handler(nodeType, nodeName, metric.title, helpText, metric.value)
 		}
 	}
 	return nil
