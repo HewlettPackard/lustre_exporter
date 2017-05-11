@@ -63,6 +63,10 @@ const (
 	ioTimeHelp             string = "Total time in milliseconds the filesystem has spent processing various object sizes."
 	diskIOSizeHelp         string = "Total number of operations the filesystem has performed for the given size."
 	diskIOsInFlightHelp    string = "Current number of I/O operations that are processing during the snapshot."
+
+	// string mappings for 'health_check' values
+	healthCheckHealthy   string = "1"
+	healthCheckUnhealthy string = "0"
 )
 
 type lustreProcMetric struct {
@@ -278,6 +282,17 @@ func (s *lustreSource) generateMDSMetricTemplates() error {
 	return nil
 }
 
+func (s *lustreSource) generateGenericMetricTemplates() error {
+	metricList := []lustreHelpStruct{
+		{"health_check", "health_check", "Current health status for the indicated instance: " + healthCheckHealthy + " refers to 'healthy', " + healthCheckUnhealthy + " refers to 'unhealthy'"},
+	}
+	for _, item := range metricList {
+		newMetric := newLustreProcMetric(item.filename, item.promName, "Generic", "", item.helpText)
+		s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
+	}
+	return nil
+}
+
 func newLustreSource() (LustreSource, error) {
 	var l lustreSource
 	l.basePath = "/proc/fs/lustre"
@@ -286,6 +301,7 @@ func newLustreSource() (LustreSource, error) {
 	l.generateMDTMetricTemplates()
 	l.generateMGSMetricTemplates()
 	l.generateMDSMetricTemplates()
+	l.generateGenericMetricTemplates()
 	return &l, nil
 }
 
@@ -305,6 +321,13 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 		for _, path := range paths {
 			metricType = "single"
 			switch metric.filename {
+			case "health_check":
+				err = s.parseTextFile(metric.source, "health_check", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
+					ch <- s.gaugeMetric(nodeType, nodeName, name, helpText, value)
+				})
+				if err != nil {
+					return err
+				}
 			case "brw_stats":
 				err = s.parseBRWStats(metric.source, "brw_stats", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64) {
 					ch <- s.brwMetric(nodeType, brwOperation, brwSize, nodeName, name, helpText, value)
@@ -595,6 +618,32 @@ func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path st
 	return nil
 }
 
+func (s *lustreSource) parseTextFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, uint64)) (err error) {
+	filename, nodeName, err := parseFileElements(path, directoryDepth)
+	fileBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	fileString := string(fileBytes[:])
+	switch filename {
+	case "health_check":
+		if strings.TrimSpace(fileString) == "healthy" {
+			value, err := strconv.ParseUint(strings.TrimSpace(string(healthCheckHealthy)), 10, 64)
+			if err != nil {
+				return err
+			}
+			handler(nodeType, nodeName, promName, helpText, value)
+		} else {
+			value, err := strconv.ParseUint(strings.TrimSpace(string(healthCheckUnhealthy)), 10, 64)
+			if err != nil {
+				return err
+			}
+			handler(nodeType, nodeName, promName, helpText, value)
+		}
+	}
+	return nil
+}
+
 func (s *lustreSource) parseFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, uint64)) (err error) {
 	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
@@ -642,6 +691,20 @@ func (s *lustreSource) constMetric(nodeType string, nodeName string, name string
 			nil,
 		),
 		prometheus.CounterValue,
+		float64(value),
+		nodeName,
+	)
+}
+
+func (s *lustreSource) gaugeMetric(nodeType string, nodeName string, name string, helpText string, value uint64) prometheus.Metric {
+	return prometheus.MustNewConstMetric(
+		prometheus.NewDesc(
+			prometheus.BuildFQName(Namespace, "", name),
+			helpText,
+			[]string{nodeType},
+			nil,
+		),
+		prometheus.GaugeValue,
 		float64(value),
 		nodeName,
 	)
