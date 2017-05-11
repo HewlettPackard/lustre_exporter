@@ -323,21 +323,21 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 			switch metric.filename {
 			case "health_check":
 				err = s.parseTextFile(metric.source, "health_check", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
-					ch <- s.gaugeMetric(nodeType, nodeName, name, helpText, value)
+					ch <- s.gaugeMetric([]string{nodeType}, []string{nodeName}, name, helpText, value)
 				})
 				if err != nil {
 					return err
 				}
 			case "brw_stats":
 				err = s.parseBRWStats(metric.source, "brw_stats", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64) {
-					ch <- s.brwMetric(nodeType, brwOperation, brwSize, nodeName, name, helpText, value)
+					ch <- s.counterMetric([]string{nodeType, "operation", "size"}, []string{nodeName, brwOperation, brwSize}, name, helpText, value)
 				})
 				if err != nil {
 					return err
 				}
 			case "job_stats":
 				err = s.parseJobStats(metric.source, "job_stats", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, jobid string, nodeName string, name string, helpText string, value uint64) {
-					ch <- s.jobStatsMetric(nodeType, jobid, nodeName, name, helpText, value)
+					ch <- s.counterMetric([]string{nodeType, "jobid"}, []string{nodeName, jobid}, name, helpText, value)
 				})
 				if err != nil {
 					return err
@@ -349,7 +349,7 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 					metricType = "md_stats"
 				}
 				err = s.parseFile(metric.source, metricType, path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
-					ch <- s.constMetric(nodeType, nodeName, name, helpText, value)
+					ch <- s.counterMetric([]string{nodeType}, []string{nodeName}, name, helpText, value)
 				})
 				if err != nil {
 					return err
@@ -682,61 +682,30 @@ func (s *lustreSource) parseFile(nodeType string, metricType string, path string
 	return nil
 }
 
-func (s *lustreSource) constMetric(nodeType string, nodeName string, name string, helpText string, value uint64) prometheus.Metric {
+func (s *lustreSource) counterMetric(labels []string, labelValues []string, name string, helpText string, value uint64) prometheus.Metric {
 	return prometheus.MustNewConstMetric(
 		prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, "", name),
 			helpText,
-			[]string{nodeType},
+			labels,
 			nil,
 		),
 		prometheus.CounterValue,
 		float64(value),
-		nodeName,
+		labelValues...,
 	)
 }
 
-func (s *lustreSource) gaugeMetric(nodeType string, nodeName string, name string, helpText string, value uint64) prometheus.Metric {
+func (s *lustreSource) gaugeMetric(labels []string, labelValues []string, name string, helpText string, value uint64) prometheus.Metric {
 	return prometheus.MustNewConstMetric(
 		prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, "", name),
 			helpText,
-			[]string{nodeType},
+			labels,
 			nil,
 		),
 		prometheus.GaugeValue,
 		float64(value),
-		nodeName,
-	)
-}
-
-func (s *lustreSource) brwMetric(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64) prometheus.Metric {
-	return prometheus.MustNewConstMetric(
-		prometheus.NewDesc(
-			prometheus.BuildFQName(Namespace, "", name),
-			helpText,
-			[]string{nodeType, "operation", "size"},
-			nil,
-		),
-		prometheus.CounterValue,
-		float64(value),
-		nodeName,
-		brwOperation,
-		brwSize,
-	)
-}
-
-func (s *lustreSource) jobStatsMetric(nodeType string, jobid string, nodeName string, name string, helpText string, value uint64) prometheus.Metric {
-	return prometheus.MustNewConstMetric(
-		prometheus.NewDesc(
-			prometheus.BuildFQName(Namespace, "", name),
-			helpText,
-			[]string{nodeType, "jobid"},
-			nil,
-		),
-		prometheus.CounterValue,
-		float64(value),
-		nodeName,
-		jobid,
+		labelValues...,
 	)
 }
