@@ -191,7 +191,7 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 	}
 	for path := range metricMap {
 		for _, item := range metricMap[path] {
-			newMetric := newLustreProcMetric(item.filename, item.promName, "OST", path, item.helpText)
+			newMetric := newLustreProcMetric(item.filename, item.promName, "ost", path, item.helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -229,7 +229,7 @@ func (s *lustreSource) generateMDTMetricTemplates() error {
 	}
 	for path := range metricMap {
 		for _, item := range metricMap[path] {
-			newMetric := newLustreProcMetric(item.filename, item.promName, "MDT", path, item.helpText)
+			newMetric := newLustreProcMetric(item.filename, item.promName, "mdt", path, item.helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -250,7 +250,7 @@ func (s *lustreSource) generateMGSMetricTemplates() error {
 	}
 	for path := range metricMap {
 		for _, item := range metricMap[path] {
-			newMetric := newLustreProcMetric(item.filename, item.promName, "MGS", path, item.helpText)
+			newMetric := newLustreProcMetric(item.filename, item.promName, "mgs", path, item.helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -271,7 +271,7 @@ func (s *lustreSource) generateMDSMetricTemplates() error {
 	}
 	for path := range metricMap {
 		for _, item := range metricMap[path] {
-			newMetric := newLustreProcMetric(item.filename, item.promName, "MDS", path, item.helpText)
+			newMetric := newLustreProcMetric(item.filename, item.promName, "mds", path, item.helpText)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
