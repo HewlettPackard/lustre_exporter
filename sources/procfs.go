@@ -347,7 +347,6 @@ func newLustreSource() LustreSource {
 }
 
 func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
-	var metricType string
 	var directoryDepth int
 
 	for _, metric := range s.lustreProcMetrics {
@@ -360,17 +359,16 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 			continue
 		}
 		for _, path := range paths {
-			metricType = single
 			switch metric.filename {
 			case "health_check":
-				err = s.parseTextFile(metric.source, "health_check", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value float64) {
+				err = s.parseTextFile(metric.source, path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value float64) {
 					ch <- metric.metricFunc([]string{nodeType}, []string{nodeName}, name, helpText, value)
 				})
 				if err != nil {
 					return err
 				}
 			case "brw_stats", "rpc_stats":
-				err = s.parseBRWStats(metric.source, "stats", path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
+				err = s.parseBRWStats(metric.source, path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
 					if extraLabelValue == "" {
 						ch <- metric.metricFunc([]string{nodeType, "operation", "size"}, []string{nodeName, brwOperation, brwSize}, name, helpText, value)
 					} else {
@@ -381,7 +379,7 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 					return err
 				}
 			case "job_stats":
-				err = s.parseJobStats(metric.source, "job_stats", path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, jobid string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
+				err = s.parseJobStats(metric.source, path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, jobid string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
 					if extraLabelValue == "" {
 						ch <- metric.metricFunc([]string{nodeType, "jobid"}, []string{nodeName, jobid}, name, helpText, value)
 					} else {
@@ -392,14 +390,7 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 					return err
 				}
 			default:
-				if metric.filename == stats {
-					metricType = stats
-				} else if metric.filename == mdStats {
-					metricType = mdStats
-				} else if metric.filename == encryptPagePools {
-					metricType = encryptPagePools
-				}
-				err = s.parseFile(metric.source, metricType, path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
+				err = s.parseFile(metric.source, metric.filename, path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
 					if extraLabelValue == "" {
 						ch <- metric.metricFunc([]string{nodeType}, []string{nodeName}, name, helpText, value)
 					} else {
@@ -692,7 +683,7 @@ func parseJobStatsText(jobStats string, promName string, helpText string, hasMul
 	return metricList, nil
 }
 
-func (s *lustreProcfsSource) parseJobStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, hasMultipleVals bool, handler func(string, string, string, string, string, float64, string, string)) (err error) {
+func (s *lustreProcfsSource) parseJobStats(nodeType string, path string, directoryDepth int, helpText string, promName string, hasMultipleVals bool, handler func(string, string, string, string, string, float64, string, string)) (err error) {
 	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
@@ -715,7 +706,7 @@ func (s *lustreProcfsSource) parseJobStats(nodeType string, metricType string, p
 	return nil
 }
 
-func (s *lustreProcfsSource) parseBRWStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, hasMultipleVals bool, handler func(string, string, string, string, string, string, float64, string, string)) (err error) {
+func (s *lustreProcfsSource) parseBRWStats(nodeType string, path string, directoryDepth int, helpText string, promName string, hasMultipleVals bool, handler func(string, string, string, string, string, string, float64, string, string)) (err error) {
 	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
@@ -757,7 +748,7 @@ func (s *lustreProcfsSource) parseBRWStats(nodeType string, metricType string, p
 	return nil
 }
 
-func (s *lustreProcfsSource) parseTextFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, float64)) (err error) {
+func (s *lustreProcfsSource) parseTextFile(nodeType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, float64)) (err error) {
 	filename, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
@@ -792,16 +783,6 @@ func (s *lustreProcfsSource) parseFile(nodeType string, metricType string, path 
 		return err
 	}
 	switch metricType {
-	case single:
-		value, err := ioutil.ReadFile(path)
-		if err != nil {
-			return err
-		}
-		convertedValue, err := strconv.ParseFloat(strings.TrimSpace(string(value)), 64)
-		if err != nil {
-			return err
-		}
-		handler(nodeType, nodeName, promName, helpText, convertedValue, "", "")
 	case stats, mdStats, encryptPagePools:
 		metricList, err := parseStatsFile(helpText, promName, path, hasMultipleVals)
 		if err != nil {
@@ -811,6 +792,16 @@ func (s *lustreProcfsSource) parseFile(nodeType string, metricType string, path 
 		for _, metric := range metricList {
 			handler(nodeType, nodeName, metric.title, metric.help, metric.value, metric.extraLabel, metric.extraLabelValue)
 		}
+	default:
+		value, err := ioutil.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		convertedValue, err := strconv.ParseFloat(strings.TrimSpace(string(value)), 64)
+		if err != nil {
+			return err
+		}
+		handler(nodeType, nodeName, promName, helpText, convertedValue, "", "")
 	}
 	return nil
 }
