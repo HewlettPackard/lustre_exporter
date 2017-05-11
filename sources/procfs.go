@@ -126,7 +126,7 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 	metricMap := map[string][]lustreHelpStruct{
 		"obdfilter/*": {
 			{"blocksize", "blocksize", "Filesystem block size in bytes"},
-			{"brw_size", "brw_size", "Block read/write size in bytes"},
+			{"brw_size", "brw_size", "Block read/write size in megabytes"},
 			{"brw_stats", "pages_per_bulk_rw", pagesPerBlockRWHelp},
 			{"brw_stats", "discontiguous_pages", discontiguousPagesHelp},
 			{"brw_stats", "disk_ios_in_flight", diskIOsInFlightHelp},
