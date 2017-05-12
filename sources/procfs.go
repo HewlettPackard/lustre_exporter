@@ -481,6 +481,10 @@ func getJobStatsByOperation(jobBlock string, jobID string, promName string, help
 		setInfoHelp:        {index: 0, pattern: "set_info"},
 		quotactlHelp:       {index: 0, pattern: "quotactl"},
 	}
+	// If the metric isn't located in the map, don't try to parse a value for it.
+	if _, exists := opMap[helpText]; !exists {
+		return nil, nil
+	}
 	pattern := opMap[helpText].pattern
 	opStat := regexCaptureString(pattern+": .*", jobBlock)
 	opNumbers := regexCaptureStrings("[0-9]*.[0-9]+|[0-9]+", opStat)
