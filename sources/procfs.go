@@ -69,13 +69,16 @@ const (
 	healthCheckUnhealthy string = "0"
 )
 
+type prometheusType func([]string, []string, string, string, uint64) prometheus.Metric
+
 type lustreProcMetric struct {
-	subsystem string
-	filename  string
-	promName  string
-	source    string //The parent data source (OST, MDS, MGS, etc)
-	path      string //Path to retrieve metric from
-	helpText  string
+	subsystem  string
+	filename   string
+	promName   string
+	source     string //The parent data source (OST, MDS, MGS, etc)
+	path       string //Path to retrieve metric from
+	helpText   string
+	metricFunc prometheusType
 }
 
 type lustreStatsMetric struct {
@@ -96,9 +99,10 @@ type lustreBRWMetric struct {
 }
 
 type lustreHelpStruct struct {
-	filename string
-	promName string // Name to be used in Prometheus
-	helpText string
+	filename   string
+	promName   string // Name to be used in Prometheus
+	helpText   string
+	metricFunc prometheusType
 }
 
 type multistatParsingStruct struct {
@@ -115,13 +119,14 @@ type lustreSource struct {
 	basePath          string
 }
 
-func newLustreProcMetric(filename string, promName string, source string, path string, helpText string) lustreProcMetric {
+func newLustreProcMetric(filename string, promName string, source string, path string, helpText string, metricFunc prometheusType) lustreProcMetric {
 	var m lustreProcMetric
 	m.filename = filename
 	m.promName = promName
 	m.source = source
 	m.path = path
 	m.helpText = helpText
+	m.metricFunc = metricFunc
 
 	return m
 }
@@ -129,73 +134,73 @@ func newLustreProcMetric(filename string, promName string, source string, path s
 func (s *lustreSource) generateOSTMetricTemplates() error {
 	metricMap := map[string][]lustreHelpStruct{
 		"obdfilter/*": {
-			{"blocksize", "blocksize", "Filesystem block size in bytes"},
-			{"brw_size", "brw_size", "Block read/write size in megabytes"},
-			{"brw_stats", "pages_per_bulk_rw", pagesPerBlockRWHelp},
-			{"brw_stats", "discontiguous_pages", discontiguousPagesHelp},
-			{"brw_stats", "disk_ios_in_flight", diskIOsInFlightHelp},
-			{"brw_stats", "io_time", ioTimeHelp},
-			{"brw_stats", "disk_io_size", diskIOSizeHelp},
-			{"degraded", "degraded", "Binary indicator as to whether or not the pool is degraded - 0 for not degraded, 1 for degraded"},
-			{"filesfree", "filesfree", "The number of inodes (objects) available"},
-			{"filestotal", "filestotal", "The maximum number of inodes (objects) the filesystem can hold"},
-			{"grant_compat_disable", "grant_compat_disable", "Binary indicator as to whether clients with OBD_CONNECT_GRANT_PARAM setting will be granted space"},
-			{"grant_precreate", "grant_precreate", "Maximum space in bytes that clients can preallocate for objects"},
-			{"job_cleanup_interval", "job_cleanup_interval", "Interval in seconds between cleanup of tuning statistics"},
-			{"job_stats", "job_read_samples", readSamplesHelp},
-			{"job_stats", "job_read_minimum", readMinimumHelp},
-			{"job_stats", "job_read_maximum", readMaximumHelp},
-			{"job_stats", "job_read_total", readTotalHelp},
-			{"job_stats", "job_write_samples", writeSamplesHelp},
-			{"job_stats", "job_write_minimum", writeMinimumHelp},
-			{"job_stats", "job_write_maximum", writeMaximumHelp},
-			{"job_stats", "job_write_total", writeTotalHelp},
-			{"job_stats", "job_num_getattr", getattrHelp},
-			{"job_stats", "job_num_setattr", setattrHelp},
-			{"job_stats", "job_num_punch", punchHelp},
-			{"job_stats", "job_num_sync", syncHelp},
-			{"job_stats", "job_num_destroy", destroyHelp},
-			{"job_stats", "job_num_create", createHelp},
-			{"job_stats", "job_num_statfs", statfsHelp},
-			{"job_stats", "job_num_get_info", getInfoHelp},
-			{"job_stats", "job_num_set_info", setInfoHelp},
-			{"job_stats", "job_num_quotactl", quotactlHelp},
-			{"kbytesavail", "kbytesavail", "Number of kilobytes readily available in the pool"},
-			{"kbytesfree", "kbytesfree", "Number of kilobytes allocated to the pool"},
-			{"kbytestotal", "kbytestotal", "Capacity of the pool in kilobytes"},
-			{"lfsck_speed_limit", "lfsck_speed_limit", "Maximum operations per second LFSCK (Lustre filesystem verification) can run"},
-			{"num_exports", "num_exports", "Total number of times the pool has been exported"},
-			{"precreate_batch", "precreate_batch", "Maximum number of objects that can be included in a single transaction"},
-			{"recovery_time_hard", "recovery_time_hard", "Maximum timeout 'recover_time_soft' can increment to for a single server"},
-			{"recovery_time_soft", "recovery_time_soft", "Duration in seconds for a client to attempt to reconnect after a crash (automatically incremented if servers are still in an error state)"},
-			{"soft_sync_limit", "soft_sync_limit", "Number of RPCs necessary before triggering a sync"},
-			{"stats", "read_samples_total", readSamplesHelp},
-			{"stats", "read_minimum_size_bytes", readMinimumHelp},
-			{"stats", "read_maximum_size_bytes", readMaximumHelp},
-			{"stats", "read_total_bytes", readTotalHelp},
-			{"stats", "write_samples_total", writeSamplesHelp},
-			{"stats", "write_minimum_size_bytes", writeMinimumHelp},
-			{"stats", "write_maximum_size_bytes", writeMaximumHelp},
-			{"stats", "write_total_bytes", writeTotalHelp},
-			{"sync_journal", "sync_journal", "Binary indicator as to whether or not the journal is set for asynchronous commits"},
-			{"tot_dirty", "tot_dirty", "Total number of exports that have been marked dirty"},
-			{"tot_granted", "tot_granted", "Total number of exports that have been marked granted"},
-			{"tot_pending", "tot_pending", "Total number of exports that have been marked pending"},
+			{"blocksize", "blocksize", "Filesystem block size in bytes", s.counterMetric},
+			{"brw_size", "brw_size", "Block read/write size in megabytes", s.counterMetric},
+			{"brw_stats", "pages_per_bulk_rw", pagesPerBlockRWHelp, s.counterMetric},
+			{"brw_stats", "discontiguous_pages", discontiguousPagesHelp, s.counterMetric},
+			{"brw_stats", "disk_ios_in_flight", diskIOsInFlightHelp, s.counterMetric},
+			{"brw_stats", "io_time", ioTimeHelp, s.counterMetric},
+			{"brw_stats", "disk_io_size", diskIOSizeHelp, s.counterMetric},
+			{"degraded", "degraded", "Binary indicator as to whether or not the pool is degraded - 0 for not degraded, 1 for degraded", s.counterMetric},
+			{"filesfree", "filesfree", "The number of inodes (objects) available", s.counterMetric},
+			{"filestotal", "filestotal", "The maximum number of inodes (objects) the filesystem can hold", s.counterMetric},
+			{"grant_compat_disable", "grant_compat_disable", "Binary indicator as to whether clients with OBD_CONNECT_GRANT_PARAM setting will be granted space", s.counterMetric},
+			{"grant_precreate", "grant_precreate", "Maximum space in bytes that clients can preallocate for objects", s.counterMetric},
+			{"job_cleanup_interval", "job_cleanup_interval", "Interval in seconds between cleanup of tuning statistics", s.counterMetric},
+			{"job_stats", "job_read_samples", readSamplesHelp, s.counterMetric},
+			{"job_stats", "job_read_minimum", readMinimumHelp, s.counterMetric},
+			{"job_stats", "job_read_maximum", readMaximumHelp, s.counterMetric},
+			{"job_stats", "job_read_total", readTotalHelp, s.counterMetric},
+			{"job_stats", "job_write_samples", writeSamplesHelp, s.counterMetric},
+			{"job_stats", "job_write_minimum", writeMinimumHelp, s.counterMetric},
+			{"job_stats", "job_write_maximum", writeMaximumHelp, s.counterMetric},
+			{"job_stats", "job_write_total", writeTotalHelp, s.counterMetric},
+			{"job_stats", "job_num_getattr", getattrHelp, s.counterMetric},
+			{"job_stats", "job_num_setattr", setattrHelp, s.counterMetric},
+			{"job_stats", "job_num_punch", punchHelp, s.counterMetric},
+			{"job_stats", "job_num_sync", syncHelp, s.counterMetric},
+			{"job_stats", "job_num_destroy", destroyHelp, s.counterMetric},
+			{"job_stats", "job_num_create", createHelp, s.counterMetric},
+			{"job_stats", "job_num_statfs", statfsHelp, s.counterMetric},
+			{"job_stats", "job_num_get_info", getInfoHelp, s.counterMetric},
+			{"job_stats", "job_num_set_info", setInfoHelp, s.counterMetric},
+			{"job_stats", "job_num_quotactl", quotactlHelp, s.counterMetric},
+			{"kbytesavail", "kbytesavail", "Number of kilobytes readily available in the pool", s.counterMetric},
+			{"kbytesfree", "kbytesfree", "Number of kilobytes allocated to the pool", s.counterMetric},
+			{"kbytestotal", "kbytestotal", "Capacity of the pool in kilobytes", s.counterMetric},
+			{"lfsck_speed_limit", "lfsck_speed_limit", "Maximum operations per second LFSCK (Lustre filesystem verification) can run", s.counterMetric},
+			{"num_exports", "num_exports", "Total number of times the pool has been exported", s.counterMetric},
+			{"precreate_batch", "precreate_batch", "Maximum number of objects that can be included in a single transaction", s.counterMetric},
+			{"recovery_time_hard", "recovery_time_hard", "Maximum timeout 'recover_time_soft' can increment to for a single server", s.counterMetric},
+			{"recovery_time_soft", "recovery_time_soft", "Duration in seconds for a client to attempt to reconnect after a crash (automatically incremented if servers are still in an error state)", s.counterMetric},
+			{"soft_sync_limit", "soft_sync_limit", "Number of RPCs necessary before triggering a sync", s.counterMetric},
+			{"stats", "read_samples_total", readSamplesHelp, s.counterMetric},
+			{"stats", "read_minimum_size_bytes", readMinimumHelp, s.counterMetric},
+			{"stats", "read_maximum_size_bytes", readMaximumHelp, s.counterMetric},
+			{"stats", "read_total_bytes", readTotalHelp, s.counterMetric},
+			{"stats", "write_samples_total", writeSamplesHelp, s.counterMetric},
+			{"stats", "write_minimum_size_bytes", writeMinimumHelp, s.counterMetric},
+			{"stats", "write_maximum_size_bytes", writeMaximumHelp, s.counterMetric},
+			{"stats", "write_total_bytes", writeTotalHelp, s.counterMetric},
+			{"sync_journal", "sync_journal", "Binary indicator as to whether or not the journal is set for asynchronous commits", s.counterMetric},
+			{"tot_dirty", "tot_dirty", "Total number of exports that have been marked dirty", s.counterMetric},
+			{"tot_granted", "tot_granted", "Total number of exports that have been marked granted", s.counterMetric},
+			{"tot_pending", "tot_pending", "Total number of exports that have been marked pending", s.counterMetric},
 		},
 		"ldlm/namespaces/filter-*": {
-			{"lock_count", "lock_count", "Number of locks"},
-			{"lock_timeouts", "lock_timeouts", "Number of lock timeouts"},
-			{"contended_locks", "contended_locks", "Number of contended locks"},
-			{"contention_seconds", "contention_seconds", "Time in seconds during which locks were contended"},
-			{"pool/granted", "granted", "Number of granted locks"},
-			{"pool/grant_rate", "grant_rate", "Lock grant rate"},
-			{"pool/cancel_rate", "cancel_rate", "Lock cancel rate"},
-			{"pool/grant_speed", "grant_speed", "Lock grant speed"},
+			{"lock_count", "lock_count", "Number of locks", s.counterMetric},
+			{"lock_timeouts", "lock_timeouts", "Number of lock timeouts", s.counterMetric},
+			{"contended_locks", "contended_locks", "Number of contended locks", s.counterMetric},
+			{"contention_seconds", "contention_seconds", "Time in seconds during which locks were contended", s.counterMetric},
+			{"pool/granted", "granted", "Number of granted locks", s.counterMetric},
+			{"pool/grant_rate", "grant_rate", "Lock grant rate", s.counterMetric},
+			{"pool/cancel_rate", "cancel_rate", "Lock cancel rate", s.counterMetric},
+			{"pool/grant_speed", "grant_speed", "Lock grant speed", s.counterMetric},
 		},
 	}
 	for path := range metricMap {
 		for _, item := range metricMap[path] {
-			newMetric := newLustreProcMetric(item.filename, item.promName, "ost", path, item.helpText)
+			newMetric := newLustreProcMetric(item.filename, item.promName, "ost", path, item.helpText, item.metricFunc)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -205,35 +210,35 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 func (s *lustreSource) generateMDTMetricTemplates() error {
 	metricMap := map[string][]lustreHelpStruct{
 		"mdt/*": {
-			{"md_stats", "mdt_opens", openHelp},
-			{"md_stats", "mdt_closes", closeHelp},
-			{"md_stats", "mdt_getattrs", getattrHelp},
-			{"md_stats", "mdt_setattrs", setattrHelp},
-			{"md_stats", "mdt_getxattrs", getxattrHelp},
-			{"md_stats", "mdt_setxattrs", setxattrHelp},
-			{"md_stats", "mdt_statfs", statfsHelp},
-			{"num_exports", "num_exports", "Total number of times the pool has been exported"},
-			{"job_stats", "num_opens", openHelp},
-			{"job_stats", "num_closes", closeHelp},
-			{"job_stats", "num_mknod", mknodHelp},
-			{"job_stats", "num_link", linkHelp},
-			{"job_stats", "num_unlink", unlinkHelp},
-			{"job_stats", "num_mkdir", mkdirHelp},
-			{"job_stats", "num_rmdir", rmdirHelp},
-			{"job_stats", "num_rename", renameHelp},
-			{"job_stats", "num_getattr", getattrHelp},
-			{"job_stats", "num_setattr", setattrHelp},
-			{"job_stats", "num_getxattr", getxattrHelp},
-			{"job_stats", "num_setxattr", setxattrHelp},
-			{"job_stats", "num_statfs", statfsHelp},
-			{"job_stats", "num_sync", syncHelp},
-			{"job_stats", "num_samedir_rename", samedirRenameHelp},
-			{"job_stats", "num_crossdir_rename", crossdirRenameHelp},
+			{"md_stats", "mdt_opens", openHelp, s.counterMetric},
+			{"md_stats", "mdt_closes", closeHelp, s.counterMetric},
+			{"md_stats", "mdt_getattrs", getattrHelp, s.counterMetric},
+			{"md_stats", "mdt_setattrs", setattrHelp, s.counterMetric},
+			{"md_stats", "mdt_getxattrs", getxattrHelp, s.counterMetric},
+			{"md_stats", "mdt_setxattrs", setxattrHelp, s.counterMetric},
+			{"md_stats", "mdt_statfs", statfsHelp, s.counterMetric},
+			{"num_exports", "num_exports", "Total number of times the pool has been exported", s.counterMetric},
+			{"job_stats", "num_opens", openHelp, s.counterMetric},
+			{"job_stats", "num_closes", closeHelp, s.counterMetric},
+			{"job_stats", "num_mknod", mknodHelp, s.counterMetric},
+			{"job_stats", "num_link", linkHelp, s.counterMetric},
+			{"job_stats", "num_unlink", unlinkHelp, s.counterMetric},
+			{"job_stats", "num_mkdir", mkdirHelp, s.counterMetric},
+			{"job_stats", "num_rmdir", rmdirHelp, s.counterMetric},
+			{"job_stats", "num_rename", renameHelp, s.counterMetric},
+			{"job_stats", "num_getattr", getattrHelp, s.counterMetric},
+			{"job_stats", "num_setattr", setattrHelp, s.counterMetric},
+			{"job_stats", "num_getxattr", getxattrHelp, s.counterMetric},
+			{"job_stats", "num_setxattr", setxattrHelp, s.counterMetric},
+			{"job_stats", "num_statfs", statfsHelp, s.counterMetric},
+			{"job_stats", "num_sync", syncHelp, s.counterMetric},
+			{"job_stats", "num_samedir_rename", samedirRenameHelp, s.counterMetric},
+			{"job_stats", "num_crossdir_rename", crossdirRenameHelp, s.counterMetric},
 		},
 	}
 	for path := range metricMap {
 		for _, item := range metricMap[path] {
-			newMetric := newLustreProcMetric(item.filename, item.promName, "mdt", path, item.helpText)
+			newMetric := newLustreProcMetric(item.filename, item.promName, "mdt", path, item.helpText, item.metricFunc)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -243,18 +248,18 @@ func (s *lustreSource) generateMDTMetricTemplates() error {
 func (s *lustreSource) generateMGSMetricTemplates() error {
 	metricMap := map[string][]lustreHelpStruct{
 		"mgs/MGS/osd/": {
-			{"blocksize", "blocksize", "Filesystem block size in bytes"},
-			{"filesfree", "filesfree", "The number of inodes (objects) available"},
-			{"filestotal", "filestotal", "The maximum number of inodes (objects) the filesystem can hold"},
-			{"kbytesavail", "kbytesavail", "Number of kilobytes readily available in the pool"},
-			{"kbytesfree", "kbytesfree", "Number of kilobytes allocated to the pool"},
-			{"kbytestotal", "kbytestotal", "Capacity of the pool in kilobytes"},
-			{"quota_iused_estimate", "quota_iused_estimate", "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated"},
+			{"blocksize", "blocksize", "Filesystem block size in bytes", s.counterMetric},
+			{"filesfree", "filesfree", "The number of inodes (objects) available", s.counterMetric},
+			{"filestotal", "filestotal", "The maximum number of inodes (objects) the filesystem can hold", s.counterMetric},
+			{"kbytesavail", "kbytesavail", "Number of kilobytes readily available in the pool", s.counterMetric},
+			{"kbytesfree", "kbytesfree", "Number of kilobytes allocated to the pool", s.counterMetric},
+			{"kbytestotal", "kbytestotal", "Capacity of the pool in kilobytes", s.counterMetric},
+			{"quota_iused_estimate", "quota_iused_estimate", "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated", s.counterMetric},
 		},
 	}
 	for path := range metricMap {
 		for _, item := range metricMap[path] {
-			newMetric := newLustreProcMetric(item.filename, item.promName, "mgs", path, item.helpText)
+			newMetric := newLustreProcMetric(item.filename, item.promName, "mgs", path, item.helpText, item.metricFunc)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -264,18 +269,18 @@ func (s *lustreSource) generateMGSMetricTemplates() error {
 func (s *lustreSource) generateMDSMetricTemplates() error {
 	metricMap := map[string][]lustreHelpStruct{
 		"mds/MDS/osd": {
-			{"blocksize", "blocksize", "Filesystem block size in bytes"},
-			{"filesfree", "filesfree", "The number of inodes (objects) available"},
-			{"filestotal", "filestotal", "The maximum number of inodes (objects) the filesystem can hold"},
-			{"kbytesavail", "kbytesavail", "Number of kilobytes readily available in the pool"},
-			{"kbytesfree", "kbytesfree", "Number of kilobytes allocated to the pool"},
-			{"kbytestotal", "kbytestotal", "Capacity of the pool in kilobytes"},
-			{"quota_iused_estimate", "quota_iused_estimate", "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated"},
+			{"blocksize", "blocksize", "Filesystem block size in bytes", s.counterMetric},
+			{"filesfree", "filesfree", "The number of inodes (objects) available", s.counterMetric},
+			{"filestotal", "filestotal", "The maximum number of inodes (objects) the filesystem can hold", s.counterMetric},
+			{"kbytesavail", "kbytesavail", "Number of kilobytes readily available in the pool", s.counterMetric},
+			{"kbytesfree", "kbytesfree", "Number of kilobytes allocated to the pool", s.counterMetric},
+			{"kbytestotal", "kbytestotal", "Capacity of the pool in kilobytes", s.counterMetric},
+			{"quota_iused_estimate", "quota_iused_estimate", "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated", s.counterMetric},
 		},
 	}
 	for path := range metricMap {
 		for _, item := range metricMap[path] {
-			newMetric := newLustreProcMetric(item.filename, item.promName, "mds", path, item.helpText)
+			newMetric := newLustreProcMetric(item.filename, item.promName, "mds", path, item.helpText, item.metricFunc)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
@@ -284,10 +289,10 @@ func (s *lustreSource) generateMDSMetricTemplates() error {
 
 func (s *lustreSource) generateGenericMetricTemplates() error {
 	metricList := []lustreHelpStruct{
-		{"health_check", "health_check", "Current health status for the indicated instance: " + healthCheckHealthy + " refers to 'healthy', " + healthCheckUnhealthy + " refers to 'unhealthy'"},
+		{"health_check", "health_check", "Current health status for the indicated instance: " + healthCheckHealthy + " refers to 'healthy', " + healthCheckUnhealthy + " refers to 'unhealthy'", s.gaugeMetric},
 	}
 	for _, item := range metricList {
-		newMetric := newLustreProcMetric(item.filename, item.promName, "Generic", "", item.helpText)
+		newMetric := newLustreProcMetric(item.filename, item.promName, "Generic", "", item.helpText, item.metricFunc)
 		s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 	}
 	return nil
@@ -323,21 +328,21 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 			switch metric.filename {
 			case "health_check":
 				err = s.parseTextFile(metric.source, "health_check", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
-					ch <- s.gaugeMetric([]string{nodeType}, []string{nodeName}, name, helpText, value)
+					ch <- metric.metricFunc([]string{nodeType}, []string{nodeName}, name, helpText, value)
 				})
 				if err != nil {
 					return err
 				}
 			case "brw_stats":
 				err = s.parseBRWStats(metric.source, "brw_stats", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64) {
-					ch <- s.counterMetric([]string{nodeType, "operation", "size"}, []string{nodeName, brwOperation, brwSize}, name, helpText, value)
+					ch <- metric.metricFunc([]string{nodeType, "operation", "size"}, []string{nodeName, brwOperation, brwSize}, name, helpText, value)
 				})
 				if err != nil {
 					return err
 				}
 			case "job_stats":
 				err = s.parseJobStats(metric.source, "job_stats", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, jobid string, nodeName string, name string, helpText string, value uint64) {
-					ch <- s.counterMetric([]string{nodeType, "jobid"}, []string{nodeName, jobid}, name, helpText, value)
+					ch <- metric.metricFunc([]string{nodeType, "jobid"}, []string{nodeName, jobid}, name, helpText, value)
 				})
 				if err != nil {
 					return err
@@ -349,7 +354,7 @@ func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
 					metricType = "md_stats"
 				}
 				err = s.parseFile(metric.source, metricType, path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
-					ch <- s.counterMetric([]string{nodeType}, []string{nodeName}, name, helpText, value)
+					ch <- metric.metricFunc([]string{nodeType}, []string{nodeName}, name, helpText, value)
 				})
 				if err != nil {
 					return err
