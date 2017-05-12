@@ -1,0 +1,14 @@
+sudo: false
+
+language: go
+go:
+  - 1.8
+  - tip
+
+before_install:
+  - go get github.com/golang/lint/golint
+
+script:
+  - make
+  - go vet
+  - golint
