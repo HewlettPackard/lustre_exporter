@@ -11,16 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-GO     ?= GO15VENDOREXPERIMENT=1 go
-GOPATH := $(firstword $(subst :, ,$(GOPATH)))
-PROMU  ?= $(GOPATH)/bin/promu
-pkgs    = $(shell $(GO) list ./... | grep -v /vendor/)
-TARGET	?= lustre_exporter
+GO              ?= GO15VENDOREXPERIMENT=1 go
+GOPATH          := $(firstword $(subst :, ,$(shell $(GO) env GOPATH)))
+PROMU           ?= $(GOPATH)/bin/promu
+pkgs            = $(shell $(GO) list ./... | grep -v /vendor/)
+TARGET          ?= lustre_exporter
 
-PREFIX			?= $(shell pwd)
-BIN_DIR			?= $(shell pwd)
+PREFIX          ?= $(shell pwd)
+BIN_DIR         ?= $(shell pwd)
 
-all: format build test
+all: format vet build test
 
 test:
 	@echo ">> running tests"
@@ -29,6 +29,10 @@ test:
 format:
 	@echo ">> formatting code"
 	@$(GO) fmt $(pkgs)
+
+vet:
+	@echo ">> vetting code"
+	@$(GO) vet $(pkgs)
 
 build: $(PROMU)
 	@echo ">> building binaries"
@@ -44,4 +48,4 @@ $(GOPATH)/bin/promu promu:
 		$(GO) get -u github.com/prometheus/promu
 
 
-.PHONY: all format build test promu clean $(GOPATH)/bin/promu
+.PHONY: all format vet build test promu clean $(GOPATH)/bin/promu

@@ -2,7 +2,7 @@ sudo: false
 
 language: go
 go:
-  - 1.8
+  - 1.8.x
   - tip
 
 before_install:
@@ -10,5 +10,4 @@ before_install:
 
 script:
   - make
-  - go vet
   - golint
