@@ -56,7 +56,7 @@ func (l LustreSource) Collect(ch chan<- prometheus.Metric) {
 	wg := sync.WaitGroup{}
 	wg.Add(len(l.sourceList))
 	for name, c := range l.sourceList {
-		go func(name string, s sources.LustreSource) {
+		go func(name string, c sources.LustreSource) {
 			collectFromSource(name, c, ch)
 			wg.Done()
 		}(name, c)
