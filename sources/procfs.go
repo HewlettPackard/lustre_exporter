@@ -497,6 +497,9 @@ func getJobStatsByOperation(jobBlock string, jobID string, promName string, help
 	pattern := opMap[helpText].pattern
 	opStat := regexCaptureString(pattern+": .*", jobBlock)
 	opNumbers := regexCaptureStrings("[0-9]*.[0-9]+|[0-9]+", opStat)
+	if len(opNumbers) < 1 {
+		return nil, nil
+	}
 	result, err := strconv.ParseUint(strings.TrimSpace(opNumbers[opMap[helpText].index]), 10, 64)
 	if err != nil {
 		return nil, err
