@@ -39,18 +39,18 @@ func TestStatsIntegration(t *testing.T) {
 		"write_bytes_total":        writeTotalHelp,
 	}
 	expectedMetrics := []lustreStatsMetric{
-		{"read_samples_total", readSamplesHelp, 1262},
-		{"read_minimum_size_bytes", readMinimumHelp, 1024},
-		{"read_maximum_size_bytes", readMaximumHelp, 1048576},
-		{"read_bytes_total", readTotalHelp, 5672395063},
-		{"write_samples_total", writeSamplesHelp, 432},
-		{"write_minimum_size_bytes", writeMinimumHelp, 1024},
-		{"write_maximum_size_bytes", writeMaximumHelp, 1048576},
-		{"write_bytes_total", writeTotalHelp, 375920472},
+		{"read_samples_total", readSamplesHelp, 1262, "", ""},
+		{"read_minimum_size_bytes", readMinimumHelp, 1024, "", ""},
+		{"read_maximum_size_bytes", readMaximumHelp, 1048576, "", ""},
+		{"read_bytes_total", readTotalHelp, 5672395063, "", ""},
+		{"write_samples_total", writeSamplesHelp, 432, "", ""},
+		{"write_minimum_size_bytes", writeMinimumHelp, 1024, "", ""},
+		{"write_maximum_size_bytes", writeMaximumHelp, 1048576, "", ""},
+		{"write_bytes_total", writeTotalHelp, 375920472, "", ""},
 	}
 
 	for promName, promHelp := range metricsToTest {
-		parsedMetrics, err := parseReadWriteBytes(testStatsText, promHelp, promName)
+		parsedMetrics, err := getStatsIOMetrics(testStatsText, promHelp, promName)
 		if err != nil {
 			t.Fatal(err)
 		}

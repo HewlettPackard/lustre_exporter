@@ -21,17 +21,17 @@ func TestReadStatsFile(t *testing.T) {
 	numParsedMetrics := 0
 	testLNETStatsText := "0 16 0 1911487 1898918 0 0 498100008 543996712 0 0"
 	expectedResults := []lustreStatsMetric{
-		{"allocated", lnetAllocatedHelp, 0},
-		{"maximum", lnetMaximumHelp, 16},
-		{"errors", lnetErrorsHelp, 0},
-		{"send_count", lnetSendCountHelp, 1911487},
-		{"receive_count", lnetReceiveCountHelp, 1898918},
-		{"route_count", lnetRouteCountHelp, 0},
-		{"drop_count", lnetDropCountHelp, 0},
-		{"send_length", lnetSendLengthHelp, 498100008},
-		{"receive_length", lnetReceiveLengthHelp, 543996712},
-		{"route_length", lnetRouteLengthHelp, 0},
-		{"drop_length", lnetDropLengthHelp, 0},
+		{"allocated", lnetAllocatedHelp, 0, "", ""},
+		{"maximum", lnetMaximumHelp, 16, "", ""},
+		{"errors", lnetErrorsHelp, 0, "", ""},
+		{"send_count", lnetSendCountHelp, 1911487, "", ""},
+		{"receive_count", lnetReceiveCountHelp, 1898918, "", ""},
+		{"route_count", lnetRouteCountHelp, 0, "", ""},
+		{"drop_count", lnetDropCountHelp, 0, "", ""},
+		{"send_length", lnetSendLengthHelp, 498100008, "", ""},
+		{"receive_length", lnetReceiveLengthHelp, 543996712, "", ""},
+		{"route_length", lnetRouteLengthHelp, 0, "", ""},
+		{"drop_length", lnetDropLengthHelp, 0, "", ""},
 	}
 
 	for _, result := range expectedResults {

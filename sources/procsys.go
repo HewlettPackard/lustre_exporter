@@ -48,33 +48,33 @@ type lustreProcsysSource struct {
 func (s *lustreProcsysSource) generateLNETTemplates() error {
 	metricMap := map[string][]lustreHelpStruct{
 		"lnet": {
-			{"catastrophe", "catastrophe_enabled", "Returns 1 if currently in catastrophe mode", s.gaugeMetric},
-			{"console_backoff", "console_backoff_enabled", "Returns non-zero number if console_backoff is enabled", s.gaugeMetric},
-			{"console_max_delay_centisecs", "console_max_delay_centiseconds", "Minimum time in centiseconds before the console logs a message", s.gaugeMetric},
-			{"console_min_delay_centisecs", "console_min_delay_centiseconds", "Maximum time in centiseconds before the console logs a message", s.gaugeMetric},
-			{"console_ratelimit", "console_ratelimit_enabled", "Returns 1 if the console message rate limiting is enabled", s.gaugeMetric},
-			{"debug_mb", "debug_megabytes", "Maximum buffer size in megabytes for the LNET debug messages", s.gaugeMetric},
-			{"fail_err", "fail_error_total", "Number of errors that have been thrown", s.counterMetric},
-			{"fail_val", "fail_maximum", "Maximum number of times to fail", s.gaugeMetric},
-			{"lnet_memused", "lnet_memory_used_bytes", "Number of bytes allocated by LNET", s.gaugeMetric},
-			{"panic_on_lbug", "panic_on_lbug_enabled", "Returns 1 if panic_on_lbug is enabled", s.gaugeMetric},
-			{"stats", "allocated", lnetAllocatedHelp, s.gaugeMetric},
-			{"stats", "maximum", lnetMaximumHelp, s.gaugeMetric},
-			{"stats", "errors_total", lnetErrorsHelp, s.counterMetric},
-			{"stats", "send_count_total", lnetSendCountHelp, s.counterMetric},
-			{"stats", "receive_count_total", lnetReceiveCountHelp, s.counterMetric},
-			{"stats", "route_count_total", lnetRouteCountHelp, s.counterMetric},
-			{"stats", "drop_count_total", lnetDropCountHelp, s.counterMetric},
-			{"stats", "send_bytes_total", lnetSendLengthHelp, s.counterMetric},
-			{"stats", "receive_bytes_total", lnetReceiveLengthHelp, s.counterMetric},
-			{"stats", "route_bytes_total", lnetRouteLengthHelp, s.counterMetric},
-			{"stats", "drop_bytes_total", lnetDropLengthHelp, s.counterMetric},
-			{"watchdog_ratelimit", "watchdog_ratelimit_enabled", "Returns 1 if the watchdog rate limiter is enabled", s.gaugeMetric},
+			{"catastrophe", "catastrophe_enabled", "Returns 1 if currently in catastrophe mode", s.gaugeMetric, false},
+			{"console_backoff", "console_backoff_enabled", "Returns non-zero number if console_backoff is enabled", s.gaugeMetric, false},
+			{"console_max_delay_centisecs", "console_max_delay_centiseconds", "Minimum time in centiseconds before the console logs a message", s.gaugeMetric, false},
+			{"console_min_delay_centisecs", "console_min_delay_centiseconds", "Maximum time in centiseconds before the console logs a message", s.gaugeMetric, false},
+			{"console_ratelimit", "console_ratelimit_enabled", "Returns 1 if the console message rate limiting is enabled", s.gaugeMetric, false},
+			{"debug_mb", "debug_megabytes", "Maximum buffer size in megabytes for the LNET debug messages", s.gaugeMetric, false},
+			{"fail_err", "fail_error_total", "Number of errors that have been thrown", s.counterMetric, false},
+			{"fail_val", "fail_maximum", "Maximum number of times to fail", s.gaugeMetric, false},
+			{"lnet_memused", "lnet_memory_used_bytes", "Number of bytes allocated by LNET", s.gaugeMetric, false},
+			{"panic_on_lbug", "panic_on_lbug_enabled", "Returns 1 if panic_on_lbug is enabled", s.gaugeMetric, false},
+			{"stats", "allocated", lnetAllocatedHelp, s.gaugeMetric, false},
+			{"stats", "maximum", lnetMaximumHelp, s.gaugeMetric, false},
+			{"stats", "errors_total", lnetErrorsHelp, s.counterMetric, false},
+			{"stats", "send_count_total", lnetSendCountHelp, s.counterMetric, false},
+			{"stats", "receive_count_total", lnetReceiveCountHelp, s.counterMetric, false},
+			{"stats", "route_count_total", lnetRouteCountHelp, s.counterMetric, false},
+			{"stats", "drop_count_total", lnetDropCountHelp, s.counterMetric, false},
+			{"stats", "send_bytes_total", lnetSendLengthHelp, s.counterMetric, false},
+			{"stats", "receive_bytes_total", lnetReceiveLengthHelp, s.counterMetric, false},
+			{"stats", "route_bytes_total", lnetRouteLengthHelp, s.counterMetric, false},
+			{"stats", "drop_bytes_total", lnetDropLengthHelp, s.counterMetric, false},
+			{"watchdog_ratelimit", "watchdog_ratelimit_enabled", "Returns 1 if the watchdog rate limiter is enabled", s.gaugeMetric, false},
 		},
 	}
 	for path := range metricMap {
 		for _, item := range metricMap[path] {
-			newMetric := newLustreProcMetric(item.filename, item.promName, "lnet", path, item.helpText, item.metricFunc)
+			newMetric := newLustreProcMetric(item.filename, item.promName, "lnet", path, item.helpText, item.hasMultipleVals, item.metricFunc)
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
