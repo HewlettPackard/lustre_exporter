@@ -26,36 +26,45 @@ import (
 
 const (
 	// Help text dedicated to the 'stats' files
-	readSamplesHelp    string = "Total number of reads that have been recorded."
-	readMaximumHelp    string = "The maximum read size in bytes."
-	readMinimumHelp    string = "The minimum read size in bytes."
-	readTotalHelp      string = "The total number of bytes that have been read."
-	writeSamplesHelp   string = "Total number of writes that have been recorded."
-	writeMaximumHelp   string = "The maximum write size in bytes."
-	writeMinimumHelp   string = "The minimum write size in bytes."
-	writeTotalHelp     string = "The total number of bytes that have been written."
-	openHelp           string = "Number of open operations the filesystem has performed."
-	closeHelp          string = "Number of close operations the filesystem has performed."
-	mknodHelp          string = "Number of mknod operations the filesystem has performed."
-	linkHelp           string = "Number of link operations the filesystem has performed."
-	unlinkHelp         string = "Number of unlink operations the filesystem has performed."
-	mkdirHelp          string = "Number of mkdir operations the filesystem has performed."
-	rmdirHelp          string = "Number of rmdir operations the filesystem has performed."
-	renameHelp         string = "Number of rename operations the filesystem has performed."
-	getattrHelp        string = "Number of getattr operations the filesystem has performed."
-	setattrHelp        string = "Number of setattr operations the filesystem has performed."
-	getxattrHelp       string = "Number of getxattr operations the filesystem has performed."
-	setxattrHelp       string = "Number of setxattr operations the filesystem has performed."
-	statfsHelp         string = "Number of statfs operations the filesystem has performed."
-	syncHelp           string = "Number of sync operations the filesystem has performed."
-	samedirRenameHelp  string = "Number of samedir_rename operations the filesystem has performed."
-	crossdirRenameHelp string = "Number of crossdir_rename operations the filesystem has performed."
-	punchHelp          string = "Number of punch operations the filesystem has performed."
-	destroyHelp        string = "Number of destroy operations the filesystem has performed."
-	createHelp         string = "Number of create operations the filesystem has performed."
-	getInfoHelp        string = "Number of get_info operations the filesystem has performed."
-	setInfoHelp        string = "Number of set_info operations the filesystem has performed."
-	quotactlHelp       string = "Number of quotactl operations the filesystem has performed."
+	readSamplesHelp     string = "Total number of reads that have been recorded."
+	readMaximumHelp     string = "The maximum read size in bytes."
+	readMinimumHelp     string = "The minimum read size in bytes."
+	readTotalHelp       string = "The total number of bytes that have been read."
+	writeSamplesHelp    string = "Total number of writes that have been recorded."
+	writeMaximumHelp    string = "The maximum write size in bytes."
+	writeMinimumHelp    string = "The minimum write size in bytes."
+	writeTotalHelp      string = "The total number of bytes that have been written."
+	openHelp            string = "Number of open operations the filesystem has performed."
+	closeHelp           string = "Number of close operations the filesystem has performed."
+	mknodHelp           string = "Number of mknod operations the filesystem has performed."
+	linkHelp            string = "Number of link operations the filesystem has performed."
+	unlinkHelp          string = "Number of unlink operations the filesystem has performed."
+	mkdirHelp           string = "Number of mkdir operations the filesystem has performed."
+	rmdirHelp           string = "Number of rmdir operations the filesystem has performed."
+	renameHelp          string = "Number of rename operations the filesystem has performed."
+	getattrHelp         string = "Number of getattr operations the filesystem has performed."
+	setattrHelp         string = "Number of setattr operations the filesystem has performed."
+	getxattrHelp        string = "Number of getxattr operations the filesystem has performed."
+	setxattrHelp        string = "Number of setxattr operations the filesystem has performed."
+	statfsHelp          string = "Number of statfs operations the filesystem has performed."
+	syncHelp            string = "Number of sync operations the filesystem has performed."
+	samedirRenameHelp   string = "Number of samedir_rename operations the filesystem has performed."
+	crossdirRenameHelp  string = "Number of crossdir_rename operations the filesystem has performed."
+	punchHelp           string = "Number of punch operations the filesystem has performed."
+	destroyHelp         string = "Number of destroy operations the filesystem has performed."
+	createHelp          string = "Number of create operations the filesystem has performed."
+	getInfoHelp         string = "Number of get_info operations the filesystem has performed."
+	setInfoHelp         string = "Number of set_info operations the filesystem has performed."
+	quotactlHelp        string = "Number of quotactl operations the filesystem has performed."
+	seekHelp            string = "Number of seek operations the filesystem has performed."
+	readdirHelp         string = "Number of readdir operations the filesystem has performed."
+	truncateHelp        string = "Number of truncate operations the filesystem has performed."
+	allocInodeHelp      string = "Number of alloc operations the filesystem has performed."
+	removexattrHelp     string = "Number of removexattr operations the filesystem has performed."
+	inodePermissionHelp string = "Number of inode_permission operations the filesystem has performed."
+	setInfoAsyncHelp    string = "Number of set_info_async operations the filesystem has performed."
+	connectHelp         string = "Number of connect operations the filesystem has performed."
+	pingHelp            string = "Number of ping operations the filesystem has performed."
 
 	// Help text dedicated to the 'brw_stats' file
 	pagesPerBlockRWHelp    string = "Total number of pages per RPC."
@@ -182,6 +191,12 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 			{"stats", "write_minimum_size_bytes", writeMinimumHelp, s.gaugeMetric},
 			{"stats", "write_maximum_size_bytes", writeMaximumHelp, s.gaugeMetric},
 			{"stats", "write_bytes_total", writeTotalHelp, s.counterMetric},
+			{"stats", "create_total", createHelp, s.counterMetric},
+			{"stats", "statfs_total", statfsHelp, s.counterMetric},
+			{"stats", "get_info_total", getInfoHelp, s.counterMetric},
+			{"stats", "set_info_async_total", setInfoAsyncHelp, s.counterMetric},
+			{"stats", "connect_total", connectHelp, s.counterMetric},
+			{"stats", "ping_total", pingHelp, s.counterMetric},
 			{"sync_journal", "sync_journal_enabled", "Binary indicator as to whether or not the journal is set for asynchronous commits", s.gaugeMetric},
 			{"tot_dirty", "exports_dirty_total", "Total number of exports that have been marked dirty", s.counterMetric},
 			{"tot_granted", "exports_granted_total", "Total number of exports that have been marked granted", s.counterMetric},
@@ -322,6 +337,18 @@ func (s *lustreSource) generateClientMetricTemplates() error {
 			{"stats", "write_minimum_size_bytes", writeMaximumHelp, s.gaugeMetric},
 			{"stats", "write_maximum_size_bytes", writeMaximumHelp, s.gaugeMetric},
 			{"stats", "write_bytes_total", writeTotalHelp, s.counterMetric},
+			{"stats", "open_total", openHelp, s.counterMetric},
+			{"stats", "close_total", closeHelp, s.counterMetric},
+			{"stats", "seek_total", seekHelp, s.counterMetric},
+			{"stats", "readdir_total", readdirHelp, s.counterMetric},
+			{"stats", "truncate_total", truncateHelp, s.counterMetric},
+			{"stats", "getattr_total", getattrHelp, s.counterMetric},
+			{"stats", "unlink_total", unlinkHelp, s.counterMetric},
+			{"stats", "alloc_inode_total", allocInodeHelp, s.counterMetric},
+			{"stats", "setxattr_total", setxattrHelp, s.counterMetric},
+			{"stats", "getxattr_total", getxattrHelp, s.counterMetric},
+			{"stats", "removexattr_total", removexattrHelp, s.counterMetric},
+			{"stats", "inode_permission_total", inodePermissionHelp, s.counterMetric},
 			{"xattr_cache", "xattr_cache_enabled", "Returns '1' if extended attribute cache is enabled", s.gaugeMetric},
 		},
 	}
@@ -418,21 +445,33 @@ func parseReadWriteBytes(statsFile string, helpText string, promName string) (me
 	// bytesString: {name} {number of samples} 'samples' [{units}] {minimum} {maximum} {sum}
 	// bytesSplit:   [0]    [1]                 [2]       [3]       [4]       [5]       [6]
 	bytesMap := map[string]multistatParsingStruct{
-		readSamplesHelp:  {pattern: "read_bytes .*", index: 1},
-		readMinimumHelp:  {pattern: "read_bytes .*", index: 4},
-		readMaximumHelp:  {pattern: "read_bytes .*", index: 5},
-		readTotalHelp:    {pattern: "read_bytes .*", index: 6},
-		writeSamplesHelp: {pattern: "write_bytes .*", index: 1},
-		writeMinimumHelp: {pattern: "write_bytes .*", index: 4},
-		writeMaximumHelp: {pattern: "write_bytes .*", index: 5},
-		writeTotalHelp:   {pattern: "write_bytes .*", index: 6},
-		openHelp:         {pattern: "open .*", index: 1},
-		closeHelp:        {pattern: "close .*", index: 1},
-		getattrHelp:      {pattern: "getattr .*", index: 1},
-		setattrHelp:      {pattern: "setattr .*", index: 1},
-		getxattrHelp:     {pattern: "getxattr .*", index: 1},
-		setxattrHelp:     {pattern: "setxattr .*", index: 1},
-		statfsHelp:       {pattern: "statfs .*", index: 1},
+		readSamplesHelp:     {pattern: "read_bytes .*", index: 1},
+		readMinimumHelp:     {pattern: "read_bytes .*", index: 4},
+		readMaximumHelp:     {pattern: "read_bytes .*", index: 5},
+		readTotalHelp:       {pattern: "read_bytes .*", index: 6},
+		writeSamplesHelp:    {pattern: "write_bytes .*", index: 1},
+		writeMinimumHelp:    {pattern: "write_bytes .*", index: 4},
+		writeMaximumHelp:    {pattern: "write_bytes .*", index: 5},
+		writeTotalHelp:      {pattern: "write_bytes .*", index: 6},
+		openHelp:            {pattern: "open .*", index: 1},
+		closeHelp:           {pattern: "close .*", index: 1},
+		getattrHelp:         {pattern: "getattr .*", index: 1},
+		setattrHelp:         {pattern: "setattr .*", index: 1},
+		getxattrHelp:        {pattern: "getxattr .*", index: 1},
+		setxattrHelp:        {pattern: "setxattr .*", index: 1},
+		statfsHelp:          {pattern: "statfs .*", index: 1},
+		seekHelp:            {pattern: "seek .*", index: 1},
+		readdirHelp:         {pattern: "readdir .*", index: 1},
+		truncateHelp:        {pattern: "truncate .*", index: 1},
+		allocInodeHelp:      {pattern: "alloc_inode .*", index: 1},
+		removexattrHelp:     {pattern: "removexattr .*", index: 1},
+		unlinkHelp:          {pattern: "unlink .*", index: 1},
+		inodePermissionHelp: {pattern: "inode_permission .*", index: 1},
+		createHelp:          {pattern: "create .*", index: 1},
+		getInfoHelp:         {pattern: "get_info .*", index: 1},
+		setInfoAsyncHelp:    {pattern: "set_info_async .*", index: 1},
+		connectHelp:         {pattern: "connect .*", index: 1},
+		pingHelp:            {pattern: "ping .*", index: 1},
 	}
 	bytesString := regexCaptureString(bytesMap[helpText].pattern, statsFile)
 	if len(bytesString) < 1 {
