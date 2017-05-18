@@ -296,6 +296,44 @@ func (s *lustreSource) generateMDSMetricTemplates() error {
 	return nil
 }
 
+func (s *lustreSource) generateClientMetricTemplates() error {
+	metricMap := map[string][]lustreHelpStruct{
+		"llite": {
+			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric},
+			{"checksum_pages", "checksum_pages_enabled", "Returns '1' if data checksumming is enabled for the client", s.gaugeMetric},
+			{"default_easize", "default_ea_size_bytes", "Default Extended Attribute (EA) size in bytes", s.gaugeMetric},
+			{"filesfree", "inodes_free", "The number of inodes (objects) available", s.gaugeMetric},
+			{"filestotal", "inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", s.gaugeMetric},
+			{"kbytesavail", "kilobytes_available", "Number of kilobytes readily available in the pool", s.gaugeMetric},
+			{"kbytesfree", "kilobytes_free", "Number of kilobytes allocated to the pool", s.gaugeMetric},
+			{"kbytestotal", "kilobytes_capacity", "Capacity of the pool in kilobytes", s.gaugeMetric},
+			{"lazystatfs", "lazystatfs_enabled", "Returns '1' if lazystatfs (a non-blocking alternative to statfs) is enabled for the client", s.gaugeMetric},
+			{"max_easize", "maximum_ea_size_bytes", "Maximum Extended Attribute (EA) size in bytes", s.gaugeMetric},
+			{"max_read_ahead_mb", "maximum_read_ahead_megabytes", "Maximum number of megabytes to read ahead", s.gaugeMetric},
+			{"max_read_ahead_per_file_mb", "maximum_read_ahead_per_file_megabytes", "Maximum number of megabytes per file to read ahead", s.gaugeMetric},
+			{"max_read_ahead_whole_mb", "maximum_read_ahead_whole_megabytes", "Maximum file size in megabytes for a file to be read in its entirety", s.gaugeMetric},
+			{"statahead_agl", "statahead_agl_enabled", "Returns '1' if the Asynchronous Glimpse Lock (AGL) for statahead is enabled", s.gaugeMetric},
+			{"statahead_max", "statahead_maximum", "Maximum window size for statahead", s.gaugeMetric},
+			{"stats", "read_samples_total", readSamplesHelp, s.counterMetric},
+			{"stats", "read_minimum_size_bytes", readMinimumHelp, s.gaugeMetric},
+			{"stats", "read_maximum_size_bytes", readMaximumHelp, s.gaugeMetric},
+			{"stats", "read_bytes_total", readTotalHelp, s.counterMetric},
+			{"stats", "write_samples_total", writeSamplesHelp, s.counterMetric},
+			{"stats", "write_minimum_size_bytes", writeMaximumHelp, s.gaugeMetric},
+			{"stats", "write_maximum_size_bytes", writeMaximumHelp, s.gaugeMetric},
+			{"stats", "write_bytes_total", writeTotalHelp, s.counterMetric},
+			{"xattr_cache", "xattr_cache_enabled", "Returns '1' if extended attribute cache is enabled", s.gaugeMetric},
+		},
+	}
+	for path := range metricMap {
+		for _, item := range metricMap[path] {
+			newMetric := newLustreProcMetric(item.filename, item.promName, "client", path, item.helpText, item.metricFunc)
+			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
+		}
+	}
+	return nil
+}
+
 func (s *lustreSource) generateGenericMetricTemplates() error {
 	metricList := []lustreHelpStruct{
 		{"health_check", "health_check", "Current health status for the indicated instance: " + healthCheckHealthy + " refers to 'healthy', " + healthCheckUnhealthy + " refers to 'unhealthy'", s.gaugeMetric},
@@ -315,6 +353,7 @@ func newLustreSource() (LustreSource, error) {
 	l.generateMDTMetricTemplates()
 	l.generateMGSMetricTemplates()
 	l.generateMDSMetricTemplates()
+	l.generateClientMetricTemplates()
 	l.generateGenericMetricTemplates()
 	return &l, nil
 }
