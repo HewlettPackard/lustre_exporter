@@ -592,20 +592,6 @@ func getJobStatsByOperation(jobBlock string, jobID string, promName string, help
 	return metricList, err
 }
 
-func getJobStats(jobBlock string, jobID string, promName string, helpText string) (metricList []lustreJobsMetric, err error) {
-	statsList, err := getJobStatsByOperation(jobBlock, jobID, promName, helpText)
-	if err != nil {
-		return nil, err
-	}
-	if statsList != nil {
-		for _, item := range statsList {
-			metricList = append(metricList, item)
-		}
-	}
-
-	return metricList, nil
-}
-
 func getJobNum(jobBlock string) (jobID string, err error) {
 	jobID = regexCaptureString("job_id: .*", jobBlock)
 	jobID = regexCaptureString("[0-9]*.[0-9]+|[0-9]+", jobID)
@@ -623,7 +609,7 @@ func parseJobStatsText(jobStats string, promName string, helpText string) (metri
 		if err != nil {
 			return nil, err
 		}
-		jobList, err := getJobStats(job, jobID, promName, helpText)
+		jobList, err := getJobStatsByOperation(job, jobID, promName, helpText)
 		if err != nil {
 			return nil, err
 		}

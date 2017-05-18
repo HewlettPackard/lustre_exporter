@@ -171,7 +171,7 @@ func TestGetJobStats(t *testing.T) {
 	testHelpText := writeTotalHelp
 	expected := uint64(274726912)
 
-	metricList, err := getJobStats(testJobBlock, testJobID, testPromName, testHelpText)
+	metricList, err := getJobStatsByOperation(testJobBlock, testJobID, testPromName, testHelpText)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -192,7 +192,7 @@ func TestGetJobStats(t *testing.T) {
 	testHelpText = "Help for DNE"
 	expected = 0
 
-	metricList, err = getJobStats(testJobBlock, testJobID, testPromName, testHelpText)
+	metricList, err = getJobStatsByOperation(testJobBlock, testJobID, testPromName, testHelpText)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -204,7 +204,7 @@ func TestGetJobStats(t *testing.T) {
 	testPromName = "job_write_bytes_total"
 	testHelpText = writeTotalHelp
 
-	metricList, err = getJobStats(testJobBlock, testJobID, testPromName, testHelpText)
+	metricList, err = getJobStatsByOperation(testJobBlock, testJobID, testPromName, testHelpText)
 	if err != nil {
 		t.Fatal(err)
 	}
