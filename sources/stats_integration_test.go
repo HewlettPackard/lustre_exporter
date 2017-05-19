@@ -14,8 +14,6 @@
 package sources
 
 import (
-	"errors"
-	"reflect"
 	"testing"
 )
 
@@ -27,15 +25,6 @@ statfs                    81813 samples [reqs]
 reconnect                 2 samples [reqs]
 statfs                    126150 samples [reqs]
 ping                      16390 samples [reqs]`
-
-func compareStatsMetrics(expectedMetrics []lustreStatsMetric, parsedMetric lustreStatsMetric) error {
-	for _, metric := range expectedMetrics {
-		if reflect.DeepEqual(metric, parsedMetric) {
-			return nil
-		}
-	}
-	return errors.New("Metric not found")
-}
 
 func TestStatsIntegration(t *testing.T) {
 	numParsedMetrics := 0

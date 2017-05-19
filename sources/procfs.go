@@ -14,7 +14,6 @@
 package sources
 
 import (
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"regexp"
@@ -78,23 +77,6 @@ const (
 	healthCheckUnhealthy string = "0"
 )
 
-type prometheusType func([]string, []string, string, string, uint64) prometheus.Metric
-
-type lustreProcMetric struct {
-	filename   string
-	promName   string
-	source     string //The parent data source (OST, MDS, MGS, etc)
-	path       string //Path to retrieve metric from
-	helpText   string
-	metricFunc prometheusType
-}
-
-type lustreStatsMetric struct {
-	title string
-	help  string
-	value uint64
-}
-
 type lustreJobsMetric struct {
 	jobID string
 	lustreStatsMetric
@@ -104,13 +86,6 @@ type lustreBRWMetric struct {
 	size      string
 	operation string
 	value     string
-}
-
-type lustreHelpStruct struct {
-	filename   string
-	promName   string // Name to be used in Prometheus
-	helpText   string
-	metricFunc prometheusType
 }
 
 type multistatParsingStruct struct {
@@ -125,18 +100,6 @@ func init() {
 type lustreSource struct {
 	lustreProcMetrics []lustreProcMetric
 	basePath          string
-}
-
-func newLustreProcMetric(filename string, promName string, source string, path string, helpText string, metricFunc prometheusType) lustreProcMetric {
-	var m lustreProcMetric
-	m.filename = filename
-	m.promName = promName
-	m.source = source
-	m.path = path
-	m.helpText = helpText
-	m.metricFunc = metricFunc
-
-	return m
 }
 
 func (s *lustreSource) generateOSTMetricTemplates() error {
@@ -617,9 +580,9 @@ func parseJobStatsText(jobStats string, promName string, helpText string) (metri
 		if err != nil {
 			return nil, err
 		}
-        if jobList != nil {
-    		metricList = append(metricList, jobList...)
-        }
+		if jobList != nil {
+			metricList = append(metricList, jobList...)
+		}
 	}
 	return metricList, nil
 }
@@ -645,34 +608,6 @@ func (s *lustreSource) parseJobStats(nodeType string, metricType string, path st
 		handler(nodeType, item.jobID, nodeName, item.lustreStatsMetric.title, item.lustreStatsMetric.help, item.lustreStatsMetric.value)
 	}
 	return nil
-}
-
-func regexCaptureString(pattern string, textToMatch string) (matchedString string) {
-	// Return the first string in a list of matched strings if found
-	strings := regexCaptureStrings(pattern, textToMatch)
-	if len(strings) < 1 {
-		return ""
-	}
-	return strings[0]
-}
-
-func regexCaptureStrings(pattern string, textToMatch string) (matchedStrings []string) {
-	re := regexp.MustCompile(pattern)
-	matchedStrings = re.FindAllString(textToMatch, -1)
-	return matchedStrings
-}
-
-func parseFileElements(path string, directoryDepth int) (name string, nodeName string, err error) {
-	pathElements := strings.Split(path, "/")
-	pathLen := len(pathElements)
-	if pathLen < 1 {
-		return "", "", fmt.Errorf("path did not return at least one element")
-	}
-	name = pathElements[pathLen-1]
-	nodeName = pathElements[pathLen-2-directoryDepth]
-	nodeName = strings.TrimPrefix(nodeName, "filter-")
-	nodeName = strings.TrimSuffix(nodeName, "_UUID")
-	return name, nodeName, nil
 }
 
 func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, string, string, uint64)) (err error) {
