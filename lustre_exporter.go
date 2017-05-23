@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"sync"
 	"time"
 
@@ -79,9 +78,9 @@ func collectFromSource(name string, s sources.LustreSource, ch chan<- prometheus
 	scrapeDurations.WithLabelValues(name, result).Observe(duration.Seconds())
 }
 
-func loadSources(list string) (map[string]sources.LustreSource, error) {
+func loadSources(list []string) (map[string]sources.LustreSource, error) {
 	sourceList := map[string]sources.LustreSource{}
-	for _, name := range strings.Split(list, ",") {
+	for _, name := range list {
 		fn, ok := sources.Factories[name]
 		if !ok {
 			return nil, fmt.Errorf("source %q not available", name)
@@ -116,7 +115,7 @@ func main() {
 	log.Infoln("Build context", version.BuildContext())
 
 	//expand to include more sources eventually (CLI, other?)
-	enabledSources := "procfs"
+	enabledSources := []string{"procfs"}
 
 	sourceList, err := loadSources(enabledSources)
 	if err != nil {
