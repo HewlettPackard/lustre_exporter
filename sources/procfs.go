@@ -574,7 +574,7 @@ func getJobStatsByOperation(jobBlock string, jobID string, promName string, help
 	}
 	pattern := opMap[helpText].pattern
 	opStat := regexCaptureString(pattern+": .*", jobBlock)
-	opNumbers := regexCaptureStrings("[0-9]*.[0-9]+|[0-9]+", opStat)
+	opNumbers := regexCaptureStrings("[0-9]*\\.[0-9]+|[0-9]+", opStat)
 	if len(opNumbers) < 1 {
 		return nil, nil
 	}
@@ -594,7 +594,7 @@ func getJobStatsByOperation(jobBlock string, jobID string, promName string, help
 
 func getJobNum(jobBlock string) (jobID string, err error) {
 	jobID = regexCaptureString("job_id: .*", jobBlock)
-	jobID = regexCaptureString("[0-9]*.[0-9]+|[0-9]+", jobID)
+	jobID = regexCaptureString("[0-9]*\\.[0-9]+|[0-9]+", jobID)
 	return strings.Trim(jobID, " "), nil
 }
 

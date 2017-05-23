@@ -60,7 +60,7 @@ Currently, Lustre is on over 60% of the top supercomputers in the world.`
 
 func TestRegexCaptureString(t *testing.T) {
 	testString := "Hex Dump: 42 4F 49 4C 45 52 20 55 50"
-	testPattern := "[0-9]*.[0-9]+|[0-9]+"
+	testPattern := "[0-9]*\\.[0-9]+|[0-9]+"
 	expected := "42"
 
 	matchedString := strings.TrimSpace(regexCaptureString(testPattern, testString))
