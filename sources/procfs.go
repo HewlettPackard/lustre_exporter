@@ -794,3 +794,17 @@ func (s *lustreSource) gaugeMetric(labels []string, labelValues []string, name s
 		labelValues...,
 	)
 }
+
+func (s *lustreSource) untypedMetric(labels []string, labelValues []string, name string, helpText string, value uint64) prometheus.Metric {
+	return prometheus.MustNewConstMetric(
+		prometheus.NewDesc(
+			prometheus.BuildFQName(Namespace, "", name),
+			helpText,
+			labels,
+			nil,
+		),
+		prometheus.UntypedValue,
+		float64(value),
+		labelValues...,
+	)
+}
