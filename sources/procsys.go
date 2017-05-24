@@ -55,28 +55,28 @@ type lustreProcsysSource struct {
 func (s *lustreProcsysSource) generateLNETTemplates() {
 	metricMap := map[string][]lustreHelpStruct{
 		"lnet": {
-			{"catastrophe", "catastrophe_enabled", "Returns 1 if currently in catastrophe mode", s.gaugeMetric, false},
-			{"console_backoff", "console_backoff_enabled", "Returns non-zero number if console_backoff is enabled", s.gaugeMetric, false},
-			{"console_max_delay_centisecs", "console_max_delay_centiseconds", "Minimum time in centiseconds before the console logs a message", s.gaugeMetric, false},
-			{"console_min_delay_centisecs", "console_min_delay_centiseconds", "Maximum time in centiseconds before the console logs a message", s.gaugeMetric, false},
-			{"console_ratelimit", "console_ratelimit_enabled", "Returns 1 if the console message rate limiting is enabled", s.gaugeMetric, false},
-			{"debug_mb", "debug_megabytes", "Maximum buffer size in megabytes for the LNET debug messages", s.gaugeMetric, false},
-			{"fail_err", "fail_error_total", "Number of errors that have been thrown", s.counterMetric, false},
-			{"fail_val", "fail_maximum", "Maximum number of times to fail", s.gaugeMetric, false},
-			{"lnet_memused", "lnet_memory_used_bytes", "Number of bytes allocated by LNET", s.gaugeMetric, false},
-			{"panic_on_lbug", "panic_on_lbug_enabled", "Returns 1 if panic_on_lbug is enabled", s.gaugeMetric, false},
-			{"stats", "allocated", lnetAllocatedHelp, s.gaugeMetric, false},
-			{"stats", "maximum", lnetMaximumHelp, s.gaugeMetric, false},
-			{"stats", "errors_total", lnetErrorsHelp, s.counterMetric, false},
-			{"stats", "send_count_total", lnetSendCountHelp, s.counterMetric, false},
-			{"stats", "receive_count_total", lnetReceiveCountHelp, s.counterMetric, false},
-			{"stats", "route_count_total", lnetRouteCountHelp, s.counterMetric, false},
-			{"stats", "drop_count_total", lnetDropCountHelp, s.counterMetric, false},
-			{"stats", "send_bytes_total", lnetSendLengthHelp, s.counterMetric, false},
-			{"stats", "receive_bytes_total", lnetReceiveLengthHelp, s.counterMetric, false},
-			{"stats", "route_bytes_total", lnetRouteLengthHelp, s.counterMetric, false},
-			{"stats", "drop_bytes_total", lnetDropLengthHelp, s.counterMetric, false},
-			{"watchdog_ratelimit", "watchdog_ratelimit_enabled", "Returns 1 if the watchdog rate limiter is enabled", s.gaugeMetric, false},
+			{"catastrophe", "catastrophe_enabled", "Returns 1 if currently in catastrophe mode", prometheus.GaugeValue, false},
+			{"console_backoff", "console_backoff_enabled", "Returns non-zero number if console_backoff is enabled", prometheus.GaugeValue, false},
+			{"console_max_delay_centisecs", "console_max_delay_centiseconds", "Minimum time in centiseconds before the console logs a message", prometheus.GaugeValue, false},
+			{"console_min_delay_centisecs", "console_min_delay_centiseconds", "Maximum time in centiseconds before the console logs a message", prometheus.GaugeValue, false},
+			{"console_ratelimit", "console_ratelimit_enabled", "Returns 1 if the console message rate limiting is enabled", prometheus.GaugeValue, false},
+			{"debug_mb", "debug_megabytes", "Maximum buffer size in megabytes for the LNET debug messages", prometheus.GaugeValue, false},
+			{"fail_err", "fail_error_total", "Number of errors that have been thrown", prometheus.CounterValue, false},
+			{"fail_val", "fail_maximum", "Maximum number of times to fail", prometheus.GaugeValue, false},
+			{"lnet_memused", "lnet_memory_used_bytes", "Number of bytes allocated by LNET", prometheus.GaugeValue, false},
+			{"panic_on_lbug", "panic_on_lbug_enabled", "Returns 1 if panic_on_lbug is enabled", prometheus.GaugeValue, false},
+			{"stats", "allocated", lnetAllocatedHelp, prometheus.GaugeValue, false},
+			{"stats", "maximum", lnetMaximumHelp, prometheus.GaugeValue, false},
+			{"stats", "errors_total", lnetErrorsHelp, prometheus.CounterValue, false},
+			{"stats", "send_count_total", lnetSendCountHelp, prometheus.CounterValue, false},
+			{"stats", "receive_count_total", lnetReceiveCountHelp, prometheus.CounterValue, false},
+			{"stats", "route_count_total", lnetRouteCountHelp, prometheus.CounterValue, false},
+			{"stats", "drop_count_total", lnetDropCountHelp, prometheus.CounterValue, false},
+			{"stats", "send_bytes_total", lnetSendLengthHelp, prometheus.CounterValue, false},
+			{"stats", "receive_bytes_total", lnetReceiveLengthHelp, prometheus.CounterValue, false},
+			{"stats", "route_bytes_total", lnetRouteLengthHelp, prometheus.CounterValue, false},
+			{"stats", "drop_bytes_total", lnetDropLengthHelp, prometheus.CounterValue, false},
+			{"watchdog_ratelimit", "watchdog_ratelimit_enabled", "Returns 1 if the watchdog rate limiter is enabled", prometheus.GaugeValue, false},
 		},
 	}
 	for path := range metricMap {
@@ -113,7 +113,7 @@ func (s *lustreProcsysSource) Update(ch chan<- prometheus.Metric) (err error) {
 				metricType = stats
 			}
 			err = s.parseFile(metric.source, metricType, path, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value float64) {
-				ch <- metric.metricFunc([]string{nodeType}, []string{nodeName}, name, helpText, value)
+				ch <- prometheusMetric(metric.metricFunc, []string{nodeType}, []string{nodeName}, name, helpText, value)
 			})
 			if err != nil {
 				return err
@@ -187,32 +187,4 @@ func (s *lustreProcsysSource) parseFile(nodeType string, metricType string, path
 		handler(nodeType, nodeName, metric.title, helpText, metric.value)
 	}
 	return nil
-}
-
-func (s *lustreProcsysSource) counterMetric(labels []string, labelValues []string, name string, helpText string, value float64) prometheus.Metric {
-	return prometheus.MustNewConstMetric(
-		prometheus.NewDesc(
-			prometheus.BuildFQName(Namespace, "", name),
-			helpText,
-			labels,
-			nil,
-		),
-		prometheus.CounterValue,
-		value,
-		labelValues...,
-	)
-}
-
-func (s *lustreProcsysSource) gaugeMetric(labels []string, labelValues []string, name string, helpText string, value float64) prometheus.Metric {
-	return prometheus.MustNewConstMetric(
-		prometheus.NewDesc(
-			prometheus.BuildFQName(Namespace, "", name),
-			helpText,
-			labels,
-			nil,
-		),
-		prometheus.GaugeValue,
-		value,
-		labelValues...,
-	)
 }

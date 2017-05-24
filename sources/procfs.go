@@ -117,67 +117,67 @@ type lustreProcfsSource struct {
 func (s *lustreProcfsSource) generateOSTMetricTemplates() {
 	metricMap := map[string][]lustreHelpStruct{
 		"obdfilter/*": {
-			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric, false},
-			{"brw_size", "brw_size_megabytes", "Block read/write size in megabytes", s.gaugeMetric, false},
-			{"brw_stats", "pages_per_bulk_rw_total", pagesPerBlockRWHelp, s.counterMetric, false},
-			{"brw_stats", "discontiguous_pages_total", discontiguousPagesHelp, s.counterMetric, false},
-			{"brw_stats", "disk_io", diskIOsInFlightHelp, s.gaugeMetric, false},
-			{"brw_stats", "io_time_milliseconds_total", ioTimeHelp, s.counterMetric, false},
-			{"brw_stats", "disk_io_total", diskIOSizeHelp, s.counterMetric, false},
-			{"degraded", "degraded", "Binary indicator as to whether or not the pool is degraded - 0 for not degraded, 1 for degraded", s.gaugeMetric, false},
-			{"filesfree", "inodes_free", "The number of inodes (objects) available", s.gaugeMetric, false},
-			{"filestotal", "inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", s.gaugeMetric, false},
-			{"grant_compat_disable", "grant_compat_disabled", "Binary indicator as to whether clients with OBD_CONNECT_GRANT_PARAM setting will be granted space", s.gaugeMetric, false},
-			{"grant_precreate", "grant_precreate_capacity_bytes", "Maximum space in bytes that clients can preallocate for objects", s.gaugeMetric, false},
-			{"job_cleanup_interval", "job_cleanup_interval_seconds", "Interval in seconds between cleanup of tuning statistics", s.gaugeMetric, false},
-			{"job_stats", "job_read_samples_total", readSamplesHelp, s.counterMetric, false},
-			{"job_stats", "job_read_minimum_size_bytes", readMinimumHelp, s.gaugeMetric, false},
-			{"job_stats", "job_read_maximum_size_bytes", readMaximumHelp, s.gaugeMetric, false},
-			{"job_stats", "job_read_bytes_total", readTotalHelp, s.counterMetric, false},
-			{"job_stats", "job_write_samples_total", writeSamplesHelp, s.counterMetric, false},
-			{"job_stats", "job_write_minimum_size_bytes", writeMinimumHelp, s.gaugeMetric, false},
-			{"job_stats", "job_write_maximum_size_bytes", writeMaximumHelp, s.gaugeMetric, false},
-			{"job_stats", "job_write_bytes_total", writeTotalHelp, s.counterMetric, false},
-			{"job_stats", "job_stats_total", jobStatsHelp, s.counterMetric, true},
-			{"kbytesavail", "available_kilobytes", "Number of kilobytes readily available in the pool", s.gaugeMetric, false},
-			{"kbytesfree", "free_kilobytes", "Number of kilobytes allocated to the pool", s.gaugeMetric, false},
-			{"kbytestotal", "capacity_kilobytes", "Capacity of the pool in kilobytes", s.gaugeMetric, false},
-			{"lfsck_speed_limit", "lfsck_speed_limit", "Maximum operations per second LFSCK (Lustre filesystem verification) can run", s.gaugeMetric, false},
-			{"num_exports", "exports_total", "Total number of times the pool has been exported", s.counterMetric, false},
-			{"precreate_batch", "precreate_batch", "Maximum number of objects that can be included in a single transaction", s.gaugeMetric, false},
-			{"recovery_time_hard", "recovery_time_hard_seconds", "Maximum timeout 'recover_time_soft' can increment to for a single server", s.gaugeMetric, false},
-			{"recovery_time_soft", "recovery_time_soft_seconds", "Duration in seconds for a client to attempt to reconnect after a crash (automatically incremented if servers are still in an error state)", s.gaugeMetric, false},
-			{"soft_sync_limit", "soft_sync_limit", "Number of RPCs necessary before triggering a sync", s.gaugeMetric, false},
-			{"stats", "read_samples_total", readSamplesHelp, s.counterMetric, false},
-			{"stats", "read_minimum_size_bytes", readMinimumHelp, s.gaugeMetric, false},
-			{"stats", "read_maximum_size_bytes", readMaximumHelp, s.gaugeMetric, false},
-			{"stats", "read_bytes_total", readTotalHelp, s.counterMetric, false},
-			{"stats", "write_samples_total", writeSamplesHelp, s.counterMetric, false},
-			{"stats", "write_minimum_size_bytes", writeMinimumHelp, s.gaugeMetric, false},
-			{"stats", "write_maximum_size_bytes", writeMaximumHelp, s.gaugeMetric, false},
-			{"stats", "write_bytes_total", writeTotalHelp, s.counterMetric, false},
-			{"stats", "stats_total", statsHelp, s.counterMetric, true},
-			{"sync_journal", "sync_journal_enabled", "Binary indicator as to whether or not the journal is set for asynchronous commits", s.gaugeMetric, false},
-			{"tot_dirty", "exports_dirty_total", "Total number of exports that have been marked dirty", s.counterMetric, false},
-			{"tot_granted", "exports_granted_total", "Total number of exports that have been marked granted", s.counterMetric, false},
-			{"tot_pending", "exports_pending_total", "Total number of exports that have been marked pending", s.counterMetric, false},
+			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", prometheus.GaugeValue, false},
+			{"brw_size", "brw_size_megabytes", "Block read/write size in megabytes", prometheus.GaugeValue, false},
+			{"brw_stats", "pages_per_bulk_rw_total", pagesPerBlockRWHelp, prometheus.CounterValue, false},
+			{"brw_stats", "discontiguous_pages_total", discontiguousPagesHelp, prometheus.CounterValue, false},
+			{"brw_stats", "disk_io", diskIOsInFlightHelp, prometheus.GaugeValue, false},
+			{"brw_stats", "io_time_milliseconds_total", ioTimeHelp, prometheus.CounterValue, false},
+			{"brw_stats", "disk_io_total", diskIOSizeHelp, prometheus.CounterValue, false},
+			{"degraded", "degraded", "Binary indicator as to whether or not the pool is degraded - 0 for not degraded, 1 for degraded", prometheus.GaugeValue, false},
+			{"filesfree", "inodes_free", "The number of inodes (objects) available", prometheus.GaugeValue, false},
+			{"filestotal", "inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", prometheus.GaugeValue, false},
+			{"grant_compat_disable", "grant_compat_disabled", "Binary indicator as to whether clients with OBD_CONNECT_GRANT_PARAM setting will be granted space", prometheus.GaugeValue, false},
+			{"grant_precreate", "grant_precreate_capacity_bytes", "Maximum space in bytes that clients can preallocate for objects", prometheus.GaugeValue, false},
+			{"job_cleanup_interval", "job_cleanup_interval_seconds", "Interval in seconds between cleanup of tuning statistics", prometheus.GaugeValue, false},
+			{"job_stats", "job_read_samples_total", readSamplesHelp, prometheus.CounterValue, false},
+			{"job_stats", "job_read_minimum_size_bytes", readMinimumHelp, prometheus.GaugeValue, false},
+			{"job_stats", "job_read_maximum_size_bytes", readMaximumHelp, prometheus.GaugeValue, false},
+			{"job_stats", "job_read_bytes_total", readTotalHelp, prometheus.CounterValue, false},
+			{"job_stats", "job_write_samples_total", writeSamplesHelp, prometheus.CounterValue, false},
+			{"job_stats", "job_write_minimum_size_bytes", writeMinimumHelp, prometheus.GaugeValue, false},
+			{"job_stats", "job_write_maximum_size_bytes", writeMaximumHelp, prometheus.GaugeValue, false},
+			{"job_stats", "job_write_bytes_total", writeTotalHelp, prometheus.CounterValue, false},
+			{"job_stats", "job_stats_total", jobStatsHelp, prometheus.CounterValue, true},
+			{"kbytesavail", "available_kilobytes", "Number of kilobytes readily available in the pool", prometheus.GaugeValue, false},
+			{"kbytesfree", "free_kilobytes", "Number of kilobytes allocated to the pool", prometheus.GaugeValue, false},
+			{"kbytestotal", "capacity_kilobytes", "Capacity of the pool in kilobytes", prometheus.GaugeValue, false},
+			{"lfsck_speed_limit", "lfsck_speed_limit", "Maximum operations per second LFSCK (Lustre filesystem verification) can run", prometheus.GaugeValue, false},
+			{"num_exports", "exports_total", "Total number of times the pool has been exported", prometheus.CounterValue, false},
+			{"precreate_batch", "precreate_batch", "Maximum number of objects that can be included in a single transaction", prometheus.GaugeValue, false},
+			{"recovery_time_hard", "recovery_time_hard_seconds", "Maximum timeout 'recover_time_soft' can increment to for a single server", prometheus.GaugeValue, false},
+			{"recovery_time_soft", "recovery_time_soft_seconds", "Duration in seconds for a client to attempt to reconnect after a crash (automatically incremented if servers are still in an error state)", prometheus.GaugeValue, false},
+			{"soft_sync_limit", "soft_sync_limit", "Number of RPCs necessary before triggering a sync", prometheus.GaugeValue, false},
+			{"stats", "read_samples_total", readSamplesHelp, prometheus.CounterValue, false},
+			{"stats", "read_minimum_size_bytes", readMinimumHelp, prometheus.GaugeValue, false},
+			{"stats", "read_maximum_size_bytes", readMaximumHelp, prometheus.GaugeValue, false},
+			{"stats", "read_bytes_total", readTotalHelp, prometheus.CounterValue, false},
+			{"stats", "write_samples_total", writeSamplesHelp, prometheus.CounterValue, false},
+			{"stats", "write_minimum_size_bytes", writeMinimumHelp, prometheus.GaugeValue, false},
+			{"stats", "write_maximum_size_bytes", writeMaximumHelp, prometheus.GaugeValue, false},
+			{"stats", "write_bytes_total", writeTotalHelp, prometheus.CounterValue, false},
+			{"stats", "stats_total", statsHelp, prometheus.CounterValue, true},
+			{"sync_journal", "sync_journal_enabled", "Binary indicator as to whether or not the journal is set for asynchronous commits", prometheus.GaugeValue, false},
+			{"tot_dirty", "exports_dirty_total", "Total number of exports that have been marked dirty", prometheus.CounterValue, false},
+			{"tot_granted", "exports_granted_total", "Total number of exports that have been marked granted", prometheus.CounterValue, false},
+			{"tot_pending", "exports_pending_total", "Total number of exports that have been marked pending", prometheus.CounterValue, false},
 		},
 		"ldlm/namespaces/filter-*": {
-			{"lock_count", "lock_count_total", "Number of locks", s.counterMetric, false},
-			{"lock_timeouts", "lock_timeout_total", "Number of lock timeouts", s.counterMetric, false},
-			{"contended_locks", "lock_contended_total", "Number of contended locks", s.counterMetric, false},
-			{"contention_seconds", "lock_contention_seconds_total", "Time in seconds during which locks were contended", s.counterMetric, false},
-			{"pool/cancel", "lock_cancel_total", "Total number of cancelled locks", s.counterMetric, false},
-			{"pool/cancel_rate", "lock_cancel_rate", "Lock cancel rate", s.gaugeMetric, false},
-			{"pool/grant", "locks_grant_total", "Total number of granted locks", s.counterMetric, false},
-			{"pool/granted", "locks_granted", "Number of granted less cancelled locks", s.untypedMetric, false},
-			{"pool/grant_plan", "lock_grant_plan", "Number of planned lock grants per second", s.gaugeMetric, false},
-			{"pool/grant_rate", "lock_grant_rate", "Lock grant rate", s.gaugeMetric, false},
-			{"pool/recalc_freed", "recalc_freed_total", "Number of locks that have been freed", s.counterMetric, false},
-			{"pool/recalc_timing", "recalc_timing_seconds_total", "Number of seconds spent locked", s.counterMetric, false},
-			{"pool/shrink_freed", "shrink_freed_total", "Number of shrinks that have been freed", s.counterMetric, false},
-			{"pool/shrink_request", "shrink_requests_total", "Number of shrinks that have been requested", s.counterMetric, false},
-			{"pool/slv", "server_lock_volume", "Current value for server lock volume (SLV)", s.gaugeMetric, false},
+			{"lock_count", "lock_count_total", "Number of locks", prometheus.CounterValue, false},
+			{"lock_timeouts", "lock_timeout_total", "Number of lock timeouts", prometheus.CounterValue, false},
+			{"contended_locks", "lock_contended_total", "Number of contended locks", prometheus.CounterValue, false},
+			{"contention_seconds", "lock_contention_seconds_total", "Time in seconds during which locks were contended", prometheus.CounterValue, false},
+			{"pool/cancel", "lock_cancel_total", "Total number of cancelled locks", prometheus.CounterValue, false},
+			{"pool/cancel_rate", "lock_cancel_rate", "Lock cancel rate", prometheus.GaugeValue, false},
+			{"pool/grant", "locks_grant_total", "Total number of granted locks", prometheus.CounterValue, false},
+			{"pool/granted", "locks_granted", "Number of granted less cancelled locks", prometheus.UntypedValue, false},
+			{"pool/grant_plan", "lock_grant_plan", "Number of planned lock grants per second", prometheus.GaugeValue, false},
+			{"pool/grant_rate", "lock_grant_rate", "Lock grant rate", prometheus.GaugeValue, false},
+			{"pool/recalc_freed", "recalc_freed_total", "Number of locks that have been freed", prometheus.CounterValue, false},
+			{"pool/recalc_timing", "recalc_timing_seconds_total", "Number of seconds spent locked", prometheus.CounterValue, false},
+			{"pool/shrink_freed", "shrink_freed_total", "Number of shrinks that have been freed", prometheus.CounterValue, false},
+			{"pool/shrink_request", "shrink_requests_total", "Number of shrinks that have been requested", prometheus.CounterValue, false},
+			{"pool/slv", "server_lock_volume", "Current value for server lock volume (SLV)", prometheus.GaugeValue, false},
 		},
 	}
 	for path := range metricMap {
@@ -191,9 +191,9 @@ func (s *lustreProcfsSource) generateOSTMetricTemplates() {
 func (s *lustreProcfsSource) generateMDTMetricTemplates() {
 	metricMap := map[string][]lustreHelpStruct{
 		"mdt/*": {
-			{mdStats, "stats_total", statsHelp, s.counterMetric, true},
-			{"num_exports", "exports_total", "Total number of times the pool has been exported", s.counterMetric, false},
-			{"job_stats", "job_stats_total", jobStatsHelp, s.counterMetric, true},
+			{mdStats, "stats_total", statsHelp, prometheus.CounterValue, true},
+			{"num_exports", "exports_total", "Total number of times the pool has been exported", prometheus.CounterValue, false},
+			{"job_stats", "job_stats_total", jobStatsHelp, prometheus.CounterValue, true},
 		},
 	}
 	for path := range metricMap {
@@ -207,13 +207,13 @@ func (s *lustreProcfsSource) generateMDTMetricTemplates() {
 func (s *lustreProcfsSource) generateMGSMetricTemplates() {
 	metricMap := map[string][]lustreHelpStruct{
 		"mgs/MGS/osd/": {
-			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric, false},
-			{"filesfree", "inodes_free", "The number of inodes (objects) available", s.gaugeMetric, false},
-			{"filestotal", "inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", s.gaugeMetric, false},
-			{"kbytesavail", "available_kilobytes", "Number of kilobytes readily available in the pool", s.gaugeMetric, false},
-			{"kbytesfree", "free_kilobytes", "Number of kilobytes allocated to the pool", s.gaugeMetric, false},
-			{"kbytestotal", "capacity_kilobytes", "Capacity of the pool in kilobytes", s.gaugeMetric, false},
-			{"quota_iused_estimate", "quota_iused_estimate", "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated", s.gaugeMetric, false},
+			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", prometheus.GaugeValue, false},
+			{"filesfree", "inodes_free", "The number of inodes (objects) available", prometheus.GaugeValue, false},
+			{"filestotal", "inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", prometheus.GaugeValue, false},
+			{"kbytesavail", "available_kilobytes", "Number of kilobytes readily available in the pool", prometheus.GaugeValue, false},
+			{"kbytesfree", "free_kilobytes", "Number of kilobytes allocated to the pool", prometheus.GaugeValue, false},
+			{"kbytestotal", "capacity_kilobytes", "Capacity of the pool in kilobytes", prometheus.GaugeValue, false},
+			{"quota_iused_estimate", "quota_iused_estimate", "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated", prometheus.GaugeValue, false},
 		},
 	}
 	for path := range metricMap {
@@ -227,13 +227,13 @@ func (s *lustreProcfsSource) generateMGSMetricTemplates() {
 func (s *lustreProcfsSource) generateMDSMetricTemplates() {
 	metricMap := map[string][]lustreHelpStruct{
 		"mds/MDS/osd": {
-			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric, false},
-			{"filesfree", "inodes_free", "The number of inodes (objects) available", s.gaugeMetric, false},
-			{"filestotal", "inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", s.gaugeMetric, false},
-			{"kbytesavail", "available_kilobytes", "Number of kilobytes readily available in the pool", s.gaugeMetric, false},
-			{"kbytesfree", "free_kilobytes", "Number of kilobytes allocated to the pool", s.gaugeMetric, false},
-			{"kbytestotal", "capacity_kilobytes", "Capacity of the pool in kilobytes", s.gaugeMetric, false},
-			{"quota_iused_estimate", "quota_iused_estimate", "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated", s.gaugeMetric, false},
+			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", prometheus.GaugeValue, false},
+			{"filesfree", "inodes_free", "The number of inodes (objects) available", prometheus.GaugeValue, false},
+			{"filestotal", "inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", prometheus.GaugeValue, false},
+			{"kbytesavail", "available_kilobytes", "Number of kilobytes readily available in the pool", prometheus.GaugeValue, false},
+			{"kbytesfree", "free_kilobytes", "Number of kilobytes allocated to the pool", prometheus.GaugeValue, false},
+			{"kbytestotal", "capacity_kilobytes", "Capacity of the pool in kilobytes", prometheus.GaugeValue, false},
+			{"quota_iused_estimate", "quota_iused_estimate", "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated", prometheus.GaugeValue, false},
 		},
 	}
 	for path := range metricMap {
@@ -247,39 +247,39 @@ func (s *lustreProcfsSource) generateMDSMetricTemplates() {
 func (s *lustreProcfsSource) generateClientMetricTemplates() {
 	metricMap := map[string][]lustreHelpStruct{
 		"llite/*": {
-			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric, false},
-			{"checksum_pages", "checksum_pages_enabled", "Returns '1' if data checksumming is enabled for the client", s.gaugeMetric, false},
-			{"default_easize", "default_ea_size_bytes", "Default Extended Attribute (EA) size in bytes", s.gaugeMetric, false},
-			{"filesfree", "inodes_free", "The number of inodes (objects) available", s.gaugeMetric, false},
-			{"filestotal", "inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", s.gaugeMetric, false},
-			{"kbytesavail", "available_kilobytes", "Number of kilobytes readily available in the pool", s.gaugeMetric, false},
-			{"kbytesfree", "free_kilobytes", "Number of kilobytes allocated to the pool", s.gaugeMetric, false},
-			{"kbytestotal", "capacity_kilobytes", "Capacity of the pool in kilobytes", s.gaugeMetric, false},
-			{"lazystatfs", "lazystatfs_enabled", "Returns '1' if lazystatfs (a non-blocking alternative to statfs) is enabled for the client", s.gaugeMetric, false},
-			{"max_easize", "maximum_ea_size_bytes", "Maximum Extended Attribute (EA) size in bytes", s.gaugeMetric, false},
-			{"max_read_ahead_mb", "maximum_read_ahead_megabytes", "Maximum number of megabytes to read ahead", s.gaugeMetric, false},
-			{"max_read_ahead_per_file_mb", "maximum_read_ahead_per_file_megabytes", "Maximum number of megabytes per file to read ahead", s.gaugeMetric, false},
-			{"max_read_ahead_whole_mb", "maximum_read_ahead_whole_megabytes", "Maximum file size in megabytes for a file to be read in its entirety", s.gaugeMetric, false},
-			{"statahead_agl", "statahead_agl_enabled", "Returns '1' if the Asynchronous Glimpse Lock (AGL) for statahead is enabled", s.gaugeMetric, false},
-			{"statahead_max", "statahead_maximum", "Maximum window size for statahead", s.gaugeMetric, false},
-			{"stats", "read_samples_total", readSamplesHelp, s.counterMetric, false},
-			{"stats", "read_minimum_size_bytes", readMinimumHelp, s.gaugeMetric, false},
-			{"stats", "read_maximum_size_bytes", readMaximumHelp, s.gaugeMetric, false},
-			{"stats", "read_bytes_total", readTotalHelp, s.counterMetric, false},
-			{"stats", "write_samples_total", writeSamplesHelp, s.counterMetric, false},
-			{"stats", "write_minimum_size_bytes", writeMinimumHelp, s.gaugeMetric, false},
-			{"stats", "write_maximum_size_bytes", writeMaximumHelp, s.gaugeMetric, false},
-			{"stats", "write_bytes_total", writeTotalHelp, s.counterMetric, false},
-			{"stats", "stats_total", statsHelp, s.counterMetric, true},
-			{"xattr_cache", "xattr_cache_enabled", "Returns '1' if extended attribute cache is enabled", s.gaugeMetric, false},
+			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", prometheus.GaugeValue, false},
+			{"checksum_pages", "checksum_pages_enabled", "Returns '1' if data checksumming is enabled for the client", prometheus.GaugeValue, false},
+			{"default_easize", "default_ea_size_bytes", "Default Extended Attribute (EA) size in bytes", prometheus.GaugeValue, false},
+			{"filesfree", "inodes_free", "The number of inodes (objects) available", prometheus.GaugeValue, false},
+			{"filestotal", "inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", prometheus.GaugeValue, false},
+			{"kbytesavail", "available_kilobytes", "Number of kilobytes readily available in the pool", prometheus.GaugeValue, false},
+			{"kbytesfree", "free_kilobytes", "Number of kilobytes allocated to the pool", prometheus.GaugeValue, false},
+			{"kbytestotal", "capacity_kilobytes", "Capacity of the pool in kilobytes", prometheus.GaugeValue, false},
+			{"lazystatfs", "lazystatfs_enabled", "Returns '1' if lazystatfs (a non-blocking alternative to statfs) is enabled for the client", prometheus.GaugeValue, false},
+			{"max_easize", "maximum_ea_size_bytes", "Maximum Extended Attribute (EA) size in bytes", prometheus.GaugeValue, false},
+			{"max_read_ahead_mb", "maximum_read_ahead_megabytes", "Maximum number of megabytes to read ahead", prometheus.GaugeValue, false},
+			{"max_read_ahead_per_file_mb", "maximum_read_ahead_per_file_megabytes", "Maximum number of megabytes per file to read ahead", prometheus.GaugeValue, false},
+			{"max_read_ahead_whole_mb", "maximum_read_ahead_whole_megabytes", "Maximum file size in megabytes for a file to be read in its entirety", prometheus.GaugeValue, false},
+			{"statahead_agl", "statahead_agl_enabled", "Returns '1' if the Asynchronous Glimpse Lock (AGL) for statahead is enabled", prometheus.GaugeValue, false},
+			{"statahead_max", "statahead_maximum", "Maximum window size for statahead", prometheus.GaugeValue, false},
+			{"stats", "read_samples_total", readSamplesHelp, prometheus.CounterValue, false},
+			{"stats", "read_minimum_size_bytes", readMinimumHelp, prometheus.GaugeValue, false},
+			{"stats", "read_maximum_size_bytes", readMaximumHelp, prometheus.GaugeValue, false},
+			{"stats", "read_bytes_total", readTotalHelp, prometheus.CounterValue, false},
+			{"stats", "write_samples_total", writeSamplesHelp, prometheus.CounterValue, false},
+			{"stats", "write_minimum_size_bytes", writeMinimumHelp, prometheus.GaugeValue, false},
+			{"stats", "write_maximum_size_bytes", writeMaximumHelp, prometheus.GaugeValue, false},
+			{"stats", "write_bytes_total", writeTotalHelp, prometheus.CounterValue, false},
+			{"stats", "stats_total", statsHelp, prometheus.CounterValue, true},
+			{"xattr_cache", "xattr_cache_enabled", "Returns '1' if extended attribute cache is enabled", prometheus.GaugeValue, false},
 		},
 		"mdc/*": {
-			{"rpc_stats", "rpcs_in_flight", rpcsInFlightHelp, s.gaugeMetric, true},
+			{"rpc_stats", "rpcs_in_flight", rpcsInFlightHelp, prometheus.GaugeValue, true},
 		},
 		"osc/*": {
-			{"rpc_stats", "pages_per_rpc_total", pagesPerRPCHelp, s.counterMetric, false},
-			{"rpc_stats", "rpcs_in_flight", rpcsInFlightHelp, s.gaugeMetric, true},
-			{"rpc_stats", "rpcs_offset", offsetHelp, s.gaugeMetric, false},
+			{"rpc_stats", "pages_per_rpc_total", pagesPerRPCHelp, prometheus.CounterValue, false},
+			{"rpc_stats", "rpcs_in_flight", rpcsInFlightHelp, prometheus.GaugeValue, true},
+			{"rpc_stats", "rpcs_offset", offsetHelp, prometheus.GaugeValue, false},
 		},
 	}
 	for path := range metricMap {
@@ -293,24 +293,24 @@ func (s *lustreProcfsSource) generateClientMetricTemplates() {
 func (s *lustreProcfsSource) generateGenericMetricTemplates() {
 	metricMap := map[string][]lustreHelpStruct{
 		"": {
-			{"health_check", "health_check", "Current health status for the indicated instance: " + healthCheckHealthy + " refers to 'healthy', " + healthCheckUnhealthy + " refers to 'unhealthy'", s.gaugeMetric, false},
+			{"health_check", "health_check", "Current health status for the indicated instance: " + healthCheckHealthy + " refers to 'healthy', " + healthCheckUnhealthy + " refers to 'unhealthy'", prometheus.GaugeValue, false},
 		},
 		"sptlrpc": {
-			{"encrypt_page_pools", "physical_pages", physicalPagesHelp, s.gaugeMetric, false},
-			{"encrypt_page_pools", "pages_per_pool", pagesPerPoolHelp, s.gaugeMetric, false},
-			{"encrypt_page_pools", "maximum_pages", maxPagesHelp, s.gaugeMetric, false},
-			{"encrypt_page_pools", "maximum_pools", maxPoolsHelp, s.gaugeMetric, false},
-			{"encrypt_page_pools", "pages_in_pools", totalPagesHelp, s.gaugeMetric, false},
-			{"encrypt_page_pools", "free_pages", totalFreeHelp, s.gaugeMetric, false},
-			{"encrypt_page_pools", "maximum_pages_reached_total", maxPagesReachedHelp, s.counterMetric, false},
-			{"encrypt_page_pools", "grows_total", growsHelp, s.counterMetric, false},
-			{"encrypt_page_pools", "grows_failure_total", growsFailureHelp, s.counterMetric, false},
-			{"encrypt_page_pools", "shrinks_total", shrinksHelp, s.counterMetric, false},
-			{"encrypt_page_pools", "cache_access_total", cacheAccessHelp, s.counterMetric, false},
-			{"encrypt_page_pools", "cache_miss_total", cacheMissingHelp, s.counterMetric, false},
-			{"encrypt_page_pools", "free_page_low", lowFreeMarkHelp, s.gaugeMetric, false},
-			{"encrypt_page_pools", "maximum_waitqueue_depth", maxWaitQueueDepthHelp, s.gaugeMetric, false},
-			{"encrypt_page_pools", "out_of_memory_request_total", outOfMemHelp, s.counterMetric, false},
+			{"encrypt_page_pools", "physical_pages", physicalPagesHelp, prometheus.GaugeValue, false},
+			{"encrypt_page_pools", "pages_per_pool", pagesPerPoolHelp, prometheus.GaugeValue, false},
+			{"encrypt_page_pools", "maximum_pages", maxPagesHelp, prometheus.GaugeValue, false},
+			{"encrypt_page_pools", "maximum_pools", maxPoolsHelp, prometheus.GaugeValue, false},
+			{"encrypt_page_pools", "pages_in_pools", totalPagesHelp, prometheus.GaugeValue, false},
+			{"encrypt_page_pools", "free_pages", totalFreeHelp, prometheus.GaugeValue, false},
+			{"encrypt_page_pools", "maximum_pages_reached_total", maxPagesReachedHelp, prometheus.CounterValue, false},
+			{"encrypt_page_pools", "grows_total", growsHelp, prometheus.CounterValue, false},
+			{"encrypt_page_pools", "grows_failure_total", growsFailureHelp, prometheus.CounterValue, false},
+			{"encrypt_page_pools", "shrinks_total", shrinksHelp, prometheus.CounterValue, false},
+			{"encrypt_page_pools", "cache_access_total", cacheAccessHelp, prometheus.CounterValue, false},
+			{"encrypt_page_pools", "cache_miss_total", cacheMissingHelp, prometheus.CounterValue, false},
+			{"encrypt_page_pools", "free_page_low", lowFreeMarkHelp, prometheus.GaugeValue, false},
+			{"encrypt_page_pools", "maximum_waitqueue_depth", maxWaitQueueDepthHelp, prometheus.GaugeValue, false},
+			{"encrypt_page_pools", "out_of_memory_request_total", outOfMemHelp, prometheus.CounterValue, false},
 		},
 	}
 	for path := range metricMap {
@@ -364,7 +364,7 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 			switch metric.filename {
 			case "health_check":
 				err = s.parseTextFile(metric.source, "health_check", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value float64) {
-					ch <- metric.metricFunc([]string{nodeType}, []string{nodeName}, name, helpText, value)
+					ch <- prometheusMetric(metric.metricFunc, []string{nodeType}, []string{nodeName}, name, helpText, value)
 				})
 				if err != nil {
 					return err
@@ -372,9 +372,9 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 			case "brw_stats", "rpc_stats":
 				err = s.parseBRWStats(metric.source, "stats", path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
 					if extraLabelValue == "" {
-						ch <- metric.metricFunc([]string{nodeType, "operation", "size"}, []string{nodeName, brwOperation, brwSize}, name, helpText, value)
+						ch <- prometheusMetric(metric.metricFunc, []string{nodeType, "operation", "size"}, []string{nodeName, brwOperation, brwSize}, name, helpText, value)
 					} else {
-						ch <- metric.metricFunc([]string{nodeType, "operation", "size", extraLabel}, []string{nodeName, brwOperation, brwSize, extraLabelValue}, name, helpText, value)
+						ch <- prometheusMetric(metric.metricFunc, []string{nodeType, "operation", "size", extraLabel}, []string{nodeName, brwOperation, brwSize, extraLabelValue}, name, helpText, value)
 					}
 				})
 				if err != nil {
@@ -383,9 +383,9 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 			case "job_stats":
 				err = s.parseJobStats(metric.source, "job_stats", path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, jobid string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
 					if extraLabelValue == "" {
-						ch <- metric.metricFunc([]string{nodeType, "jobid"}, []string{nodeName, jobid}, name, helpText, value)
+						ch <- prometheusMetric(metric.metricFunc, []string{nodeType, "jobid"}, []string{nodeName, jobid}, name, helpText, value)
 					} else {
-						ch <- metric.metricFunc([]string{nodeType, "jobid", extraLabel}, []string{nodeName, jobid, extraLabelValue}, name, helpText, value)
+						ch <- prometheusMetric(metric.metricFunc, []string{nodeType, "jobid", extraLabel}, []string{nodeName, jobid, extraLabelValue}, name, helpText, value)
 					}
 				})
 				if err != nil {
@@ -401,9 +401,9 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 				}
 				err = s.parseFile(metric.source, metricType, path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
 					if extraLabelValue == "" {
-						ch <- metric.metricFunc([]string{nodeType}, []string{nodeName}, name, helpText, value)
+						ch <- prometheusMetric(metric.metricFunc, []string{nodeType}, []string{nodeName}, name, helpText, value)
 					} else {
-						ch <- metric.metricFunc([]string{nodeType, extraLabel}, []string{nodeName, extraLabelValue}, name, helpText, value)
+						ch <- prometheusMetric(metric.metricFunc, []string{nodeType, extraLabel}, []string{nodeName, extraLabelValue}, name, helpText, value)
 					}
 				})
 				if err != nil {
@@ -813,46 +813,4 @@ func (s *lustreProcfsSource) parseFile(nodeType string, metricType string, path 
 		}
 	}
 	return nil
-}
-
-func (s *lustreProcfsSource) counterMetric(labels []string, labelValues []string, name string, helpText string, value float64) prometheus.Metric {
-	return prometheus.MustNewConstMetric(
-		prometheus.NewDesc(
-			prometheus.BuildFQName(Namespace, "", name),
-			helpText,
-			labels,
-			nil,
-		),
-		prometheus.CounterValue,
-		value,
-		labelValues...,
-	)
-}
-
-func (s *lustreProcfsSource) gaugeMetric(labels []string, labelValues []string, name string, helpText string, value float64) prometheus.Metric {
-	return prometheus.MustNewConstMetric(
-		prometheus.NewDesc(
-			prometheus.BuildFQName(Namespace, "", name),
-			helpText,
-			labels,
-			nil,
-		),
-		prometheus.GaugeValue,
-		value,
-		labelValues...,
-	)
-}
-
-func (s *lustreProcfsSource) untypedMetric(labels []string, labelValues []string, name string, helpText string, value float64) prometheus.Metric {
-	return prometheus.MustNewConstMetric(
-		prometheus.NewDesc(
-			prometheus.BuildFQName(Namespace, "", name),
-			helpText,
-			labels,
-			nil,
-		),
-		prometheus.UntypedValue,
-		value,
-		labelValues...,
-	)
 }

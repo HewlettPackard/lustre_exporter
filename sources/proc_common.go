@@ -27,8 +27,6 @@ var (
 	numRegexPattern = regexp.MustCompile(`[0-9]*\.[0-9]+|[0-9]+`)
 )
 
-type prometheusType func([]string, []string, string, string, float64) prometheus.Metric
-
 type lustreProcMetric struct {
 	filename        string
 	promName        string
@@ -36,7 +34,7 @@ type lustreProcMetric struct {
 	path            string //Path to retrieve metric from
 	helpText        string
 	hasMultipleVals bool
-	metricFunc      prometheusType
+	metricFunc      prometheus.ValueType
 }
 
 type lustreStatsMetric struct {
@@ -51,11 +49,11 @@ type lustreHelpStruct struct {
 	filename        string
 	promName        string // Name to be used in Prometheus
 	helpText        string
-	metricFunc      prometheusType
+	metricFunc      prometheus.ValueType
 	hasMultipleVals bool
 }
 
-func newLustreProcMetric(filename string, promName string, source string, path string, helpText string, hasMultipleVals bool, metricFunc prometheusType) lustreProcMetric {
+func newLustreProcMetric(filename string, promName string, source string, path string, helpText string, hasMultipleVals bool, metricFunc prometheus.ValueType) lustreProcMetric {
 	var m lustreProcMetric
 	m.filename = filename
 	m.promName = promName
@@ -128,4 +126,18 @@ func convertToBytes(s string) string {
 	}
 	byteVal *= uint64(multiplier)
 	return strconv.FormatUint(byteVal, 10)
+}
+
+func prometheusMetric(valueType prometheus.ValueType, labels []string, labelValues []string, name string, helpText string, value float64) prometheus.Metric {
+	return prometheus.MustNewConstMetric(
+		prometheus.NewDesc(
+			prometheus.BuildFQName(Namespace, "", name),
+			helpText,
+			labels,
+			nil,
+		),
+		valueType,
+		value,
+		labelValues...,
+	)
 }
