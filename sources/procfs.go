@@ -207,10 +207,17 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 			{"lock_timeouts", "lock_timeout_total", "Number of lock timeouts", s.counterMetric},
 			{"contended_locks", "lock_contended_total", "Number of contended locks", s.counterMetric},
 			{"contention_seconds", "lock_contention_seconds_total", "Time in seconds during which locks were contended", s.counterMetric},
-			{"pool/granted", "locks_granted_total", "Number of granted locks", s.counterMetric},
-			{"pool/grant_rate", "lock_grant_rate", "Lock grant rate", s.gaugeMetric},
+			{"pool/cancel", "lock_cancel_total", "Total number of cancelled locks", s.counterMetric},
 			{"pool/cancel_rate", "lock_cancel_rate", "Lock cancel rate", s.gaugeMetric},
-			{"pool/grant_speed", "lock_grant_speed", "Lock grant speed", s.gaugeMetric},
+			{"pool/grant", "locks_grant_total", "Total number of granted locks", s.counterMetric},
+			{"pool/granted", "locks_granted", "Number of granted less cancelled locks", s.untypedMetric},
+			{"pool/grant_plan", "lock_grant_plan", "Number of planned lock grants per second", s.gaugeMetric},
+			{"pool/grant_rate", "lock_grant_rate", "Lock grant rate", s.gaugeMetric},
+			{"pool/recalc_freed", "recalc_freed_total", "Number of locks that have been freed", s.counterMetric},
+			{"pool/recalc_timing", "recalc_timing_seconds_total", "Number of seconds spent locked", s.counterMetric},
+			{"pool/shrink_freed", "shrink_freed_total", "Number of shrinks that have been freed", s.counterMetric},
+			{"pool/shrink_request", "shrink_requests_total", "Number of shrinks that have been requested", s.counterMetric},
+			{"pool/slv", "server_lock_volume", "Current value for server lock volume (SLV)", s.gaugeMetric},
 		},
 	}
 	for path := range metricMap {
@@ -790,6 +797,20 @@ func (s *lustreSource) gaugeMetric(labels []string, labelValues []string, name s
 			nil,
 		),
 		prometheus.GaugeValue,
+		float64(value),
+		labelValues...,
+	)
+}
+
+func (s *lustreSource) untypedMetric(labels []string, labelValues []string, name string, helpText string, value uint64) prometheus.Metric {
+	return prometheus.MustNewConstMetric(
+		prometheus.NewDesc(
+			prometheus.BuildFQName(Namespace, "", name),
+			helpText,
+			labels,
+			nil,
+		),
+		prometheus.UntypedValue,
 		float64(value),
 		labelValues...,
 	)
