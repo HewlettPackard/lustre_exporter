@@ -637,7 +637,7 @@ func (s *lustreProcfsSource) parseBRWStats(nodeType string, metricType string, p
 		if err != nil {
 			return err
 		}
-		handler(nodeType, item.operation, item.size, nodeName, promName, helpText, value)
+		handler(nodeType, item.operation, convertToBytes(item.size), nodeName, promName, helpText, value)
 	}
 	return nil
 }
