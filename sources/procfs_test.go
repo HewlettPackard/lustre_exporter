@@ -204,7 +204,7 @@ func TestGetJobStats(t *testing.T) {
 	testPromName = "job_write_bytes_total"
 	testHelpText = writeTotalHelp
 
-	metricList, err = getJobStatsByOperation(testJobBlock, testJobID, testPromName, testHelpText)
+	_, err = getJobStatsByOperation(testJobBlock, testJobID, testPromName, testHelpText)
 	if err != nil {
 		t.Fatal(err)
 	}
