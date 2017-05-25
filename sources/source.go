@@ -27,12 +27,3 @@ var Factories = make(map[string]func() (LustreSource, error))
 type LustreSource interface {
 	Update(ch chan<- prometheus.Metric) (err error)
 }
-
-type typedDesc struct {
-	desc      *prometheus.Desc
-	valueType prometheus.ValueType
-}
-
-func (d *typedDesc) mustNewConstMetric(value float64, labels ...string) prometheus.Metric {
-	return prometheus.MustNewConstMetric(d.desc, d.valueType, value, labels...)
-}

@@ -81,7 +81,6 @@ const (
 type prometheusType func([]string, []string, string, string, uint64) prometheus.Metric
 
 type lustreProcMetric struct {
-	subsystem  string
 	filename   string
 	promName   string
 	source     string //The parent data source (OST, MDS, MGS, etc)
@@ -531,9 +530,7 @@ func parseStatsFile(helpText string, promName string, path string) (metricList [
 		return nil, err
 	}
 	if statsList != nil {
-		for _, item := range statsList {
-			metricList = append(metricList, item)
-		}
+		metricList = append(metricList, statsList...)
 	}
 
 	return metricList, nil
@@ -620,9 +617,9 @@ func parseJobStatsText(jobStats string, promName string, helpText string) (metri
 		if err != nil {
 			return nil, err
 		}
-		for _, item := range jobList {
-			metricList = append(metricList, item)
-		}
+        if jobList != nil {
+    		metricList = append(metricList, jobList...)
+        }
 	}
 	return metricList, nil
 }
@@ -712,6 +709,9 @@ func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path st
 
 func (s *lustreSource) parseTextFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, uint64)) (err error) {
 	filename, nodeName, err := parseFileElements(path, directoryDepth)
+	if err != nil {
+		return err
+	}
 	fileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
