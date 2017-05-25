@@ -14,13 +14,14 @@
 GO              ?= GO15VENDOREXPERIMENT=1 go
 GOPATH          := $(firstword $(subst :, ,$(shell $(GO) env GOPATH)))
 PROMU           ?= $(GOPATH)/bin/promu
+MEGACHECK       ?= $(GOPATH)/bin/megacheck
 pkgs            = $(shell $(GO) list ./... | grep -v /vendor/)
 TARGET          ?= lustre_exporter
 
 PREFIX          ?= $(shell pwd)
 BIN_DIR         ?= $(shell pwd)
 
-all: format vet build test
+all: format vet megacheck build test
 
 test:
 	@echo ">> running tests"
@@ -33,6 +34,10 @@ format:
 vet:
 	@echo ">> vetting code"
 	@$(GO) vet $(pkgs)
+
+megacheck:
+	@echo ">> megacheck code"
+	@$(MEGACHECK) $(pkgs)
 
 build: $(PROMU)
 	@echo ">> building binaries"
@@ -47,5 +52,9 @@ $(GOPATH)/bin/promu promu:
 		GOARCH=$(subst x86_64,amd64,$(patsubst i%86,386,$(shell uname -m))) \
 		$(GO) get -u github.com/prometheus/promu
 
+$(GOPATH)/bin/megacheck mega:
+	@GOOS=$(shell uname -s | tr A-Z a-z) \
+		GOARCH=$(subst x86_64,amd64,$(patsubst i%86,386,$(shell uname -m))) \
+		$(GO) get -u honnef.co/go/tools/cmd/megacheck
 
-.PHONY: all format vet build test promu clean $(GOPATH)/bin/promu
+.PHONY: all format vet mega build test promu clean $(GOPATH)/bin/promu $(GOPATH)/bin/megacheck
