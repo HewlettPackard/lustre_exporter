@@ -15,7 +15,9 @@ package sources
 
 import (
 	"fmt"
+	"math"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -83,4 +85,33 @@ func parseFileElements(path string, directoryDepth int) (name string, nodeName s
 	nodeName = strings.TrimPrefix(nodeName, "filter-")
 	nodeName = strings.TrimSuffix(nodeName, "_UUID")
 	return name, nodeName, nil
+}
+
+func convertToBytes(s string) string {
+	if len(s) < 1 {
+		return s
+	}
+	numericS := ""
+	uppercaseS := strings.ToUpper(s)
+	multiplier := float64(1)
+	switch finalChar := uppercaseS[len(uppercaseS)-1:]; finalChar {
+	case "K":
+		numericS = strings.TrimSuffix(uppercaseS, "K")
+		multiplier = math.Pow(2, 10)
+	case "M":
+		numericS = strings.TrimSuffix(uppercaseS, "M")
+		multiplier = math.Pow(2, 20)
+	case "G":
+		numericS = strings.TrimSuffix(uppercaseS, "G")
+		multiplier = math.Pow(2, 30)
+	default:
+		//passthrough integers and IO sizes that we don't expect
+		return s
+	}
+	byteVal, err := strconv.ParseUint(numericS, 10, 64)
+	if err != nil {
+		return s
+	}
+	byteVal *= uint64(multiplier)
+	return strconv.FormatUint(byteVal, 10)
 }

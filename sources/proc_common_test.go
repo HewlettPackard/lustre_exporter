@@ -137,3 +137,26 @@ func TestParseFileElements(t *testing.T) {
 		t.Fatalf("Retrieved an unexpected name. Expected: %s, Got: %s", expectedNodeName, nodeName)
 	}
 }
+
+func TestConvertToBytes(t *testing.T) {
+	resultString := ""
+	testStringResults := map[string]string{
+		"1":          "1",
+		"512":        "512",
+		"1K":         "1024",
+		"10M":        "10485760",
+		"100G":       "107374182400",
+		"HotGarbage": "HotGarbage",
+		"":           "",
+		"KG":         "KG",
+		"M":          "M",
+		"100m":       "104857600",
+	}
+
+	for testString := range testStringResults {
+		resultString = convertToBytes(testString)
+		if resultString != testStringResults[testString] {
+			t.Fatalf("Unexpected result of convertToBytes for %s: Expected %s, got %s", testString, testStringResults[testString], resultString)
+		}
+	}
+}
