@@ -115,7 +115,7 @@ func main() {
 	log.Infoln("Build context", version.BuildContext())
 
 	//expand to include more sources eventually (CLI, other?)
-	enabledSources := []string{"procfs"}
+	enabledSources := []string{"procfs", "procsys"}
 
 	sourceList, err := loadSources(enabledSources)
 	if err != nil {

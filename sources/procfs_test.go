@@ -14,68 +14,8 @@
 package sources
 
 import (
-	"strings"
 	"testing"
 )
-
-func TestRegexCaptureStrings(t *testing.T) {
-	testString := `The lustre_exporter is a collector to be used with Prometheus which captures Lustre metrics.
-Lustre is a parrallel filesystem for high-performance computers.
-Currently, Lustre is on over 60% of the top supercomputers in the world.`
-	// Matching is case-sensitive
-	testPattern := "Lustre"
-	expected := 3
-
-	matchedStrings := regexCaptureStrings(testPattern, testString)
-	if l := len(matchedStrings); l != expected {
-		t.Fatalf("Retrieved an unexpected number of regex matches. Expected: %d, Got: %d", expected, l)
-	}
-
-	testPattern = "lustre"
-	expected = 1
-
-	matchedStrings = regexCaptureStrings(testPattern, testString)
-	if l := len(matchedStrings); l != expected {
-		t.Fatalf("Retrieved an unexpected number of regex matches. Expected: %d, Got: %d", expected, l)
-	}
-
-	// Matching is case-insensitive
-	testPattern = "(?i)lustre"
-	expected = 4
-
-	matchedStrings = regexCaptureStrings(testPattern, testString)
-	if l := len(matchedStrings); l != expected {
-		t.Fatalf("Retrieved an unexpected number of regex matches. Expected: %d, Got: %d", expected, l)
-	}
-
-	// Match does not exist
-	testPattern = "DNE"
-	expected = 0
-
-	matchedStrings = regexCaptureStrings(testPattern, testString)
-	if l := len(matchedStrings); l != expected {
-		t.Fatalf("Retrieved an unexpected number of regex matches. Expected: %d, Got: %d", expected, l)
-	}
-}
-
-func TestRegexCaptureString(t *testing.T) {
-	testString := "Hex Dump: 42 4F 49 4C 45 52 20 55 50"
-	testPattern := "[0-9]*\\.[0-9]+|[0-9]+"
-	expected := "42"
-
-	matchedString := strings.TrimSpace(regexCaptureString(testPattern, testString))
-	if matchedString != expected {
-		t.Fatalf("Retrieved an unexpected string. Expected: %s, Got: %s", expected, matchedString)
-	}
-
-	testPattern = "DNE"
-	expected = ""
-
-	matchedString = strings.TrimSpace(regexCaptureString(testPattern, testString))
-	if matchedString != expected {
-		t.Fatalf("Retrieved an unexpected string. Expected: %s, Got: %s", expected, matchedString)
-	}
-}
 
 func TestGetJobNum(t *testing.T) {
 	testString := "job_id: 1234"
@@ -98,56 +38,6 @@ func TestGetJobNum(t *testing.T) {
 	}
 	if jobID != expected {
 		t.Fatalf("Retrieved an unexpected Job ID. Expected: %s, Got: %s", expected, jobID)
-	}
-}
-
-func TestParseFileElements(t *testing.T) {
-	testPath := "/proc/fs/lustre/obdfilter/OST0000/filesfree"
-	directoryDepth := 0
-	expectedName := "filesfree"
-	expectedNodeName := "OST0000"
-
-	name, nodeName, err := parseFileElements(testPath, directoryDepth)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if name != expectedName {
-		t.Fatalf("Retrieved an unexpected name. Expected: %s, Got: %s", expectedName, name)
-	}
-	if nodeName != expectedNodeName {
-		t.Fatalf("Retrieved an unexpected name. Expected: %s, Got: %s", expectedNodeName, nodeName)
-	}
-
-	testPath = "/proc/fs/lustre/ldlm/namespaces/filter-lustrefs-OST0005_UUID/pool/grant_rate"
-	directoryDepth = 1
-	expectedName = "grant_rate"
-	expectedNodeName = "lustrefs-OST0005"
-
-	name, nodeName, err = parseFileElements(testPath, directoryDepth)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if name != expectedName {
-		t.Fatalf("Retrieved an unexpected name. Expected: %s, Got: %s", expectedName, name)
-	}
-	if nodeName != expectedNodeName {
-		t.Fatalf("Retrieved an unexpected name. Expected: %s, Got: %s", expectedNodeName, nodeName)
-	}
-
-	testPath = "/proc/fs/lustre/health_check"
-	directoryDepth = 0
-	expectedName = "health_check"
-	expectedNodeName = "lustre"
-
-	name, nodeName, err = parseFileElements(testPath, directoryDepth)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if name != expectedName {
-		t.Fatalf("Retrieved an unexpected name. Expected: %s, Got: %s", expectedName, name)
-	}
-	if nodeName != expectedNodeName {
-		t.Fatalf("Retrieved an unexpected name. Expected: %s, Got: %s", expectedNodeName, nodeName)
 	}
 }
 

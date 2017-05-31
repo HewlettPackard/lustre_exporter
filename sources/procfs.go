@@ -14,7 +14,6 @@
 package sources
 
 import (
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"regexp"
@@ -78,23 +77,6 @@ const (
 	healthCheckUnhealthy string = "0"
 )
 
-type prometheusType func([]string, []string, string, string, uint64) prometheus.Metric
-
-type lustreProcMetric struct {
-	filename   string
-	promName   string
-	source     string //The parent data source (OST, MDS, MGS, etc)
-	path       string //Path to retrieve metric from
-	helpText   string
-	metricFunc prometheusType
-}
-
-type lustreStatsMetric struct {
-	title string
-	help  string
-	value uint64
-}
-
 type lustreJobsMetric struct {
 	jobID string
 	lustreStatsMetric
@@ -106,13 +88,6 @@ type lustreBRWMetric struct {
 	value     string
 }
 
-type lustreHelpStruct struct {
-	filename   string
-	promName   string // Name to be used in Prometheus
-	helpText   string
-	metricFunc prometheusType
-}
-
 type multistatParsingStruct struct {
 	index   int
 	pattern string
@@ -122,24 +97,12 @@ func init() {
 	Factories["procfs"] = newLustreSource
 }
 
-type lustreSource struct {
+type lustreProcfsSource struct {
 	lustreProcMetrics []lustreProcMetric
 	basePath          string
 }
 
-func newLustreProcMetric(filename string, promName string, source string, path string, helpText string, metricFunc prometheusType) lustreProcMetric {
-	var m lustreProcMetric
-	m.filename = filename
-	m.promName = promName
-	m.source = source
-	m.path = path
-	m.helpText = helpText
-	m.metricFunc = metricFunc
-
-	return m
-}
-
-func (s *lustreSource) generateOSTMetricTemplates() error {
+func (s *lustreProcfsSource) generateOSTMetricTemplates() error {
 	metricMap := map[string][]lustreHelpStruct{
 		"obdfilter/*": {
 			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric},
@@ -228,7 +191,7 @@ func (s *lustreSource) generateOSTMetricTemplates() error {
 	return nil
 }
 
-func (s *lustreSource) generateMDTMetricTemplates() error {
+func (s *lustreProcfsSource) generateMDTMetricTemplates() error {
 	metricMap := map[string][]lustreHelpStruct{
 		"mdt/*": {
 			{"md_stats", "open_total", openHelp, s.counterMetric},
@@ -275,7 +238,7 @@ func (s *lustreSource) generateMDTMetricTemplates() error {
 	return nil
 }
 
-func (s *lustreSource) generateMGSMetricTemplates() error {
+func (s *lustreProcfsSource) generateMGSMetricTemplates() error {
 	metricMap := map[string][]lustreHelpStruct{
 		"mgs/MGS/osd/": {
 			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric},
@@ -296,7 +259,7 @@ func (s *lustreSource) generateMGSMetricTemplates() error {
 	return nil
 }
 
-func (s *lustreSource) generateMDSMetricTemplates() error {
+func (s *lustreProcfsSource) generateMDSMetricTemplates() error {
 	metricMap := map[string][]lustreHelpStruct{
 		"mds/MDS/osd": {
 			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric},
@@ -317,7 +280,7 @@ func (s *lustreSource) generateMDSMetricTemplates() error {
 	return nil
 }
 
-func (s *lustreSource) generateClientMetricTemplates() error {
+func (s *lustreProcfsSource) generateClientMetricTemplates() error {
 	metricMap := map[string][]lustreHelpStruct{
 		"llite": {
 			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric},
@@ -367,7 +330,7 @@ func (s *lustreSource) generateClientMetricTemplates() error {
 	return nil
 }
 
-func (s *lustreSource) generateGenericMetricTemplates() error {
+func (s *lustreProcfsSource) generateGenericMetricTemplates() error {
 	metricList := []lustreHelpStruct{
 		{"health_check", "health_check", "Current health status for the indicated instance: " + healthCheckHealthy + " refers to 'healthy', " + healthCheckUnhealthy + " refers to 'unhealthy'", s.gaugeMetric},
 	}
@@ -379,7 +342,7 @@ func (s *lustreSource) generateGenericMetricTemplates() error {
 }
 
 func newLustreSource() (LustreSource, error) {
-	var l lustreSource
+	var l lustreProcfsSource
 	l.basePath = "/proc/fs/lustre"
 	//control which node metrics you pull via flags
 	l.generateOSTMetricTemplates()
@@ -391,7 +354,7 @@ func newLustreSource() (LustreSource, error) {
 	return &l, nil
 }
 
-func (s *lustreSource) Update(ch chan<- prometheus.Metric) (err error) {
+func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 	metricType := "single"
 	directoryDepth := 0
 
@@ -617,14 +580,14 @@ func parseJobStatsText(jobStats string, promName string, helpText string) (metri
 		if err != nil {
 			return nil, err
 		}
-        if jobList != nil {
-    		metricList = append(metricList, jobList...)
-        }
+		if jobList != nil {
+			metricList = append(metricList, jobList...)
+		}
 	}
 	return metricList, nil
 }
 
-func (s *lustreSource) parseJobStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, string, uint64)) (err error) {
+func (s *lustreProcfsSource) parseJobStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, string, uint64)) (err error) {
 	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
@@ -647,35 +610,7 @@ func (s *lustreSource) parseJobStats(nodeType string, metricType string, path st
 	return nil
 }
 
-func regexCaptureString(pattern string, textToMatch string) (matchedString string) {
-	// Return the first string in a list of matched strings if found
-	strings := regexCaptureStrings(pattern, textToMatch)
-	if len(strings) < 1 {
-		return ""
-	}
-	return strings[0]
-}
-
-func regexCaptureStrings(pattern string, textToMatch string) (matchedStrings []string) {
-	re := regexp.MustCompile(pattern)
-	matchedStrings = re.FindAllString(textToMatch, -1)
-	return matchedStrings
-}
-
-func parseFileElements(path string, directoryDepth int) (name string, nodeName string, err error) {
-	pathElements := strings.Split(path, "/")
-	pathLen := len(pathElements)
-	if pathLen < 1 {
-		return "", "", fmt.Errorf("path did not return at least one element")
-	}
-	name = pathElements[pathLen-1]
-	nodeName = pathElements[pathLen-2-directoryDepth]
-	nodeName = strings.TrimPrefix(nodeName, "filter-")
-	nodeName = strings.TrimSuffix(nodeName, "_UUID")
-	return name, nodeName, nil
-}
-
-func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, string, string, uint64)) (err error) {
+func (s *lustreProcfsSource) parseBRWStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, string, string, uint64)) (err error) {
 	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
@@ -707,7 +642,7 @@ func (s *lustreSource) parseBRWStats(nodeType string, metricType string, path st
 	return nil
 }
 
-func (s *lustreSource) parseTextFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, uint64)) (err error) {
+func (s *lustreProcfsSource) parseTextFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, uint64)) (err error) {
 	filename, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
@@ -736,7 +671,7 @@ func (s *lustreSource) parseTextFile(nodeType string, metricType string, path st
 	return nil
 }
 
-func (s *lustreSource) parseFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, uint64)) (err error) {
+func (s *lustreProcfsSource) parseFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, uint64)) (err error) {
 	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
@@ -774,7 +709,7 @@ func (s *lustreSource) parseFile(nodeType string, metricType string, path string
 	return nil
 }
 
-func (s *lustreSource) counterMetric(labels []string, labelValues []string, name string, helpText string, value uint64) prometheus.Metric {
+func (s *lustreProcfsSource) counterMetric(labels []string, labelValues []string, name string, helpText string, value uint64) prometheus.Metric {
 	return prometheus.MustNewConstMetric(
 		prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, "", name),
@@ -788,7 +723,7 @@ func (s *lustreSource) counterMetric(labels []string, labelValues []string, name
 	)
 }
 
-func (s *lustreSource) gaugeMetric(labels []string, labelValues []string, name string, helpText string, value uint64) prometheus.Metric {
+func (s *lustreProcfsSource) gaugeMetric(labels []string, labelValues []string, name string, helpText string, value uint64) prometheus.Metric {
 	return prometheus.MustNewConstMetric(
 		prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, "", name),
@@ -802,7 +737,7 @@ func (s *lustreSource) gaugeMetric(labels []string, labelValues []string, name s
 	)
 }
 
-func (s *lustreSource) untypedMetric(labels []string, labelValues []string, name string, helpText string, value uint64) prometheus.Metric {
+func (s *lustreProcfsSource) untypedMetric(labels []string, labelValues []string, name string, helpText string, value uint64) prometheus.Metric {
 	return prometheus.MustNewConstMetric(
 		prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, "", name),
