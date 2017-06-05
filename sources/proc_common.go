@@ -23,6 +23,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+var (
+	numRegexPattern = regexp.MustCompile(`[0-9]*\.[0-9]+|[0-9]+`)
+)
+
 type prometheusType func([]string, []string, string, string, uint64) prometheus.Metric
 
 type lustreProcMetric struct {
@@ -77,6 +81,11 @@ func regexCaptureStrings(pattern string, textToMatch string) (matchedStrings []s
 	re := regexp.MustCompile(pattern)
 	matchedStrings = re.FindAllString(textToMatch, -1)
 	return matchedStrings
+}
+
+func regexCaptureNumbers(textToMatch string) (matchedNumbers []string) {
+	matchedNumbers = numRegexPattern.FindAllString(textToMatch, -1)
+	return matchedNumbers
 }
 
 func parseFileElements(path string, directoryDepth int) (name string, nodeName string, err error) {

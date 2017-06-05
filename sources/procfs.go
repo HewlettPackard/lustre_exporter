@@ -506,7 +506,7 @@ func getJobStatsIOMetrics(jobBlock string, jobID string, promName string, helpTe
 	}
 	pattern := opMap[helpText].pattern
 	opStat := regexCaptureString(pattern+": .*", jobBlock)
-	opNumbers := regexCaptureStrings("[0-9]*\\.[0-9]+|[0-9]+", opStat)
+	opNumbers := regexCaptureNumbers(opStat)
 	if len(opNumbers) < 1 {
 		return nil, nil
 	}
@@ -528,8 +528,11 @@ func getJobStatsIOMetrics(jobBlock string, jobID string, promName string, helpTe
 
 func getJobNum(jobBlock string) (jobID string, err error) {
 	jobID = regexCaptureString("job_id: .*", jobBlock)
-	jobID = regexCaptureString("[0-9]*\\.[0-9]+|[0-9]+", jobID)
-	return strings.Trim(jobID, " "), nil
+	jobIDlist := regexCaptureNumbers(jobID)
+	if len(jobIDlist) < 1 {
+		return "", nil
+	}
+	return strings.Trim(jobIDlist[0], " "), nil
 }
 
 func getJobStatsOperationMetrics(jobBlock string, jobID string, promName string, helpText string) (metricList []lustreJobsMetric, err error) {
