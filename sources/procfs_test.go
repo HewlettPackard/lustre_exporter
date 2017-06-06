@@ -46,22 +46,22 @@ func TestGetJobStats(t *testing.T) {
   snapshot_time:   1493326943
   read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
   write_bytes:     { samples:         262, unit: bytes, min: 1048576, max: 1048576, sum:       274726912 }
-  getattr:         { samples:           0, unit:  reqs }
-  setattr:         { samples:           0, unit:  reqs }
-  punch:           { samples:           0, unit:  reqs }
-  sync:            { samples:           0, unit:  reqs }
-  destroy:         { samples:           0, unit:  reqs }
-  create:          { samples:           0, unit:  reqs }
-  statfs:          { samples:           0, unit:  reqs }
-  get_info:        { samples:           0, unit:  reqs }
-  set_info:        { samples:           0, unit:  reqs }
-  quotactl:        { samples:           0, unit:  reqs }`
+  getattr:         { samples:           1, unit:  reqs }
+  setattr:         { samples:           2, unit:  reqs }
+  punch:           { samples:           3, unit:  reqs }
+  sync:            { samples:           4, unit:  reqs }
+  destroy:         { samples:           5, unit:  reqs }
+  create:          { samples:           6, unit:  reqs }
+  statfs:          { samples:           7, unit:  reqs }
+  get_info:        { samples:           8, unit:  reqs }
+  set_info:        { samples:           9, unit:  reqs }
+  quotactl:        { samples:           10, unit:  reqs }`
 	testJobID := "29"
 	testPromName := "job_write_bytes_total"
 	testHelpText := writeTotalHelp
 	expected := uint64(274726912)
 
-	metricList, err := getJobStatsByOperation(testJobBlock, testJobID, testPromName, testHelpText)
+	metricList, err := getJobStatsIOMetrics(testJobBlock, testJobID, testPromName, testHelpText)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,11 +78,31 @@ func TestGetJobStats(t *testing.T) {
 		t.Fatalf("Retrieved an unexpected name. Expected: %s, Got: %s", testPromName, metricList[0].title)
 	}
 
+	testPromName = "job_stats_total"
+	testHelpText = jobStatsHelp
+
+	metricList, err = getJobStatsOperationMetrics(testJobBlock, testJobID, testPromName, testHelpText)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if l := len(metricList); l != 10 {
+		t.Fatalf("Retrieved an unexpected number of items. Expected: %d, Got: %d", 1, l)
+	}
+	if metricList[9].value != 10 {
+		t.Fatalf("Retrieved an unexpected value. Expected: %d, Got: %d", 10, metricList[9].value)
+	}
+	if metricList[3].help != jobStatsHelp {
+		t.Fatal("Retrieved an unexpected help text.")
+	}
+	if metricList[6].title != testPromName {
+		t.Fatalf("Retrieved an unexpected name. Expected: %s, Got: %s", testPromName, metricList[6].title)
+	}
+
 	testPromName = "dne"
 	testHelpText = "Help for DNE"
 	expected = 0
 
-	metricList, err = getJobStatsByOperation(testJobBlock, testJobID, testPromName, testHelpText)
+	metricList, err = getJobStatsIOMetrics(testJobBlock, testJobID, testPromName, testHelpText)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,7 +114,7 @@ func TestGetJobStats(t *testing.T) {
 	testPromName = "job_write_bytes_total"
 	testHelpText = writeTotalHelp
 
-	_, err = getJobStatsByOperation(testJobBlock, testJobID, testPromName, testHelpText)
+	_, err = getJobStatsIOMetrics(testJobBlock, testJobID, testPromName, testHelpText)
 	if err != nil {
 		t.Fatal(err)
 	}

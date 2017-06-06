@@ -26,34 +26,39 @@ import (
 type prometheusType func([]string, []string, string, string, uint64) prometheus.Metric
 
 type lustreProcMetric struct {
-	filename   string
-	promName   string
-	source     string //The parent data source (OST, MDS, MGS, etc)
-	path       string //Path to retrieve metric from
-	helpText   string
-	metricFunc prometheusType
+	filename        string
+	promName        string
+	source          string //The parent data source (OST, MDS, MGS, etc)
+	path            string //Path to retrieve metric from
+	helpText        string
+	hasMultipleVals bool
+	metricFunc      prometheusType
 }
 
 type lustreStatsMetric struct {
-	title string
-	help  string
-	value uint64
+	title           string
+	help            string
+	value           uint64
+	extraLabel      string
+	extraLabelValue string
 }
 
 type lustreHelpStruct struct {
-	filename   string
-	promName   string // Name to be used in Prometheus
-	helpText   string
-	metricFunc prometheusType
+	filename        string
+	promName        string // Name to be used in Prometheus
+	helpText        string
+	metricFunc      prometheusType
+	hasMultipleVals bool
 }
 
-func newLustreProcMetric(filename string, promName string, source string, path string, helpText string, metricFunc prometheusType) lustreProcMetric {
+func newLustreProcMetric(filename string, promName string, source string, path string, helpText string, hasMultipleVals bool, metricFunc prometheusType) lustreProcMetric {
 	var m lustreProcMetric
 	m.filename = filename
 	m.promName = promName
 	m.source = source
 	m.path = path
 	m.helpText = helpText
+	m.hasMultipleVals = hasMultipleVals
 	m.metricFunc = metricFunc
 
 	return m
