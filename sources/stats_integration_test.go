@@ -50,7 +50,7 @@ func TestStatsIntegration(t *testing.T) {
 	}
 
 	for promName, promHelp := range metricsToTest {
-		parsedMetrics, err := getStatsIOMetrics(testStatsText, promHelp, promName)
+		parsedMetrics, err := getStatsIOMetrics(testStatsText, promName, promHelp)
 		if err != nil {
 			t.Fatal(err)
 		}
