@@ -333,7 +333,7 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 	return nil
 }
 
-func getStatsOperationMetrics(statsFile string, helpText string, promName string) (metricList []lustreStatsMetric, err error) {
+func getStatsOperationMetrics(statsFile string, promName string, helpText string) (metricList []lustreStatsMetric, err error) {
 	operationSlice := []multistatParsingStruct{
 		{pattern: "open", index: 1},
 		{pattern: "close", index: 1},
@@ -381,7 +381,7 @@ func getStatsOperationMetrics(statsFile string, helpText string, promName string
 	return metricList, nil
 }
 
-func getStatsIOMetrics(statsFile string, helpText string, promName string) (metricList []lustreStatsMetric, err error) {
+func getStatsIOMetrics(statsFile string, promName string, helpText string) (metricList []lustreStatsMetric, err error) {
 	// bytesSplit is in the following format:
 	// bytesString: {name} {number of samples} 'samples' [{units}] {minimum} {maximum} {sum}
 	// bytesSplit:   [0]    [1]                 [2]       [3]       [4]       [5]       [6]
@@ -450,9 +450,9 @@ func parseStatsFile(helpText string, promName string, path string, hasMultipleVa
 	statsFile := string(statsFileBytes[:])
 	var statsList []lustreStatsMetric
 	if hasMultipleVals {
-		statsList, err = getStatsOperationMetrics(statsFile, helpText, promName)
+		statsList, err = getStatsOperationMetrics(statsFile, promName, helpText)
 	} else {
-		statsList, err = getStatsIOMetrics(statsFile, helpText, promName)
+		statsList, err = getStatsIOMetrics(statsFile, promName, helpText)
 	}
 	if err != nil {
 		return nil, err
