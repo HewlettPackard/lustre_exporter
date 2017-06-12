@@ -37,11 +37,16 @@ const (
 	statsHelp        string = "Number of operations the filesystem has performed."
 
 	// Help text dedicated to the 'brw_stats' file
-	pagesPerBlockRWHelp    string = "Total number of pages per RPC."
+	pagesPerBlockRWHelp    string = "Total number of pages per block RPC."
 	discontiguousPagesHelp string = "Total number of logical discontinuities per RPC."
 	ioTimeHelp             string = "Total time in milliseconds the filesystem has spent processing various object sizes."
 	diskIOSizeHelp         string = "Total number of operations the filesystem has performed for the given size."
 	diskIOsInFlightHelp    string = "Current number of I/O operations that are processing during the snapshot."
+
+	// Help text dedicated to the 'rpc_stats' file
+	pagesPerRPCHelp  string = "Total number of pages per RPC."
+	rpcsInFlightHelp string = "Current number of RPCs that are processing during the snapshot."
+	offsetHelp       string = "Current RPC offset by size."
 
 	// string mappings for 'health_check' values
 	healthCheckHealthy   string = "1"
@@ -236,6 +241,14 @@ func (s *lustreProcfsSource) generateClientMetricTemplates() error {
 			{"stats", "stats_total", statsHelp, s.counterMetric, true},
 			{"xattr_cache", "xattr_cache_enabled", "Returns '1' if extended attribute cache is enabled", s.gaugeMetric, false},
 		},
+		"mdc/*": {
+			{"rpc_stats", "rpcs_in_flight", rpcsInFlightHelp, s.gaugeMetric, true},
+		},
+		"osc/*": {
+			{"rpc_stats", "pages_per_rpc", pagesPerRPCHelp, s.counterMetric, false},
+			{"rpc_stats", "rpcs_in_flight", rpcsInFlightHelp, s.gaugeMetric, true},
+			{"rpc_stats", "rpcs_offset", offsetHelp, s.counterMetric, false},
+		},
 	}
 	for path := range metricMap {
 		for _, item := range metricMap[path] {
@@ -293,9 +306,9 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 				if err != nil {
 					return err
 				}
-			case "brw_stats":
-				err = s.parseBRWStats(metric.source, "brw_stats", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64) {
-					ch <- metric.metricFunc([]string{nodeType, "operation", "size"}, []string{nodeName, brwOperation, brwSize}, name, helpText, value)
+			case "brw_stats", "rpc_stats":
+				err = s.parseBRWStats(metric.source, "stats", path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64, extraLabel string, extraLabelValue string) {
+					ch <- metric.metricFunc([]string{nodeType, "operation", "size", extraLabel}, []string{nodeName, brwOperation, brwSize, extraLabelValue}, name, helpText, value)
 				})
 				if err != nil {
 					return err
@@ -433,10 +446,18 @@ func splitBRWStats(statBlock string) (metricList []lustreBRWMetric, err error) {
 			// Lines are in the following format:
 			// [size] [# read RPCs] [relative read size (%)] [cumulative read size (%)] | [# write RPCs] [relative write size (%)] [cumulative write size (%)]
 			// [0]    [1]           [2]                      [3]                       [4] [5]           [6]                       [7]
-			size, readRPCs, writeRPCs := fields[0], fields[1], fields[5]
-			size = strings.Replace(size, ":", "", -1)
-			metricList = append(metricList, lustreBRWMetric{size: size, operation: "read", value: readRPCs})
-			metricList = append(metricList, lustreBRWMetric{size: size, operation: "write", value: writeRPCs})
+			if len(fields) >= 6 {
+				size, readRPCs, writeRPCs := fields[0], fields[1], fields[5]
+				size = strings.Replace(size, ":", "", -1)
+				metricList = append(metricList, lustreBRWMetric{size: size, operation: "read", value: readRPCs})
+				metricList = append(metricList, lustreBRWMetric{size: size, operation: "write", value: writeRPCs})
+			} else if len(fields) >= 1 {
+				size, rpcs := fields[0], fields[1]
+				size = strings.Replace(size, ":", "", -1)
+				metricList = append(metricList, lustreBRWMetric{size: size, operation: "read", value: rpcs})
+			} else {
+				continue
+			}
 		}
 	}
 	return metricList, nil
@@ -606,7 +627,7 @@ func (s *lustreProcfsSource) parseJobStats(nodeType string, metricType string, p
 	return nil
 }
 
-func (s *lustreProcfsSource) parseBRWStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, string, string, uint64)) (err error) {
+func (s *lustreProcfsSource) parseBRWStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, hasMultipleVals bool, handler func(string, string, string, string, string, string, uint64, string, string)) (err error) {
 	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
@@ -617,6 +638,9 @@ func (s *lustreProcfsSource) parseBRWStats(nodeType string, metricType string, p
 		diskIOsInFlightHelp:    "disk I/Os in flight",
 		ioTimeHelp:             "I/O time",
 		diskIOSizeHelp:         "disk I/O size",
+		pagesPerRPCHelp:        "pages per rpc",
+		rpcsInFlightHelp:       "rpcs in flight",
+		offsetHelp:             "offset",
 	}
 	statsFileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -628,12 +652,19 @@ func (s *lustreProcfsSource) parseBRWStats(nodeType string, metricType string, p
 	if err != nil {
 		return err
 	}
+	extraLabel := ""
+	extraLabelValue := ""
+	if hasMultipleVals {
+		extraLabel = "type"
+		pathElements := strings.Split(path, "/")
+		extraLabelValue = pathElements[len(pathElements)-3]
+	}
 	for _, item := range metricList {
 		value, err := strconv.ParseUint(item.value, 10, 64)
 		if err != nil {
 			return err
 		}
-		handler(nodeType, item.operation, convertToBytes(item.size), nodeName, promName, helpText, value)
+		handler(nodeType, item.operation, convertToBytes(item.size), nodeName, promName, helpText, value, extraLabel, extraLabelValue)
 	}
 	return nil
 }
