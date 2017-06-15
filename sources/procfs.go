@@ -308,7 +308,11 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 				}
 			case "brw_stats", "rpc_stats":
 				err = s.parseBRWStats(metric.source, "stats", path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64, extraLabel string, extraLabelValue string) {
-					ch <- metric.metricFunc([]string{nodeType, "operation", "size", extraLabel}, []string{nodeName, brwOperation, brwSize, extraLabelValue}, name, helpText, value)
+					if extraLabelValue == "" {
+						ch <- metric.metricFunc([]string{nodeType, "operation", "size"}, []string{nodeName, brwOperation, brwSize}, name, helpText, value)
+					} else {
+						ch <- metric.metricFunc([]string{nodeType, "operation", "size", extraLabel}, []string{nodeName, brwOperation, brwSize, extraLabelValue}, name, helpText, value)
+					}
 				})
 				if err != nil {
 					return err
