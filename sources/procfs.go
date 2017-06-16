@@ -56,6 +56,21 @@ const (
 	mdStats string = "md_stats"
 )
 
+var (
+	// OstEnabled specifies whether to collect OST metrics
+	OstEnabled bool
+	// MdtEnabled specifies whether to collect MDT metrics
+	MdtEnabled bool
+	// MgsEnabled specifies whether to collect MGS metrics
+	MgsEnabled bool
+	// MdsEnabled specifies whether to collect MDS metrics
+	MdsEnabled bool
+	// ClientEnabled specifies whether to collect Client metrics
+	ClientEnabled bool
+	// GenericEnabled specifies whether to collect Generic metrics
+	GenericEnabled bool
+)
+
 type lustreJobsMetric struct {
 	jobID string
 	lustreStatsMetric
@@ -271,12 +286,24 @@ func newLustreSource() LustreSource {
 	var l lustreProcfsSource
 	l.basePath = "/proc/fs/lustre"
 	//control which node metrics you pull via flags
-	l.generateOSTMetricTemplates()
-	l.generateMDTMetricTemplates()
-	l.generateMGSMetricTemplates()
-	l.generateMDSMetricTemplates()
-	l.generateClientMetricTemplates()
-	l.generateGenericMetricTemplates()
+	if OstEnabled {
+		l.generateOSTMetricTemplates()
+	}
+	if MdtEnabled {
+		l.generateMDTMetricTemplates()
+	}
+	if MgsEnabled {
+		l.generateMGSMetricTemplates()
+	}
+	if MdsEnabled {
+		l.generateMDSMetricTemplates()
+	}
+	if ClientEnabled {
+		l.generateClientMetricTemplates()
+	}
+	if GenericEnabled {
+		l.generateGenericMetricTemplates()
+	}
 	return &l
 }
 

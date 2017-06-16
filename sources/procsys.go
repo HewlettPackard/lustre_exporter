@@ -40,6 +40,9 @@ const (
 	stats  string = "stats"
 )
 
+// LnetEnabled specified whether LNET metrics should be collected
+var LnetEnabled bool
+
 func init() {
 	Factories["procsys"] = newLustreProcSysSource
 }
@@ -87,7 +90,9 @@ func (s *lustreProcsysSource) generateLNETTemplates() {
 func newLustreProcSysSource() LustreSource {
 	var l lustreProcsysSource
 	l.basePath = "/proc/sys"
-	l.generateLNETTemplates()
+	if LnetEnabled {
+		l.generateLNETTemplates()
+	}
 	return &l
 }
 
