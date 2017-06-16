@@ -21,6 +21,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/HewlettPackard/lustre_exporter/sources"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/expfmt"
@@ -137,6 +138,8 @@ func blacklisted(blacklist []string, metricName string) bool {
 
 func TestCollector(t *testing.T) {
 	targets := []string{"OST", "MDT", "MGS", "MDS", "Client", "Generic", "LNET"}
+	// Override the default file location to the local proc directory
+	sources.ProcLocation = "proc"
 
 	expectedMetrics := []promType{
 		// OST Metrics
@@ -1353,4 +1356,7 @@ func TestCollector(t *testing.T) {
 	if l := len(expectedMetrics); l != numParsed {
 		t.Fatalf("Retrieved an unexpected number of metrics. Expected: %d, Got: %d", l, numParsed)
 	}
+
+	// Return the proc location to the default value
+	sources.ProcLocation = "/proc"
 }

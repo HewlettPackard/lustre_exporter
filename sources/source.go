@@ -17,6 +17,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// ProcLocation is the source to pull proc files from. By default, use the '/proc' directory on the local node,
+// but for testing purposes, specify 'proc' (without the leading '/') for the local files.
+var ProcLocation = "/proc"
+
 //Namespace defines the namespace shared by all Lustre metrics.
 const Namespace = "lustre"
 

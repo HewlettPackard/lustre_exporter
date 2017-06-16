@@ -284,7 +284,7 @@ func (s *lustreProcfsSource) generateGenericMetricTemplates() {
 
 func newLustreSource() LustreSource {
 	var l lustreProcfsSource
-	l.basePath = "/proc/fs/lustre"
+	l.basePath = filepath.Join(ProcLocation, "fs/lustre")
 	//control which node metrics you pull via flags
 	if OstEnabled {
 		l.generateOSTMetricTemplates()
