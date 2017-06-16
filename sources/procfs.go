@@ -245,9 +245,9 @@ func (s *lustreProcfsSource) generateClientMetricTemplates() error {
 			{"rpc_stats", "rpcs_in_flight", rpcsInFlightHelp, s.gaugeMetric, true},
 		},
 		"osc/*": {
-			{"rpc_stats", "pages_per_rpc", pagesPerRPCHelp, s.counterMetric, false},
+			{"rpc_stats", "pages_per_rpc_total", pagesPerRPCHelp, s.counterMetric, false},
 			{"rpc_stats", "rpcs_in_flight", rpcsInFlightHelp, s.gaugeMetric, true},
-			{"rpc_stats", "rpcs_offset", offsetHelp, s.counterMetric, false},
+			{"rpc_stats", "rpcs_offset", offsetHelp, s.gaugeMetric, false},
 		},
 	}
 	for path := range metricMap {
