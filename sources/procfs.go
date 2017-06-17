@@ -680,13 +680,13 @@ func (s *lustreProcfsSource) parseTextFile(nodeType string, metricType string, p
 	switch filename {
 	case "health_check":
 		if strings.TrimSpace(fileString) == "healthy" {
-			value, err := strconv.ParseUint(strings.TrimSpace(string(healthCheckHealthy)), 10, 64)
+			value, err := strconv.ParseUint(strings.TrimSpace(healthCheckHealthy), 10, 64)
 			if err != nil {
 				return err
 			}
 			handler(nodeType, nodeName, promName, helpText, value)
 		} else {
-			value, err := strconv.ParseUint(strings.TrimSpace(string(healthCheckUnhealthy)), 10, 64)
+			value, err := strconv.ParseUint(strings.TrimSpace(healthCheckUnhealthy), 10, 64)
 			if err != nil {
 				return err
 			}
