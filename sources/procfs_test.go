@@ -100,7 +100,6 @@ func TestGetJobStats(t *testing.T) {
 
 	testPromName = "dne"
 	testHelpText = "Help for DNE"
-	var expected int
 
 	metricList, err = getJobStatsIOMetrics(testJobBlock, testJobID, testPromName, testHelpText)
 	if err != nil {
