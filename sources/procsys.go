@@ -88,7 +88,7 @@ func newLustreProcSysSource() LustreSource {
 }
 
 func (s *lustreProcsysSource) Update(ch chan<- prometheus.Metric) (err error) {
-	metricType := "single"
+	var metricType string
 
 	for _, metric := range s.lustreProcMetrics {
 		paths, err := filepath.Glob(filepath.Join(s.basePath, metric.path, metric.filename))

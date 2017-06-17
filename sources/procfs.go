@@ -278,8 +278,8 @@ func newLustreSource() LustreSource {
 }
 
 func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
-	metricType := "single"
-	directoryDepth := 0
+	var metricType string
+	var directoryDepth int
 
 	for _, metric := range s.lustreProcMetrics {
 		directoryDepth = strings.Count(metric.filename, "/")
