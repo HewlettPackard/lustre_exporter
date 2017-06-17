@@ -560,7 +560,8 @@ func getJobStatsOperationMetrics(jobBlock string, jobID string, promName string,
 		if len(opNumbers) < 1 {
 			continue
 		}
-		result, err := strconv.ParseUint(strings.TrimSpace(opNumbers[operation.index]), 10, 64)
+		var result uint64
+		result, err = strconv.ParseUint(strings.TrimSpace(opNumbers[operation.index]), 10, 64)
 		if err != nil {
 			return nil, err
 		}
