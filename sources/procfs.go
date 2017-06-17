@@ -51,6 +51,9 @@ const (
 	// string mappings for 'health_check' values
 	healthCheckHealthy   string = "1"
 	healthCheckUnhealthy string = "0"
+
+	//repeated strings replaced by constants
+	mdStats string = "md_stats"
 )
 
 type lustreJobsMetric struct {
@@ -155,7 +158,7 @@ func (s *lustreProcfsSource) generateOSTMetricTemplates() {
 func (s *lustreProcfsSource) generateMDTMetricTemplates() {
 	metricMap := map[string][]lustreHelpStruct{
 		"mdt/*": {
-			{"md_stats", "stats_total", statsHelp, s.counterMetric, true},
+			{mdStats, "stats_total", statsHelp, s.counterMetric, true},
 			{"num_exports", "exports_total", "Total number of times the pool has been exported", s.counterMetric, false},
 			{"job_stats", "job_stats_total", jobStatsHelp, s.counterMetric, true},
 		},
@@ -291,7 +294,7 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 			continue
 		}
 		for _, path := range paths {
-			metricType = "single"
+			metricType = single
 			switch metric.filename {
 			case "health_check":
 				err = s.parseTextFile(metric.source, "health_check", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
@@ -323,10 +326,10 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 					return err
 				}
 			default:
-				if metric.filename == "stats" {
-					metricType = "stats"
-				} else if metric.filename == "md_stats" {
-					metricType = "md_stats"
+				if metric.filename == stats {
+					metricType = stats
+				} else if metric.filename == mdStats {
+					metricType = mdStats
 				}
 				err = s.parseFile(metric.source, metricType, path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, nodeName string, name string, helpText string, value uint64, extraLabel string, extraLabelValue string) {
 					if extraLabelValue == "" {
@@ -703,7 +706,7 @@ func (s *lustreProcfsSource) parseFile(nodeType string, metricType string, path 
 		return err
 	}
 	switch metricType {
-	case "single":
+	case single:
 		value, err := ioutil.ReadFile(path)
 		if err != nil {
 			return err
@@ -713,7 +716,7 @@ func (s *lustreProcfsSource) parseFile(nodeType string, metricType string, path 
 			return err
 		}
 		handler(nodeType, nodeName, promName, helpText, convertedValue, "", "")
-	case "stats":
+	case stats:
 		metricList, err := parseStatsFile(helpText, promName, path, hasMultipleVals)
 		if err != nil {
 			return err
@@ -722,7 +725,7 @@ func (s *lustreProcfsSource) parseFile(nodeType string, metricType string, path 
 		for _, metric := range metricList {
 			handler(nodeType, nodeName, metric.title, metric.help, metric.value, metric.extraLabel, metric.extraLabelValue)
 		}
-	case "md_stats":
+	case mdStats:
 		metricList, err := parseStatsFile(helpText, promName, path, hasMultipleVals)
 		if err != nil {
 			return err
