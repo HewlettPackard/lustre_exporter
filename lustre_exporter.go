@@ -104,7 +104,10 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Fprintln(os.Stdout, version.Print("lustre_exporter"))
+		num, err := fmt.Fprintln(os.Stdout, version.Print("lustre_exporter"))
+		if err != nil {
+			log.Fatal(num, err)
+		}
 		os.Exit(0)
 	}
 
@@ -129,13 +132,17 @@ func main() {
 
 	http.Handle(*metricsPath, prometheus.InstrumentHandler("prometheus", handler))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`<html>
+		var num int
+		num, err = w.Write([]byte(`<html>
 			<head><title>Lustre Exporter</title></head>
 			<body>
 			<h1>Lustre Exporter</h1>
 			<p><a href="` + *metricsPath + `">Metrics</a></p>
 			</body>
 			</html>`))
+		if err != nil {
+			log.Fatal(num, err)
+		}
 	})
 
 	log.Infoln("Listening on", *listenAddress)
