@@ -214,7 +214,7 @@ func (s *lustreProcfsSource) generateMDSMetricTemplates() error {
 
 func (s *lustreProcfsSource) generateClientMetricTemplates() error {
 	metricMap := map[string][]lustreHelpStruct{
-		"llite": {
+		"llite/*": {
 			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric, false},
 			{"checksum_pages", "checksum_pages_enabled", "Returns '1' if data checksumming is enabled for the client", s.gaugeMetric, false},
 			{"default_easize", "default_ea_size_bytes", "Default Extended Attribute (EA) size in bytes", s.gaugeMetric, false},
