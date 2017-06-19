@@ -78,7 +78,7 @@ type lustreProcfsSource struct {
 	basePath          string
 }
 
-func (s *lustreProcfsSource) generateOSTMetricTemplates() error {
+func (s *lustreProcfsSource) generateOSTMetricTemplates() {
 	metricMap := map[string][]lustreHelpStruct{
 		"obdfilter/*": {
 			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric, false},
@@ -150,10 +150,9 @@ func (s *lustreProcfsSource) generateOSTMetricTemplates() error {
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
-	return nil
 }
 
-func (s *lustreProcfsSource) generateMDTMetricTemplates() error {
+func (s *lustreProcfsSource) generateMDTMetricTemplates() {
 	metricMap := map[string][]lustreHelpStruct{
 		"mdt/*": {
 			{"md_stats", "stats_total", statsHelp, s.counterMetric, true},
@@ -167,10 +166,9 @@ func (s *lustreProcfsSource) generateMDTMetricTemplates() error {
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
-	return nil
 }
 
-func (s *lustreProcfsSource) generateMGSMetricTemplates() error {
+func (s *lustreProcfsSource) generateMGSMetricTemplates() {
 	metricMap := map[string][]lustreHelpStruct{
 		"mgs/MGS/osd/": {
 			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric, false},
@@ -188,10 +186,9 @@ func (s *lustreProcfsSource) generateMGSMetricTemplates() error {
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
-	return nil
 }
 
-func (s *lustreProcfsSource) generateMDSMetricTemplates() error {
+func (s *lustreProcfsSource) generateMDSMetricTemplates() {
 	metricMap := map[string][]lustreHelpStruct{
 		"mds/MDS/osd": {
 			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric, false},
@@ -209,10 +206,9 @@ func (s *lustreProcfsSource) generateMDSMetricTemplates() error {
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
-	return nil
 }
 
-func (s *lustreProcfsSource) generateClientMetricTemplates() error {
+func (s *lustreProcfsSource) generateClientMetricTemplates() {
 	metricMap := map[string][]lustreHelpStruct{
 		"llite/*": {
 			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric, false},
@@ -256,10 +252,9 @@ func (s *lustreProcfsSource) generateClientMetricTemplates() error {
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
-	return nil
 }
 
-func (s *lustreProcfsSource) generateGenericMetricTemplates() error {
+func (s *lustreProcfsSource) generateGenericMetricTemplates() {
 	metricList := []lustreHelpStruct{
 		{"health_check", "health_check", "Current health status for the indicated instance: " + healthCheckHealthy + " refers to 'healthy', " + healthCheckUnhealthy + " refers to 'unhealthy'", s.gaugeMetric, false},
 	}
@@ -267,10 +262,9 @@ func (s *lustreProcfsSource) generateGenericMetricTemplates() error {
 		newMetric := newLustreProcMetric(item.filename, item.promName, "Generic", "", item.helpText, item.hasMultipleVals, item.metricFunc)
 		s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 	}
-	return nil
 }
 
-func newLustreSource() (LustreSource, error) {
+func newLustreSource() LustreSource {
 	var l lustreProcfsSource
 	l.basePath = "/proc/fs/lustre"
 	//control which node metrics you pull via flags
@@ -280,7 +274,7 @@ func newLustreSource() (LustreSource, error) {
 	l.generateMDSMetricTemplates()
 	l.generateClientMetricTemplates()
 	l.generateGenericMetricTemplates()
-	return &l, nil
+	return &l
 }
 
 func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {

@@ -45,7 +45,7 @@ type lustreProcsysSource struct {
 	basePath          string
 }
 
-func (s *lustreProcsysSource) generateLNETTemplates() error {
+func (s *lustreProcsysSource) generateLNETTemplates() {
 	metricMap := map[string][]lustreHelpStruct{
 		"lnet": {
 			{"catastrophe", "catastrophe_enabled", "Returns 1 if currently in catastrophe mode", s.gaugeMetric, false},
@@ -78,14 +78,13 @@ func (s *lustreProcsysSource) generateLNETTemplates() error {
 			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 		}
 	}
-	return nil
 }
 
-func newLustreProcSysSource() (LustreSource, error) {
+func newLustreProcSysSource() LustreSource {
 	var l lustreProcsysSource
 	l.basePath = "/proc/sys"
 	l.generateLNETTemplates()
-	return &l, nil
+	return &l
 }
 
 func (s *lustreProcsysSource) Update(ch chan<- prometheus.Metric) (err error) {

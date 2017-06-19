@@ -85,10 +85,7 @@ func loadSources(list []string) (map[string]sources.LustreSource, error) {
 		if !ok {
 			return nil, fmt.Errorf("source %q not available", name)
 		}
-		c, err := fn()
-		if err != nil {
-			return nil, err
-		}
+		c := fn()
 		sourceList[name] = c
 	}
 	return sourceList, nil

@@ -21,7 +21,7 @@ import (
 const Namespace = "lustre"
 
 //Factories contains the list of all sources.
-var Factories = make(map[string]func() (LustreSource, error))
+var Factories = make(map[string]func() LustreSource)
 
 //LustreSource is the interface that each source implements.
 type LustreSource interface {
