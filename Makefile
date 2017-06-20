@@ -14,14 +14,16 @@
 GO              ?= GO15VENDOREXPERIMENT=1 go
 GOPATH          := $(firstword $(subst :, ,$(shell $(GO) env GOPATH)))
 PROMU           ?= $(GOPATH)/bin/promu
-MEGACHECK       ?= $(GOPATH)/bin/megacheck
+GOLINTER        ?= $(GOPATH)/bin/gometalinter
+#aligncheck and gosimple took unfortunately too long at travisCI
+GOLINTER_OPT    ?= --vendor --deadline 6m --cyclo-over=19 --disable=aligncheck --disable=gosimple
 pkgs            = $(shell $(GO) list ./... | grep -v /vendor/)
 TARGET          ?= lustre_exporter
 
 PREFIX          ?= $(shell pwd)
 BIN_DIR         ?= $(shell pwd)
 
-all: format vet megacheck build test
+all: format vet gometalinter build test
 
 test:
 	@echo ">> running tests"
@@ -31,13 +33,10 @@ format:
 	@echo ">> formatting code"
 	@$(GO) fmt $(pkgs)
 
-vet:
-	@echo ">> vetting code"
-	@$(GO) vet $(pkgs)
-
-megacheck:
-	@echo ">> megacheck code"
-	@$(MEGACHECK) $(pkgs)
+gometalinter: $(GOLINTER)
+	@echo ">> linting code"
+	@$(GOLINTER) --install --update > /dev/null
+	@$(GOLINTER) $(GOLINTER_OPT) ./...
 
 build: $(PROMU)
 	@echo ">> building binaries"
@@ -52,9 +51,9 @@ $(GOPATH)/bin/promu promu:
 		GOARCH=$(subst x86_64,amd64,$(patsubst i%86,386,$(shell uname -m))) \
 		$(GO) get -u github.com/prometheus/promu
 
-$(GOPATH)/bin/megacheck mega:
+$(GOPATH)/bin/gometalinter lint:
 	@GOOS=$(shell uname -s | tr A-Z a-z) \
 		GOARCH=$(subst x86_64,amd64,$(patsubst i%86,386,$(shell uname -m))) \
-		$(GO) get -u honnef.co/go/tools/cmd/megacheck
+		$(GO) get -u github.com/alecthomas/gometalinter
 
-.PHONY: all format vet mega build test promu clean $(GOPATH)/bin/promu $(GOPATH)/bin/megacheck
+.PHONY: all format vet build test promu clean $(GOPATH)/bin/promu $(GOPATH)/bin/gometalinter lint

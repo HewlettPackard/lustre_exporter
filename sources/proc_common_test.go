@@ -139,7 +139,7 @@ func TestParseFileElements(t *testing.T) {
 }
 
 func TestConvertToBytes(t *testing.T) {
-	resultString := ""
+	var resultString string
 	testStringResults := map[string]string{
 		"1":          "1",
 		"512":        "512",

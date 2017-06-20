@@ -6,9 +6,8 @@ go:
   - tip
 
 before_install:
-  - go get github.com/golang/lint/golint
-  - go get honnef.co/go/tools/cmd/megacheck
+  # We need this because of a gotype tool bug
+  - go test -i
 
 script:
   - make
-  - golint

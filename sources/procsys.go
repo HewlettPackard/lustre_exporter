@@ -23,6 +23,7 @@ import (
 )
 
 const (
+	// Help text dedicated to the 'lnet' metrics
 	lnetAllocatedHelp     string = "Number of messages currently allocated"
 	lnetMaximumHelp       string = "Maximum number of outstanding messages"
 	lnetErrorsHelp        string = "Total number of errors"
@@ -34,6 +35,9 @@ const (
 	lnetReceiveLengthHelp string = "Total number of bytes received"
 	lnetRouteLengthHelp   string = "Total number of bytes for routed messages"
 	lnetDropLengthHelp    string = "Total number of bytes that have been dropped"
+	//repeated strings replaced by constants
+	single string = "single"
+	stats  string = "stats"
 )
 
 func init() {
@@ -88,7 +92,7 @@ func newLustreProcSysSource() LustreSource {
 }
 
 func (s *lustreProcsysSource) Update(ch chan<- prometheus.Metric) (err error) {
-	metricType := "single"
+	var metricType string
 
 	for _, metric := range s.lustreProcMetrics {
 		paths, err := filepath.Glob(filepath.Join(s.basePath, metric.path, metric.filename))
@@ -99,9 +103,9 @@ func (s *lustreProcsysSource) Update(ch chan<- prometheus.Metric) (err error) {
 			continue
 		}
 		for _, path := range paths {
-			metricType = "single"
-			if metric.filename == "stats" {
-				metricType = "stats"
+			metricType = single
+			if metric.filename == stats {
+				metricType = stats
 			}
 			err = s.parseFile(metric.source, metricType, path, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
 				ch <- metric.metricFunc([]string{nodeType}, []string{nodeName}, name, helpText, value)
@@ -155,7 +159,7 @@ func (s *lustreProcsysSource) parseFile(nodeType string, metricType string, path
 		return err
 	}
 	switch metricType {
-	case "single":
+	case single:
 		value, err := ioutil.ReadFile(path)
 		if err != nil {
 			return err
@@ -165,7 +169,7 @@ func (s *lustreProcsysSource) parseFile(nodeType string, metricType string, path
 			return err
 		}
 		handler(nodeType, nodeName, promName, helpText, convertedValue)
-	case "stats":
+	case stats:
 		statsFileBytes, err := ioutil.ReadFile(path)
 		if err != nil {
 			return err
