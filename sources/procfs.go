@@ -234,7 +234,7 @@ func (s *lustreProcfsSource) generateClientMetricTemplates() {
 			{"stats", "read_maximum_size_bytes", readMaximumHelp, s.gaugeMetric, false},
 			{"stats", "read_bytes_total", readTotalHelp, s.counterMetric, false},
 			{"stats", "write_samples_total", writeSamplesHelp, s.counterMetric, false},
-			{"stats", "write_minimum_size_bytes", writeMaximumHelp, s.gaugeMetric, false},
+			{"stats", "write_minimum_size_bytes", writeMinimumHelp, s.gaugeMetric, false},
 			{"stats", "write_maximum_size_bytes", writeMaximumHelp, s.gaugeMetric, false},
 			{"stats", "write_bytes_total", writeTotalHelp, s.counterMetric, false},
 			{"stats", "stats_total", statsHelp, s.counterMetric, true},
