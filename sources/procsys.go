@@ -136,7 +136,7 @@ func parseSysStatsFile(helpText string, promName string, statsFile string) (metr
 		lnetRouteLengthHelp:   9,
 		lnetDropLengthHelp:    10,
 	}
-	statsResults := regexCaptureStrings("[0-9]*\\.[0-9]+|[0-9]+", statsFile)
+	statsResults := regexCaptureNumbers(statsFile)
 	if len(statsResults) < 1 {
 		return metric, nil
 	}
