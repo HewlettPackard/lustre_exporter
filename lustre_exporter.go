@@ -97,11 +97,26 @@ func init() {
 
 func main() {
 	var (
-		showVersion   = flag.Bool("version", false, "Print version information.")
-		listenAddress = flag.String("web.listen-address", ":9169", "Address to use to expose Lustre metrics.")
-		metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path to use to expose Lustre metrics.")
+		showVersion    = flag.Bool("version", false, "Print version information.")
+		listenAddress  = flag.String("web.listen-address", ":9169", "Address to use to expose Lustre metrics.")
+		metricsPath    = flag.String("web.telemetry-path", "/metrics", "Path to use to expose Lustre metrics.")
+		ostEnabled     = flag.Bool("collector.ost", true, "Enable OST metrics")
+		mdtEnabled     = flag.Bool("collector.mdt", true, "Enable MDT metrics")
+		mgsEnabled     = flag.Bool("collector.mgs", true, "Enable MGS metrics")
+		mdsEnabled     = flag.Bool("collector.mds", true, "Enable MDS metrics")
+		clientEnabled  = flag.Bool("collector.client", true, "Enable Client metrics")
+		genericEnabled = flag.Bool("collector.generic", true, "Enable Generic metrics")
+		lnetEnabled    = flag.Bool("collector.lnet", true, "Enable LNET metrics")
 	)
 	flag.Parse()
+
+	sources.OstEnabled = *ostEnabled
+	sources.MdtEnabled = *mdtEnabled
+	sources.MgsEnabled = *mgsEnabled
+	sources.MdsEnabled = *mdsEnabled
+	sources.ClientEnabled = *clientEnabled
+	sources.GenericEnabled = *genericEnabled
+	sources.LnetEnabled = *lnetEnabled
 
 	if *showVersion {
 		num, err := fmt.Fprintln(os.Stdout, version.Print("lustre_exporter"))
