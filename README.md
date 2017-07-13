@@ -22,27 +22,26 @@ make
 ## Running
 
 ```
-./lustre_exporter
+./lustre_exporter <flags>
 ```
 
 ### Flags
 
-TODO, but the current plan is to create flags that would define what node metrics are pulled from a running instance (e.g., OSS and MDS metrics would each have their own flag to disable). Also, we'd have flags to disable non-procfs metrics.
+Boolean (True/False)
 
-### What's exported?
+* collector.ost - Enable OST metrics
+* collector.mdt - Enable MDT metrics
+* collector.mgs - Enable MGS metrics
+* collector.mds - Enable MDS metrics
+* collector.client - Enable client metrics
+* collector.generic - Enable generic metrics
+* collector.lnet - Enable lnet metrics
 
-Design plans
+## What's exported?
 
-1. Export all proc data from all nodes running the Lustre Exporter that can function as a counter type (will save histogram-type work for later).
-  - STATUS: Mostly complete as far as we can tell. If anything you want is missing, please file an issue!
-2. Identify redundant data (if it exists).
-  - Deduplication would be done, at first, by enabling flags to identify the node type with a configuration flag.
-  - STATUS: No problems so far, saving for future work.
-3. Add in:
-  - Histogram data
-    - STATUS: We have some of this via the 'brw_stats' file. We have created the histograms within Grafana in early tests.
-  - Other data sources (CLI data that isn't present in /proc, for example). Users will be able to disable non-proc sources via a configuration flag.
-    - STATUS: Not yet started
+All Lustre procfs and procsys data from all nodes running the Lustre Exporter that we perceive as valuable data is exported or can be added to be exported (we don't have any known major gaps that anyone cares about, so if you see something missing, please file an issue!).
+
+See the issues tab for all known issues. This project is actively maintained by HPE, so you should see a reasonably quick response if you identify a gap.
 
 ## Contributing
 
