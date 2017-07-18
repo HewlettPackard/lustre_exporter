@@ -1246,6 +1246,20 @@ func TestCollector(t *testing.T) {
 
 		// Generic Metrics
 		{"lustre_health_check", "Current health status for the indicated instance: 1 refers to 'healthy', 0 refers to 'unhealthy'", gauge, []labelPair{{"Generic", "lustre"}}, 1, false},
+		{"lustre_cache_miss_total", "Total number of cache misses.", counter, []labelPair{{"Generic", "sptlrpc"}}, 0, false},
+		{"lustre_cache_access_total", "Total number of times cache has been accessed.", counter, []labelPair{{"Generic", "sptlrpc"}}, 0, false},
+		{"lustre_free_pages", "Current number of pages available.", gauge, []labelPair{{"Generic", "sptlrpc"}}, 0, false},
+		{"lustre_maximum_pools", "Number of pools.", gauge, []labelPair{{"Generic", "sptlrpc"}}, 8041, false},
+		{"lustre_pages_in_pools", "Number of pages in all pools.", gauge, []labelPair{{"Generic", "sptlrpc"}}, 0, false},
+		{"lustre_pages_per_pool", "Number of pages per pool.", gauge, []labelPair{{"Generic", "sptlrpc"}}, 512, false},
+		{"lustre_maximum_pages_reached_total", "Total number of pages reached.", counter, []labelPair{{"Generic", "sptlrpc"}}, 0, false},
+		{"lustre_maximum_pages", "Maximum number of pages that can be held.", gauge, []labelPair{{"Generic", "sptlrpc"}}, 4.116587e+06, false},
+		{"lustre_physical_pages", "Capacity of physical memory.", gauge, []labelPair{{"Generic", "sptlrpc"}}, 3.2932703e+07, false},
+		{"lustre_grows_total", "Total number of grows.", counter, []labelPair{{"Generic", "sptlrpc"}}, 0, false},
+		{"lustre_maximum_waitqueue_depth", "Maximum waitqueue length.", gauge, []labelPair{{"Generic", "sptlrpc"}}, 0, false},
+		{"lustre_grows_failure_total", "Total number of failures while attempting to add pages.", counter, []labelPair{{"Generic", "sptlrpc"}}, 0, false},
+		{"lustre_shrinks_total", "Total number of shrinks.", counter, []labelPair{{"Generic", "sptlrpc"}}, 0, false},
+		{"lustre_free_page_low", "Lowest number of free pages reached.", gauge, []labelPair{{"Generic", "sptlrpc"}}, 0, false},
 
 		// LNET Metrics
 		{"lustre_console_max_delay_centiseconds", "Minimum time in centiseconds before the console logs a message", gauge, []labelPair{{"lnet", "lnet"}}, 60000, false},

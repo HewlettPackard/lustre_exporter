@@ -48,12 +48,31 @@ const (
 	rpcsInFlightHelp string = "Current number of RPCs that are processing during the snapshot."
 	offsetHelp       string = "Current RPC offset by size."
 
+	// Help text dedicated to the 'encrypt_page_pools' file
+	physicalPagesHelp     string = "Capacity of physical memory."
+	pagesPerPoolHelp      string = "Number of pages per pool."
+	maxPagesHelp          string = "Maximum number of pages that can be held."
+	maxPoolsHelp          string = "Number of pools."
+	totalPagesHelp        string = "Number of pages in all pools."
+	totalFreeHelp         string = "Current number of pages available."
+	maxPagesReachedHelp   string = "Total number of pages reached."
+	growsHelp             string = "Total number of grows."
+	growsFailureHelp      string = "Total number of failures while attempting to add pages."
+	shrinksHelp           string = "Total number of shrinks."
+	cacheAccessHelp       string = "Total number of times cache has been accessed."
+	cacheMissingHelp      string = "Total number of cache misses."
+	lowFreeMarkHelp       string = "Lowest number of free pages reached."
+	maxWaitQueueDepthHelp string = "Maximum waitqueue length."
+	maxWaitTimeHelp       string = "Maximum wait time in jiffies."
+	outOfMemHelp          string = "Total number of out of memory requests."
+
 	// string mappings for 'health_check' values
 	healthCheckHealthy   string = "1"
 	healthCheckUnhealthy string = "0"
 
 	//repeated strings replaced by constants
-	mdStats string = "md_stats"
+	mdStats          string = "md_stats"
+	encryptPagePools string = "encrypt_page_pools"
 )
 
 var (
@@ -273,12 +292,34 @@ func (s *lustreProcfsSource) generateClientMetricTemplates() {
 }
 
 func (s *lustreProcfsSource) generateGenericMetricTemplates() {
-	metricList := []lustreHelpStruct{
-		{"health_check", "health_check", "Current health status for the indicated instance: " + healthCheckHealthy + " refers to 'healthy', " + healthCheckUnhealthy + " refers to 'unhealthy'", s.gaugeMetric, false},
+	metricMap := map[string][]lustreHelpStruct{
+		"": {
+			{"health_check", "health_check", "Current health status for the indicated instance: " + healthCheckHealthy + " refers to 'healthy', " + healthCheckUnhealthy + " refers to 'unhealthy'", s.gaugeMetric, false},
+		},
+		"sptlrpc": {
+			{"encrypt_page_pools", "physical_pages", physicalPagesHelp, s.gaugeMetric, false},
+			{"encrypt_page_pools", "pages_per_pool", pagesPerPoolHelp, s.gaugeMetric, false},
+			{"encrypt_page_pools", "maximum_pages", maxPagesHelp, s.gaugeMetric, false},
+			{"encrypt_page_pools", "maximum_pools", maxPoolsHelp, s.gaugeMetric, false},
+			{"encrypt_page_pools", "pages_in_pools", totalPagesHelp, s.gaugeMetric, false},
+			{"encrypt_page_pools", "free_pages", totalFreeHelp, s.gaugeMetric, false},
+			{"encrypt_page_pools", "maximum_pages_reached_total", maxPagesReachedHelp, s.counterMetric, false},
+			{"encrypt_page_pools", "grows_total", growsHelp, s.counterMetric, false},
+			{"encrypt_page_pools", "grows_failure_total", growsFailureHelp, s.counterMetric, false},
+			{"encrypt_page_pools", "shrinks_total", shrinksHelp, s.counterMetric, false},
+			{"encrypt_page_pools", "cache_access_total", cacheAccessHelp, s.counterMetric, false},
+			{"encrypt_page_pools", "cache_miss_total", cacheMissingHelp, s.counterMetric, false},
+			{"encrypt_page_pools", "free_page_low", lowFreeMarkHelp, s.gaugeMetric, false},
+			{"encrypt_page_pools", "maximum_waitqueue_depth", maxWaitQueueDepthHelp, s.gaugeMetric, false},
+			{"encrypt_page_pools", "maximum_wait_time_jiffies", maxWaitTimeHelp, s.gaugeMetric, false},
+			{"encrypt_page_pools", "out_of_memory_request_total", outOfMemHelp, s.counterMetric, false},
+		},
 	}
-	for _, item := range metricList {
-		newMetric := newLustreProcMetric(item.filename, item.promName, "Generic", "", item.helpText, item.hasMultipleVals, item.metricFunc)
-		s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
+	for path := range metricMap {
+		for _, item := range metricMap[path] {
+			newMetric := newLustreProcMetric(item.filename, item.promName, "Generic", path, item.helpText, item.hasMultipleVals, item.metricFunc)
+			s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
+		}
 	}
 }
 
@@ -357,6 +398,8 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 					metricType = stats
 				} else if metric.filename == mdStats {
 					metricType = mdStats
+				} else if metric.filename == encryptPagePools {
+					metricType = encryptPagePools
 				}
 				err = s.parseFile(metric.source, metricType, path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, nodeName string, name string, helpText string, value uint64, extraLabel string, extraLabelValue string) {
 					if extraLabelValue == "" {
@@ -427,14 +470,30 @@ func getStatsIOMetrics(statsFile string, promName string, helpText string) (metr
 	// bytesString: {name} {number of samples} 'samples' [{units}] {minimum} {maximum} {sum}
 	// bytesSplit:   [0]    [1]                 [2]       [3]       [4]       [5]       [6]
 	bytesMap := map[string]multistatParsingStruct{
-		readSamplesHelp:  {pattern: "read_bytes .*", index: 1},
-		readMinimumHelp:  {pattern: "read_bytes .*", index: 4},
-		readMaximumHelp:  {pattern: "read_bytes .*", index: 5},
-		readTotalHelp:    {pattern: "read_bytes .*", index: 6},
-		writeSamplesHelp: {pattern: "write_bytes .*", index: 1},
-		writeMinimumHelp: {pattern: "write_bytes .*", index: 4},
-		writeMaximumHelp: {pattern: "write_bytes .*", index: 5},
-		writeTotalHelp:   {pattern: "write_bytes .*", index: 6},
+		readSamplesHelp:       {pattern: "read_bytes .*", index: 1},
+		readMinimumHelp:       {pattern: "read_bytes .*", index: 4},
+		readMaximumHelp:       {pattern: "read_bytes .*", index: 5},
+		readTotalHelp:         {pattern: "read_bytes .*", index: 6},
+		writeSamplesHelp:      {pattern: "write_bytes .*", index: 1},
+		writeMinimumHelp:      {pattern: "write_bytes .*", index: 4},
+		writeMaximumHelp:      {pattern: "write_bytes .*", index: 5},
+		writeTotalHelp:        {pattern: "write_bytes .*", index: 6},
+		physicalPagesHelp:     {pattern: "physical pages: .*", index: 2},
+		pagesPerPoolHelp:      {pattern: "pages per pool: .*", index: 3},
+		maxPagesHelp:          {pattern: "max pages: .*", index: 2},
+		maxPoolsHelp:          {pattern: "max pools: .*", index: 2},
+		totalPagesHelp:        {pattern: "total pages: .*", index: 2},
+		totalFreeHelp:         {pattern: "total free: .*", index: 2},
+		maxPagesReachedHelp:   {pattern: "max pages reached: .*", index: 3},
+		growsHelp:             {pattern: "grows: .*", index: 1},
+		growsFailureHelp:      {pattern: "grows failure: .*", index: 2},
+		shrinksHelp:           {pattern: "shrinks: .*", index: 1},
+		cacheAccessHelp:       {pattern: "cache access: .*", index: 2},
+		cacheMissingHelp:      {pattern: "cache missing: .*", index: 2},
+		lowFreeMarkHelp:       {pattern: "low free mark: .*", index: 3},
+		maxWaitQueueDepthHelp: {pattern: "max waitqueue depth: .*", index: 3},
+		maxWaitTimeHelp:       {pattern: "max wait time: .*", index: 3},
+		outOfMemHelp:          {pattern: "out of mem: .*", index: 3},
 	}
 	pattern := bytesMap[helpText].pattern
 	bytesString := regexCaptureString(pattern, statsFile)
@@ -746,16 +805,7 @@ func (s *lustreProcfsSource) parseFile(nodeType string, metricType string, path 
 			return err
 		}
 		handler(nodeType, nodeName, promName, helpText, convertedValue, "", "")
-	case stats:
-		metricList, err := parseStatsFile(helpText, promName, path, hasMultipleVals)
-		if err != nil {
-			return err
-		}
-
-		for _, metric := range metricList {
-			handler(nodeType, nodeName, metric.title, metric.help, metric.value, metric.extraLabel, metric.extraLabelValue)
-		}
-	case mdStats:
+	case stats, mdStats, encryptPagePools:
 		metricList, err := parseStatsFile(helpText, promName, path, hasMultipleVals)
 		if err != nil {
 			return err
