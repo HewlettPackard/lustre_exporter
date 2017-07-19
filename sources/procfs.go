@@ -63,7 +63,6 @@ const (
 	cacheMissingHelp      string = "Total number of cache misses."
 	lowFreeMarkHelp       string = "Lowest number of free pages reached."
 	maxWaitQueueDepthHelp string = "Maximum waitqueue length."
-	maxWaitTimeHelp       string = "Maximum wait time in jiffies."
 	outOfMemHelp          string = "Total number of out of memory requests."
 
 	// string mappings for 'health_check' values
@@ -311,7 +310,6 @@ func (s *lustreProcfsSource) generateGenericMetricTemplates() {
 			{"encrypt_page_pools", "cache_miss_total", cacheMissingHelp, s.counterMetric, false},
 			{"encrypt_page_pools", "free_page_low", lowFreeMarkHelp, s.gaugeMetric, false},
 			{"encrypt_page_pools", "maximum_waitqueue_depth", maxWaitQueueDepthHelp, s.gaugeMetric, false},
-			{"encrypt_page_pools", "maximum_wait_time_jiffies", maxWaitTimeHelp, s.gaugeMetric, false},
 			{"encrypt_page_pools", "out_of_memory_request_total", outOfMemHelp, s.counterMetric, false},
 		},
 	}
@@ -492,7 +490,6 @@ func getStatsIOMetrics(statsFile string, promName string, helpText string) (metr
 		cacheMissingHelp:      {pattern: "cache missing: .*", index: 2},
 		lowFreeMarkHelp:       {pattern: "low free mark: .*", index: 3},
 		maxWaitQueueDepthHelp: {pattern: "max waitqueue depth: .*", index: 3},
-		maxWaitTimeHelp:       {pattern: "max wait time: .*", index: 3},
 		outOfMemHelp:          {pattern: "out of mem: .*", index: 3},
 	}
 	pattern := bytesMap[helpText].pattern

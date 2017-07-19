@@ -1260,6 +1260,7 @@ func TestCollector(t *testing.T) {
 		{"lustre_grows_failure_total", "Total number of failures while attempting to add pages.", counter, []labelPair{{"Generic", "sptlrpc"}}, 0, false},
 		{"lustre_shrinks_total", "Total number of shrinks.", counter, []labelPair{{"Generic", "sptlrpc"}}, 0, false},
 		{"lustre_free_page_low", "Lowest number of free pages reached.", gauge, []labelPair{{"Generic", "sptlrpc"}}, 0, false},
+		{"lustre_out_of_memory_request_total", "Total number of out of memory requests.", 0, []labelPair{{"Generic", "sptlrpc"}}, 0, false},
 
 		// LNET Metrics
 		{"lustre_console_max_delay_centiseconds", "Minimum time in centiseconds before the console logs a message", gauge, []labelPair{{"lnet", "lnet"}}, 60000, false},
