@@ -363,14 +363,14 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 			metricType = single
 			switch metric.filename {
 			case "health_check":
-				err = s.parseTextFile(metric.source, "health_check", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
+				err = s.parseTextFile(metric.source, "health_check", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value float64) {
 					ch <- metric.metricFunc([]string{nodeType}, []string{nodeName}, name, helpText, value)
 				})
 				if err != nil {
 					return err
 				}
 			case "brw_stats", "rpc_stats":
-				err = s.parseBRWStats(metric.source, "stats", path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value uint64, extraLabel string, extraLabelValue string) {
+				err = s.parseBRWStats(metric.source, "stats", path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
 					if extraLabelValue == "" {
 						ch <- metric.metricFunc([]string{nodeType, "operation", "size"}, []string{nodeName, brwOperation, brwSize}, name, helpText, value)
 					} else {
@@ -381,7 +381,7 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 					return err
 				}
 			case "job_stats":
-				err = s.parseJobStats(metric.source, "job_stats", path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, jobid string, nodeName string, name string, helpText string, value uint64, extraLabel string, extraLabelValue string) {
+				err = s.parseJobStats(metric.source, "job_stats", path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, jobid string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
 					if extraLabelValue == "" {
 						ch <- metric.metricFunc([]string{nodeType, "jobid"}, []string{nodeName, jobid}, name, helpText, value)
 					} else {
@@ -399,7 +399,7 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 				} else if metric.filename == encryptPagePools {
 					metricType = encryptPagePools
 				}
-				err = s.parseFile(metric.source, metricType, path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, nodeName string, name string, helpText string, value uint64, extraLabel string, extraLabelValue string) {
+				err = s.parseFile(metric.source, metricType, path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
 					if extraLabelValue == "" {
 						ch <- metric.metricFunc([]string{nodeType}, []string{nodeName}, name, helpText, value)
 					} else {
@@ -447,7 +447,7 @@ func getStatsOperationMetrics(statsFile string, promName string, helpText string
 			continue
 		}
 		bytesSplit := r.Split(opStat, -1)
-		result, err := strconv.ParseUint(bytesSplit[operation.index], 10, 64)
+		result, err := strconv.ParseFloat(bytesSplit[operation.index], 64)
 		if err != nil {
 			return nil, err
 		}
@@ -502,7 +502,7 @@ func getStatsIOMetrics(statsFile string, promName string, helpText string) (metr
 		return nil, err
 	}
 	bytesSplit := r.Split(bytesString, -1)
-	result, err := strconv.ParseUint(bytesSplit[bytesMap[helpText].index], 10, 64)
+	result, err := strconv.ParseFloat(bytesSplit[bytesMap[helpText].index], 64)
 	if err != nil {
 		return nil, err
 	}
@@ -593,7 +593,7 @@ func getJobStatsIOMetrics(jobBlock string, jobID string, promName string, helpTe
 	if len(opNumbers) < 1 {
 		return nil, nil
 	}
-	result, err := strconv.ParseUint(strings.TrimSpace(opNumbers[opMap[helpText].index]), 10, 64)
+	result, err := strconv.ParseFloat(strings.TrimSpace(opNumbers[opMap[helpText].index]), 64)
 	if err != nil {
 		return nil, err
 	}
@@ -649,8 +649,8 @@ func getJobStatsOperationMetrics(jobBlock string, jobID string, promName string,
 		if len(opNumbers) < 1 {
 			continue
 		}
-		var result uint64
-		result, err = strconv.ParseUint(strings.TrimSpace(opNumbers[operation.index]), 10, 64)
+		var result float64
+		result, err = strconv.ParseFloat(strings.TrimSpace(opNumbers[operation.index]), 64)
 		if err != nil {
 			return nil, err
 		}
@@ -692,7 +692,7 @@ func parseJobStatsText(jobStats string, promName string, helpText string, hasMul
 	return metricList, nil
 }
 
-func (s *lustreProcfsSource) parseJobStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, hasMultipleVals bool, handler func(string, string, string, string, string, uint64, string, string)) (err error) {
+func (s *lustreProcfsSource) parseJobStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, hasMultipleVals bool, handler func(string, string, string, string, string, float64, string, string)) (err error) {
 	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
@@ -715,7 +715,7 @@ func (s *lustreProcfsSource) parseJobStats(nodeType string, metricType string, p
 	return nil
 }
 
-func (s *lustreProcfsSource) parseBRWStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, hasMultipleVals bool, handler func(string, string, string, string, string, string, uint64, string, string)) (err error) {
+func (s *lustreProcfsSource) parseBRWStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, hasMultipleVals bool, handler func(string, string, string, string, string, string, float64, string, string)) (err error) {
 	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
@@ -748,7 +748,7 @@ func (s *lustreProcfsSource) parseBRWStats(nodeType string, metricType string, p
 		extraLabelValue = pathElements[len(pathElements)-3]
 	}
 	for _, item := range metricList {
-		value, err := strconv.ParseUint(item.value, 10, 64)
+		value, err := strconv.ParseFloat(item.value, 64)
 		if err != nil {
 			return err
 		}
@@ -757,7 +757,7 @@ func (s *lustreProcfsSource) parseBRWStats(nodeType string, metricType string, p
 	return nil
 }
 
-func (s *lustreProcfsSource) parseTextFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, uint64)) (err error) {
+func (s *lustreProcfsSource) parseTextFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, float64)) (err error) {
 	filename, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
@@ -770,13 +770,13 @@ func (s *lustreProcfsSource) parseTextFile(nodeType string, metricType string, p
 	switch filename {
 	case "health_check":
 		if strings.TrimSpace(fileString) == "healthy" {
-			value, err := strconv.ParseUint(strings.TrimSpace(healthCheckHealthy), 10, 64)
+			value, err := strconv.ParseFloat(strings.TrimSpace(healthCheckHealthy), 64)
 			if err != nil {
 				return err
 			}
 			handler(nodeType, nodeName, promName, helpText, value)
 		} else {
-			value, err := strconv.ParseUint(strings.TrimSpace(healthCheckUnhealthy), 10, 64)
+			value, err := strconv.ParseFloat(strings.TrimSpace(healthCheckUnhealthy), 64)
 			if err != nil {
 				return err
 			}
@@ -786,7 +786,7 @@ func (s *lustreProcfsSource) parseTextFile(nodeType string, metricType string, p
 	return nil
 }
 
-func (s *lustreProcfsSource) parseFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, hasMultipleVals bool, handler func(string, string, string, string, uint64, string, string)) (err error) {
+func (s *lustreProcfsSource) parseFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, hasMultipleVals bool, handler func(string, string, string, string, float64, string, string)) (err error) {
 	_, nodeName, err := parseFileElements(path, directoryDepth)
 	if err != nil {
 		return err
@@ -797,7 +797,7 @@ func (s *lustreProcfsSource) parseFile(nodeType string, metricType string, path 
 		if err != nil {
 			return err
 		}
-		convertedValue, err := strconv.ParseUint(strings.TrimSpace(string(value)), 10, 64)
+		convertedValue, err := strconv.ParseFloat(strings.TrimSpace(string(value)), 64)
 		if err != nil {
 			return err
 		}
@@ -815,7 +815,7 @@ func (s *lustreProcfsSource) parseFile(nodeType string, metricType string, path 
 	return nil
 }
 
-func (s *lustreProcfsSource) counterMetric(labels []string, labelValues []string, name string, helpText string, value uint64) prometheus.Metric {
+func (s *lustreProcfsSource) counterMetric(labels []string, labelValues []string, name string, helpText string, value float64) prometheus.Metric {
 	return prometheus.MustNewConstMetric(
 		prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, "", name),
@@ -824,12 +824,12 @@ func (s *lustreProcfsSource) counterMetric(labels []string, labelValues []string
 			nil,
 		),
 		prometheus.CounterValue,
-		float64(value),
+		value,
 		labelValues...,
 	)
 }
 
-func (s *lustreProcfsSource) gaugeMetric(labels []string, labelValues []string, name string, helpText string, value uint64) prometheus.Metric {
+func (s *lustreProcfsSource) gaugeMetric(labels []string, labelValues []string, name string, helpText string, value float64) prometheus.Metric {
 	return prometheus.MustNewConstMetric(
 		prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, "", name),
@@ -838,12 +838,12 @@ func (s *lustreProcfsSource) gaugeMetric(labels []string, labelValues []string, 
 			nil,
 		),
 		prometheus.GaugeValue,
-		float64(value),
+		value,
 		labelValues...,
 	)
 }
 
-func (s *lustreProcfsSource) untypedMetric(labels []string, labelValues []string, name string, helpText string, value uint64) prometheus.Metric {
+func (s *lustreProcfsSource) untypedMetric(labels []string, labelValues []string, name string, helpText string, value float64) prometheus.Metric {
 	return prometheus.MustNewConstMetric(
 		prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, "", name),
@@ -852,7 +852,7 @@ func (s *lustreProcfsSource) untypedMetric(labels []string, labelValues []string
 			nil,
 		),
 		prometheus.UntypedValue,
-		float64(value),
+		value,
 		labelValues...,
 	)
 }
