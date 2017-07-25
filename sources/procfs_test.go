@@ -59,7 +59,7 @@ func TestGetJobStats(t *testing.T) {
 	testJobID := "29"
 	testPromName := "job_write_bytes_total"
 	testHelpText := writeTotalHelp
-	expected := uint64(274726912)
+	expected := float64(274726912)
 
 	metricList, err := getJobStatsIOMetrics(testJobBlock, testJobID, testPromName, testHelpText)
 	if err != nil {
@@ -69,7 +69,7 @@ func TestGetJobStats(t *testing.T) {
 		t.Fatalf("Retrieved an unexpected number of items. Expected: %d, Got: %d", 1, l)
 	}
 	if metricList[0].value != expected {
-		t.Fatalf("Retrieved an unexpected value. Expected: %d, Got: %d", expected, metricList[0].value)
+		t.Fatalf("Retrieved an unexpected value. Expected: %f, Got: %f", expected, metricList[0].value)
 	}
 	if metricList[0].help != writeTotalHelp {
 		t.Fatal("Retrieved an unexpected help text.")
@@ -88,8 +88,8 @@ func TestGetJobStats(t *testing.T) {
 	if l := len(metricList); l != 10 {
 		t.Fatalf("Retrieved an unexpected number of items. Expected: %d, Got: %d", 1, l)
 	}
-	if metricList[9].value != 10 {
-		t.Fatalf("Retrieved an unexpected value. Expected: %d, Got: %d", 10, metricList[9].value)
+	if metricList[9].value != float64(10) {
+		t.Fatalf("Retrieved an unexpected value. Expected: %f, Got: %f", float64(10), metricList[9].value)
 	}
 	if metricList[3].help != jobStatsHelp {
 		t.Fatal("Retrieved an unexpected help text.")

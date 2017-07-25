@@ -112,7 +112,7 @@ func (s *lustreProcsysSource) Update(ch chan<- prometheus.Metric) (err error) {
 			if metric.filename == stats {
 				metricType = stats
 			}
-			err = s.parseFile(metric.source, metricType, path, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value uint64) {
+			err = s.parseFile(metric.source, metricType, path, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value float64) {
 				ch <- metric.metricFunc([]string{nodeType}, []string{nodeName}, name, helpText, value)
 			})
 			if err != nil {
@@ -146,7 +146,7 @@ func parseSysStatsFile(helpText string, promName string, statsFile string) (metr
 		return metric, nil
 	}
 	index := statsMap[helpText]
-	value, err := strconv.ParseUint(statsResults[index], 10, 64)
+	value, err := strconv.ParseFloat(statsResults[index], 64)
 	if err != nil {
 		return metric, err
 	}
@@ -158,7 +158,7 @@ func parseSysStatsFile(helpText string, promName string, statsFile string) (metr
 	return metric, nil
 }
 
-func (s *lustreProcsysSource) parseFile(nodeType string, metricType string, path string, helpText string, promName string, handler func(string, string, string, string, uint64)) (err error) {
+func (s *lustreProcsysSource) parseFile(nodeType string, metricType string, path string, helpText string, promName string, handler func(string, string, string, string, float64)) (err error) {
 	_, nodeName, err := parseFileElements(path, 0)
 	if err != nil {
 		return err
@@ -169,7 +169,7 @@ func (s *lustreProcsysSource) parseFile(nodeType string, metricType string, path
 		if err != nil {
 			return err
 		}
-		convertedValue, err := strconv.ParseUint(strings.TrimSpace(string(value)), 10, 64)
+		convertedValue, err := strconv.ParseFloat(strings.TrimSpace(string(value)), 64)
 		if err != nil {
 			return err
 		}
@@ -189,7 +189,7 @@ func (s *lustreProcsysSource) parseFile(nodeType string, metricType string, path
 	return nil
 }
 
-func (s *lustreProcsysSource) counterMetric(labels []string, labelValues []string, name string, helpText string, value uint64) prometheus.Metric {
+func (s *lustreProcsysSource) counterMetric(labels []string, labelValues []string, name string, helpText string, value float64) prometheus.Metric {
 	return prometheus.MustNewConstMetric(
 		prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, "", name),
@@ -198,12 +198,12 @@ func (s *lustreProcsysSource) counterMetric(labels []string, labelValues []strin
 			nil,
 		),
 		prometheus.CounterValue,
-		float64(value),
+		value,
 		labelValues...,
 	)
 }
 
-func (s *lustreProcsysSource) gaugeMetric(labels []string, labelValues []string, name string, helpText string, value uint64) prometheus.Metric {
+func (s *lustreProcsysSource) gaugeMetric(labels []string, labelValues []string, name string, helpText string, value float64) prometheus.Metric {
 	return prometheus.MustNewConstMetric(
 		prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, "", name),
@@ -212,7 +212,7 @@ func (s *lustreProcsysSource) gaugeMetric(labels []string, labelValues []string,
 			nil,
 		),
 		prometheus.GaugeValue,
-		float64(value),
+		value,
 		labelValues...,
 	)
 }

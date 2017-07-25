@@ -27,7 +27,7 @@ var (
 	numRegexPattern = regexp.MustCompile(`[0-9]*\.[0-9]+|[0-9]+`)
 )
 
-type prometheusType func([]string, []string, string, string, uint64) prometheus.Metric
+type prometheusType func([]string, []string, string, string, float64) prometheus.Metric
 
 type lustreProcMetric struct {
 	filename        string
@@ -42,7 +42,7 @@ type lustreProcMetric struct {
 type lustreStatsMetric struct {
 	title           string
 	help            string
-	value           uint64
+	value           float64
 	extraLabel      string
 	extraLabelValue string
 }
