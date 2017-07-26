@@ -110,14 +110,6 @@ func main() {
 	)
 	flag.Parse()
 
-	sources.OstEnabled = *ostEnabled
-	sources.MdtEnabled = *mdtEnabled
-	sources.MgsEnabled = *mgsEnabled
-	sources.MdsEnabled = *mdsEnabled
-	sources.ClientEnabled = *clientEnabled
-	sources.GenericEnabled = *genericEnabled
-	sources.LnetEnabled = *lnetEnabled
-
 	if *showVersion {
 		num, err := fmt.Fprintln(os.Stdout, version.Print("lustre_exporter"))
 		if err != nil {
@@ -129,7 +121,36 @@ func main() {
 	log.Infoln("Starting lustre_exporter", version.Info())
 	log.Infoln("Build context", version.BuildContext())
 
-	//expand to include more sources eventually (CLI, other?)
+	log.Infof("Enabled Components:")
+	sources.OstEnabled = *ostEnabled
+	if sources.OstEnabled {
+		log.Infof(" - OST Enabled")
+	}
+	sources.MdtEnabled = *mdtEnabled
+	if sources.MdtEnabled {
+		log.Infof(" - MDT Enabled")
+	}
+	sources.MgsEnabled = *mgsEnabled
+	if sources.MgsEnabled {
+		log.Infof(" - MGS Enabled")
+	}
+	sources.MdsEnabled = *mdsEnabled
+	if sources.MdsEnabled {
+		log.Infof(" - MDS Enabled")
+	}
+	sources.ClientEnabled = *clientEnabled
+	if sources.ClientEnabled {
+		log.Infof(" - Client Enabled")
+	}
+	sources.GenericEnabled = *genericEnabled
+	if sources.GenericEnabled {
+		log.Infof(" - Generic Enabled")
+	}
+	sources.LnetEnabled = *lnetEnabled
+	if sources.LnetEnabled {
+		log.Infof(" - Lnet Enabled")
+	}
+
 	enabledSources := []string{"procfs", "procsys"}
 
 	sourceList, err := loadSources(enabledSources)
@@ -137,7 +158,7 @@ func main() {
 		log.Fatalf("Couldn't load sources: %q", err)
 	}
 
-	log.Infof("Enabled sources:")
+	log.Infof("Available sources:")
 	for s := range sourceList {
 		log.Infof(" - %s", s)
 	}
