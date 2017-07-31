@@ -4,12 +4,29 @@
 
 [Full Changelog](https://github.com/HewlettPackard/lustre_exporter/compare/v0.01.0...HEAD)
 
+**Implemented enhancements:**
+
+- Ignored command line flags? [\#109](https://github.com/HewlettPackard/lustre_exporter/issues/109)
+
 **Closed issues:**
 
+- Convert internal representations to floating point values [\#111](https://github.com/HewlettPackard/lustre_exporter/issues/111)
+- RPC and console metrics names  [\#96](https://github.com/HewlettPackard/lustre_exporter/issues/96)
+- Cases exist where type label is unpopulated for some client stats [\#94](https://github.com/HewlettPackard/lustre_exporter/issues/94)
+- Test interface FS [\#93](https://github.com/HewlettPackard/lustre_exporter/issues/93)
+- Argument ordering inconsistent between stats and job\_stats methods [\#89](https://github.com/HewlettPackard/lustre_exporter/issues/89)
+- Make stats and job\_stats patterns the same [\#88](https://github.com/HewlettPackard/lustre_exporter/issues/88)
 - Change kilobytes\_\* metrics to \*\_kilobytes [\#76](https://github.com/HewlettPackard/lustre_exporter/issues/76)
 - inode metrics [\#72](https://github.com/HewlettPackard/lustre_exporter/issues/72)
+- Add lnet statistics [\#70](https://github.com/HewlettPackard/lustre_exporter/issues/70)
+- Add client statistics [\#69](https://github.com/HewlettPackard/lustre_exporter/issues/69)
+- /proc/fs/lustre/sptlrpc/encrypt\_page\_pools stats [\#68](https://github.com/HewlettPackard/lustre_exporter/issues/68)
+- Missing ldlm pool stats? [\#67](https://github.com/HewlettPackard/lustre_exporter/issues/67)
+- Converge md\_stats and some job\_stats statistics into a single metric [\#64](https://github.com/HewlettPackard/lustre_exporter/issues/64)
 - Missing md\_stats from code [\#62](https://github.com/HewlettPackard/lustre_exporter/issues/62)
 - `build user` not parsing correctly [\#56](https://github.com/HewlettPackard/lustre_exporter/issues/56)
+- Semantic Versioning and CHANGELOG.md [\#55](https://github.com/HewlettPackard/lustre_exporter/issues/55)
+- Normalize size labels [\#50](https://github.com/HewlettPackard/lustre_exporter/issues/50)
 - Lowercase labels for metrics [\#49](https://github.com/HewlettPackard/lustre_exporter/issues/49)
 - Fix help text for obdfilter/\*/brw\_size [\#48](https://github.com/HewlettPackard/lustre_exporter/issues/48)
 - Convert counters to gauges where applicable [\#47](https://github.com/HewlettPackard/lustre_exporter/issues/47)
@@ -18,8 +35,30 @@
 
 **Merged pull requests:**
 
+- Log to stdout what sub-components are enabled [\#113](https://github.com/HewlettPackard/lustre_exporter/pull/113) ([joehandzik](https://github.com/joehandzik))
+- Use float64 instead of uint64 for all Prom metrics [\#112](https://github.com/HewlettPackard/lustre_exporter/pull/112) ([joehandzik](https://github.com/joehandzik))
+- Replace 'max wait time' with 'out of mem' [\#108](https://github.com/HewlettPackard/lustre_exporter/pull/108) ([roclark](https://github.com/roclark))
+- Update README [\#106](https://github.com/HewlettPackard/lustre_exporter/pull/106) ([joehandzik](https://github.com/joehandzik))
+- Add Kerberos stats [\#105](https://github.com/HewlettPackard/lustre_exporter/pull/105) ([roclark](https://github.com/roclark))
+- Move all number parsing to separate function [\#103](https://github.com/HewlettPackard/lustre_exporter/pull/103) ([roclark](https://github.com/roclark))
+- Refactor Testing Infrastructre [\#102](https://github.com/HewlettPackard/lustre_exporter/pull/102) ([roclark](https://github.com/roclark))
+- Update write\_minimum\_size\_bytes help text [\#101](https://github.com/HewlettPackard/lustre_exporter/pull/101) ([roclark](https://github.com/roclark))
+- Remove support for errors that won't happen [\#99](https://github.com/HewlettPackard/lustre_exporter/pull/99) ([joehandzik](https://github.com/joehandzik))
+- Add wildcard to client metrics [\#98](https://github.com/HewlettPackard/lustre_exporter/pull/98) ([roclark](https://github.com/roclark))
+- Fix RPC metric names and types [\#97](https://github.com/HewlettPackard/lustre_exporter/pull/97) ([roclark](https://github.com/roclark))
+- Don't populate empty labels for rpc\_stats [\#95](https://github.com/HewlettPackard/lustre_exporter/pull/95) ([joehandzik](https://github.com/joehandzik))
+- Add `gometalinter` support [\#92](https://github.com/HewlettPackard/lustre_exporter/pull/92) ([mjtrangoni](https://github.com/mjtrangoni))
+- Reorder getStats\*Metrics arguments [\#91](https://github.com/HewlettPackard/lustre_exporter/pull/91) ([joehandzik](https://github.com/joehandzik))
+- Add RPC stats for the client [\#90](https://github.com/HewlettPackard/lustre_exporter/pull/90) ([roclark](https://github.com/roclark))
+- Coalesce some statistics into a single metric [\#87](https://github.com/HewlettPackard/lustre_exporter/pull/87) ([joehandzik](https://github.com/joehandzik))
+- Convert brw\_stats sizes to bytes [\#86](https://github.com/HewlettPackard/lustre_exporter/pull/86) ([joehandzik](https://github.com/joehandzik))
+- Cleanup errors caught by megacheck [\#85](https://github.com/HewlettPackard/lustre_exporter/pull/85) ([joehandzik](https://github.com/joehandzik))
+- Add Megacheck [\#84](https://github.com/HewlettPackard/lustre_exporter/pull/84) ([mjtrangoni](https://github.com/mjtrangoni))
 - Update float parsing patterns [\#83](https://github.com/HewlettPackard/lustre_exporter/pull/83) ([roclark](https://github.com/roclark))
+- Add LNET statistics [\#82](https://github.com/HewlettPackard/lustre_exporter/pull/82) ([roclark](https://github.com/roclark))
 - Allow multiple sources [\#81](https://github.com/HewlettPackard/lustre_exporter/pull/81) ([roclark](https://github.com/roclark))
+- Add CHANGELOG.md [\#80](https://github.com/HewlettPackard/lustre_exporter/pull/80) ([joehandzik](https://github.com/joehandzik))
+- Add missing ldlm pool stats [\#79](https://github.com/HewlettPackard/lustre_exporter/pull/79) ([roclark](https://github.com/roclark))
 - Expand metrics collected by stats files [\#78](https://github.com/HewlettPackard/lustre_exporter/pull/78) ([roclark](https://github.com/roclark))
 - Change kilobytes\_\* to \*\_kilobytes [\#77](https://github.com/HewlettPackard/lustre_exporter/pull/77) ([joehandzik](https://github.com/joehandzik))
 - Add client statistics [\#75](https://github.com/HewlettPackard/lustre_exporter/pull/75) ([roclark](https://github.com/roclark))
