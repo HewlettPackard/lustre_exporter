@@ -1,8 +1,7 @@
 # Change Log
 
-## [Unreleased](https://github.com/HewlettPackard/lustre_exporter/tree/HEAD)
-
-[Full Changelog](https://github.com/HewlettPackard/lustre_exporter/compare/v0.01.0...HEAD)
+## [v1.0.0-rc.1](https://github.com/HewlettPackard/lustre_exporter/tree/v1.0.0-rc.1) (2017-07-31)
+[Full Changelog](https://github.com/HewlettPackard/lustre_exporter/compare/v0.01.0...v1.0.0-rc.1)
 
 **Implemented enhancements:**
 
@@ -35,6 +34,7 @@
 
 **Merged pull requests:**
 
+- Update CHANGELOG [\#114](https://github.com/HewlettPackard/lustre_exporter/pull/114) ([joehandzik](https://github.com/joehandzik))
 - Log to stdout what sub-components are enabled [\#113](https://github.com/HewlettPackard/lustre_exporter/pull/113) ([joehandzik](https://github.com/joehandzik))
 - Use float64 instead of uint64 for all Prom metrics [\#112](https://github.com/HewlettPackard/lustre_exporter/pull/112) ([joehandzik](https://github.com/joehandzik))
 - Replace 'max wait time' with 'out of mem' [\#108](https://github.com/HewlettPackard/lustre_exporter/pull/108) ([roclark](https://github.com/roclark))
