@@ -100,13 +100,13 @@ func main() {
 		showVersion    = flag.Bool("version", false, "Print version information.")
 		listenAddress  = flag.String("web.listen-address", ":9169", "Address to use to expose Lustre metrics.")
 		metricsPath    = flag.String("web.telemetry-path", "/metrics", "Path to use to expose Lustre metrics.")
-		ostEnabled     = flag.Bool("collector.ost", true, "Enable OST metrics")
-		mdtEnabled     = flag.Bool("collector.mdt", true, "Enable MDT metrics")
-		mgsEnabled     = flag.Bool("collector.mgs", true, "Enable MGS metrics")
-		mdsEnabled     = flag.Bool("collector.mds", true, "Enable MDS metrics")
-		clientEnabled  = flag.Bool("collector.client", true, "Enable Client metrics")
-		genericEnabled = flag.Bool("collector.generic", true, "Enable Generic metrics")
-		lnetEnabled    = flag.Bool("collector.lnet", true, "Enable LNET metrics")
+		ostEnabled     = flag.String("collector.ost", "extended", "Enable OST metrics")
+		mdtEnabled     = flag.String("collector.mdt", "extended", "Enable MDT metrics")
+		mgsEnabled     = flag.String("collector.mgs", "extended", "Enable MGS metrics")
+		mdsEnabled     = flag.String("collector.mds", "extended", "Enable MDS metrics")
+		clientEnabled  = flag.String("collector.client", "extended", "Enable Client metrics")
+		genericEnabled = flag.String("collector.generic", "extended", "Enable Generic metrics")
+		lnetEnabled    = flag.String("collector.lnet", "extended", "Enable LNET metrics")
 	)
 	flag.Parse()
 
@@ -123,33 +123,19 @@ func main() {
 
 	log.Infof("Enabled Components:")
 	sources.OstEnabled = *ostEnabled
-	if sources.OstEnabled {
-		log.Infof(" - OST Enabled")
-	}
+	log.Infof(" - OST State: %s", sources.OstEnabled)
 	sources.MdtEnabled = *mdtEnabled
-	if sources.MdtEnabled {
-		log.Infof(" - MDT Enabled")
-	}
+	log.Infof(" - MDT State: %s", sources.MdtEnabled)
 	sources.MgsEnabled = *mgsEnabled
-	if sources.MgsEnabled {
-		log.Infof(" - MGS Enabled")
-	}
+	log.Infof(" - MGS State: %s", sources.MgsEnabled)
 	sources.MdsEnabled = *mdsEnabled
-	if sources.MdsEnabled {
-		log.Infof(" - MDS Enabled")
-	}
+	log.Infof(" - MDS State: %s", sources.MdsEnabled)
 	sources.ClientEnabled = *clientEnabled
-	if sources.ClientEnabled {
-		log.Infof(" - Client Enabled")
-	}
+	log.Infof(" - Client State: %s", sources.ClientEnabled)
 	sources.GenericEnabled = *genericEnabled
-	if sources.GenericEnabled {
-		log.Infof(" - Generic Enabled")
-	}
+	log.Infof(" - Generic State: %s", sources.GenericEnabled)
 	sources.LnetEnabled = *lnetEnabled
-	if sources.LnetEnabled {
-		log.Infof(" - Lnet Enabled")
-	}
+	log.Infof(" - Lnet State: %s", sources.LnetEnabled)
 
 	enabledSources := []string{"procfs", "procsys"}
 

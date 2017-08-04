@@ -27,15 +27,32 @@ make
 
 ### Flags
 
-Boolean (True/False)
+* collector.ost=disabled/core/extended
+* collector.mdt=disabled/core/extended
+* collector.mgs=disabled/core/extended
+* collector.mds=disabled/core/extended
+* collector.client=disabled/core/extended
+* collector.generic=disabled/core/extended
+* collector.lnet=disabled/core/extended
 
-* collector.ost - Enable OST metrics
-* collector.mdt - Enable MDT metrics
-* collector.mgs - Enable MGS metrics
-* collector.mds - Enable MDS metrics
-* collector.client - Enable client metrics
-* collector.generic - Enable generic metrics
-* collector.lnet - Enable lnet metrics
+All above flags default to the value "extended" when no argument is submitted by the user.
+
+Example: `./lustre_exporter -collector.ost=disabled -collector.mdt=core -collector.mgs=extended`
+
+The above example will result in a running instance of the Lustre Exporter with the following statuses:
+* collector.ost=disabled
+* collector.mdt=core
+* collector.mgs=extended
+* collector.mds=extended
+* collector.client=extended
+* collector.generic=extended
+* collector.lnet=extended
+
+Flag Option Detailed Description
+
+- disabled - Completely disable all metrics for this portion of a source.
+- core - Enable this source, but only for metrics considered to be particularly useful.
+- extended - Enable this source and include all metrics that the Lustre Exporter is aware of within it.
 
 ## What's exported?
 

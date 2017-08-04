@@ -56,61 +56,61 @@ var (
 func toggleCollectors(target string) {
 	switch target {
 	case "OST":
-		sources.OstEnabled = true
-		sources.MdtEnabled = false
-		sources.MgsEnabled = false
-		sources.MdsEnabled = false
-		sources.ClientEnabled = false
-		sources.GenericEnabled = false
-		sources.LnetEnabled = false
+		sources.OstEnabled = "extended"
+		sources.MdtEnabled = "disabled"
+		sources.MgsEnabled = "disabled"
+		sources.MdsEnabled = "disabled"
+		sources.ClientEnabled = "disabled"
+		sources.GenericEnabled = "disabled"
+		sources.LnetEnabled = "disabled"
 	case "MDT":
-		sources.OstEnabled = false
-		sources.MdtEnabled = true
-		sources.MgsEnabled = false
-		sources.MdsEnabled = false
-		sources.ClientEnabled = false
-		sources.GenericEnabled = false
-		sources.LnetEnabled = false
+		sources.OstEnabled = "disabled"
+		sources.MdtEnabled = "extended"
+		sources.MgsEnabled = "disabled"
+		sources.MdsEnabled = "disabled"
+		sources.ClientEnabled = "disabled"
+		sources.GenericEnabled = "disabled"
+		sources.LnetEnabled = "disabled"
 	case "MGS":
-		sources.OstEnabled = false
-		sources.MdtEnabled = false
-		sources.MgsEnabled = true
-		sources.MdsEnabled = false
-		sources.ClientEnabled = false
-		sources.GenericEnabled = false
-		sources.LnetEnabled = false
+		sources.OstEnabled = "disabled"
+		sources.MdtEnabled = "disabled"
+		sources.MgsEnabled = "extended"
+		sources.MdsEnabled = "disabled"
+		sources.ClientEnabled = "disabled"
+		sources.GenericEnabled = "disabled"
+		sources.LnetEnabled = "disabled"
 	case "MDS":
-		sources.OstEnabled = false
-		sources.MdtEnabled = false
-		sources.MgsEnabled = false
-		sources.MdsEnabled = true
-		sources.ClientEnabled = false
-		sources.GenericEnabled = false
-		sources.LnetEnabled = false
+		sources.OstEnabled = "disabled"
+		sources.MdtEnabled = "disabled"
+		sources.MgsEnabled = "disabled"
+		sources.MdsEnabled = "extended"
+		sources.ClientEnabled = "disabled"
+		sources.GenericEnabled = "disabled"
+		sources.LnetEnabled = "disabled"
 	case "Client":
-		sources.OstEnabled = false
-		sources.MdtEnabled = false
-		sources.MgsEnabled = false
-		sources.MdsEnabled = false
-		sources.ClientEnabled = true
-		sources.GenericEnabled = false
-		sources.LnetEnabled = false
+		sources.OstEnabled = "disabled"
+		sources.MdtEnabled = "disabled"
+		sources.MgsEnabled = "disabled"
+		sources.MdsEnabled = "disabled"
+		sources.ClientEnabled = "extended"
+		sources.GenericEnabled = "disabled"
+		sources.LnetEnabled = "disabled"
 	case "Generic":
-		sources.OstEnabled = false
-		sources.MdtEnabled = false
-		sources.MgsEnabled = false
-		sources.MdsEnabled = false
-		sources.ClientEnabled = false
-		sources.GenericEnabled = true
-		sources.LnetEnabled = false
+		sources.OstEnabled = "disabled"
+		sources.MdtEnabled = "disabled"
+		sources.MgsEnabled = "disabled"
+		sources.MdsEnabled = "disabled"
+		sources.ClientEnabled = "disabled"
+		sources.GenericEnabled = "extended"
+		sources.LnetEnabled = "disabled"
 	case "LNET":
-		sources.OstEnabled = false
-		sources.MdtEnabled = false
-		sources.MgsEnabled = false
-		sources.MdsEnabled = false
-		sources.ClientEnabled = false
-		sources.GenericEnabled = false
-		sources.LnetEnabled = true
+		sources.OstEnabled = "disabled"
+		sources.MdtEnabled = "disabled"
+		sources.MgsEnabled = "disabled"
+		sources.MdsEnabled = "disabled"
+		sources.ClientEnabled = "disabled"
+		sources.GenericEnabled = "disabled"
+		sources.LnetEnabled = "extended"
 	}
 }
 
