@@ -23,6 +23,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+const (
+	core     string = "core"
+	extended string = "extended"
+	disabled string = "disabled"
+)
+
 var (
 	numRegexPattern = regexp.MustCompile(`[0-9]*\.[0-9]+|[0-9]+`)
 )
@@ -53,6 +59,7 @@ type lustreHelpStruct struct {
 	helpText        string
 	metricFunc      prometheusType
 	hasMultipleVals bool
+	priorityLevel   string
 }
 
 func newLustreProcMetric(filename string, promName string, source string, path string, helpText string, hasMultipleVals bool, metricFunc prometheusType) lustreProcMetric {
