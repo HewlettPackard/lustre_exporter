@@ -326,7 +326,7 @@ func (s *lustreProcfsSource) generateGenericMetricTemplates(filter string) {
 	for path := range metricMap {
 		for _, item := range metricMap[path] {
 			if filter == extended || item.priorityLevel == core {
-				newMetric := newLustreProcMetric(item.filename, item.promName, "Generic", path, item.helpText, item.hasMultipleVals, item.metricFunc)
+				newMetric := newLustreProcMetric(item.filename, item.promName, "generic", path, item.helpText, item.hasMultipleVals, item.metricFunc)
 				s.lustreProcMetrics = append(s.lustreProcMetrics, newMetric)
 			}
 		}
@@ -376,7 +376,7 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 			switch metric.filename {
 			case "health_check":
 				err = s.parseTextFile(metric.source, "health_check", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value float64) {
-					ch <- metric.metricFunc([]string{nodeType}, []string{nodeName}, name, helpText, value)
+					ch <- metric.metricFunc([]string{"component", "target"}, []string{nodeType, nodeName}, name, helpText, value)
 				})
 				if err != nil {
 					return err
@@ -384,9 +384,9 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 			case "brw_stats", "rpc_stats":
 				err = s.parseBRWStats(metric.source, "stats", path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
 					if extraLabelValue == "" {
-						ch <- metric.metricFunc([]string{nodeType, "operation", "size"}, []string{nodeName, brwOperation, brwSize}, name, helpText, value)
+						ch <- metric.metricFunc([]string{"component", "target", "operation", "size"}, []string{nodeType, nodeName, brwOperation, brwSize}, name, helpText, value)
 					} else {
-						ch <- metric.metricFunc([]string{nodeType, "operation", "size", extraLabel}, []string{nodeName, brwOperation, brwSize, extraLabelValue}, name, helpText, value)
+						ch <- metric.metricFunc([]string{"component", "target", "operation", "size", extraLabel}, []string{nodeType, nodeName, brwOperation, brwSize, extraLabelValue}, name, helpText, value)
 					}
 				})
 				if err != nil {
@@ -395,9 +395,9 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 			case "job_stats":
 				err = s.parseJobStats(metric.source, "job_stats", path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, jobid string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
 					if extraLabelValue == "" {
-						ch <- metric.metricFunc([]string{nodeType, "jobid"}, []string{nodeName, jobid}, name, helpText, value)
+						ch <- metric.metricFunc([]string{"component", "target", "jobid"}, []string{nodeType, nodeName, jobid}, name, helpText, value)
 					} else {
-						ch <- metric.metricFunc([]string{nodeType, "jobid", extraLabel}, []string{nodeName, jobid, extraLabelValue}, name, helpText, value)
+						ch <- metric.metricFunc([]string{"component", "target", "jobid", extraLabel}, []string{nodeType, nodeName, jobid, extraLabelValue}, name, helpText, value)
 					}
 				})
 				if err != nil {
@@ -413,9 +413,9 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 				}
 				err = s.parseFile(metric.source, metricType, path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
 					if extraLabelValue == "" {
-						ch <- metric.metricFunc([]string{nodeType}, []string{nodeName}, name, helpText, value)
+						ch <- metric.metricFunc([]string{"component", "target"}, []string{nodeType, nodeName}, name, helpText, value)
 					} else {
-						ch <- metric.metricFunc([]string{nodeType, extraLabel}, []string{nodeName, extraLabelValue}, name, helpText, value)
+						ch <- metric.metricFunc([]string{"component", "target", extraLabel}, []string{nodeType, nodeName, extraLabelValue}, name, helpText, value)
 					}
 				})
 				if err != nil {
