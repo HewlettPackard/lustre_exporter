@@ -115,7 +115,7 @@ func (s *lustreProcsysSource) Update(ch chan<- prometheus.Metric) (err error) {
 				metricType = stats
 			}
 			err = s.parseFile(metric.source, metricType, path, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value float64) {
-				ch <- metric.metricFunc([]string{nodeType}, []string{nodeName}, name, helpText, value)
+				ch <- metric.metricFunc([]string{"component", "target"}, []string{nodeType, nodeName}, name, helpText, value)
 			})
 			if err != nil {
 				return err

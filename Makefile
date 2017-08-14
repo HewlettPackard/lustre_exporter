@@ -16,7 +16,7 @@ GOPATH          := $(firstword $(subst :, ,$(shell $(GO) env GOPATH)))
 PROMU           ?= $(GOPATH)/bin/promu
 GOLINTER        ?= $(GOPATH)/bin/gometalinter
 #aligncheck and gosimple took unfortunately too long at travisCI
-GOLINTER_OPT    ?= --vendor --deadline 6m --cyclo-over=19 --disable=aligncheck --disable=gosimple
+GOLINTER_OPT    ?= --vendor --deadline 6m --cyclo-over=20 --disable=aligncheck --disable=gosimple
 pkgs            = $(shell $(GO) list ./... | grep -v /vendor/)
 TARGET          ?= lustre_exporter
 
