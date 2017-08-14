@@ -14,12 +14,12 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"net/http"
-	"os"
 	"sync"
 	"time"
+
+	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/HewlettPackard/lustre_exporter/sources"
 	"github.com/prometheus/client_golang/prometheus"
@@ -97,26 +97,19 @@ func init() {
 
 func main() {
 	var (
-		showVersion    = flag.Bool("version", false, "Print version information.")
-		listenAddress  = flag.String("web.listen-address", ":9169", "Address to use to expose Lustre metrics.")
-		metricsPath    = flag.String("web.telemetry-path", "/metrics", "Path to use to expose Lustre metrics.")
-		ostEnabled     = flag.String("collector.ost", "extended", "Enable OST metrics")
-		mdtEnabled     = flag.String("collector.mdt", "extended", "Enable MDT metrics")
-		mgsEnabled     = flag.String("collector.mgs", "extended", "Enable MGS metrics")
-		mdsEnabled     = flag.String("collector.mds", "extended", "Enable MDS metrics")
-		clientEnabled  = flag.String("collector.client", "extended", "Enable Client metrics")
-		genericEnabled = flag.String("collector.generic", "extended", "Enable Generic metrics")
-		lnetEnabled    = flag.String("collector.lnet", "extended", "Enable LNET metrics")
+		listenAddress  = kingpin.Flag("web.listen-address", "Address to use to expose Lustre metrics.").Default(":9169").String()
+		metricsPath    = kingpin.Flag("web.telemetry-path", "Path to use to expose Lustre metrics.").Default("/metrics").String()
+		ostEnabled     = kingpin.Flag("collector.ost", "Enable OST metrics").Default("extended").String()
+		mdtEnabled     = kingpin.Flag("collector.mdt", "Enable MDT metrics").Default("extended").String()
+		mgsEnabled     = kingpin.Flag("collector.mgs", "Enable MGS metrics").Default("extended").String()
+		mdsEnabled     = kingpin.Flag("collector.mds", "Enable MDS metrics").Default("extended").String()
+		clientEnabled  = kingpin.Flag("collector.client", "Enable Client metrics").Default("extended").String()
+		genericEnabled = kingpin.Flag("collector.generic", "Enable Generic metrics").Default("extended").String()
+		lnetEnabled    = kingpin.Flag("collector.lnet", "Enable LNET metrics").Default("extended").String()
 	)
-	flag.Parse()
-
-	if *showVersion {
-		num, err := fmt.Fprintln(os.Stdout, version.Print("lustre_exporter"))
-		if err != nil {
-			log.Fatal(num, err)
-		}
-		os.Exit(0)
-	}
+	kingpin.Version(version.Print("lustre_exporter"))
+	kingpin.HelpFlag.Short('h')
+	kingpin.Parse()
 
 	log.Infoln("Starting lustre_exporter", version.Info())
 	log.Infoln("Build context", version.BuildContext())
