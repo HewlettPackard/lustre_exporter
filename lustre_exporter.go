@@ -96,25 +96,27 @@ func init() {
 }
 
 func main() {
-	var (
-		listenAddress  = kingpin.Flag("web.listen-address", "Address to use to expose Lustre metrics.").Default(":9169").String()
-		metricsPath    = kingpin.Flag("web.telemetry-path", "Path to use to expose Lustre metrics.").Default("/metrics").String()
-		ostEnabled     = kingpin.Flag("collector.ost", "Enable OST metrics").Default("extended").String()
-		mdtEnabled     = kingpin.Flag("collector.mdt", "Enable MDT metrics").Default("extended").String()
-		mgsEnabled     = kingpin.Flag("collector.mgs", "Enable MGS metrics").Default("extended").String()
-		mdsEnabled     = kingpin.Flag("collector.mds", "Enable MDS metrics").Default("extended").String()
-		clientEnabled  = kingpin.Flag("collector.client", "Enable Client metrics").Default("extended").String()
-		genericEnabled = kingpin.Flag("collector.generic", "Enable Generic metrics").Default("extended").String()
-		lnetEnabled    = kingpin.Flag("collector.lnet", "Enable LNET metrics").Default("extended").String()
-	)
 	kingpin.Version(version.Print("lustre_exporter"))
 	kingpin.HelpFlag.Short('h')
+
+	var (
+		clientEnabled  = kingpin.Flag("collector.client", "Set client metric level. Valid levels: [extended, core, disabled]").Default("extended").Enum("extended", "core", "disabled")
+		genericEnabled = kingpin.Flag("collector.generic", "Set generic metric level. Valid levels: [extended, core, disabled]").Default("extended").Enum("extended", "core", "disabled")
+		lnetEnabled    = kingpin.Flag("collector.lnet", "Set LNET metric level. Valid levels: [extended, core, disabled]").Default("extended").Enum("extended", "core", "disabled")
+		mdsEnabled     = kingpin.Flag("collector.mds", "Set MDS metric level. Valid levels: [extended, core, disabled]").Default("extended").Enum("extended", "core", "disabled")
+		mdtEnabled     = kingpin.Flag("collector.mdt", "Set MDT metric level. Valid levels: [extended, core, disabled]").Default("extended").Enum("extended", "core", "disabled")
+		mgsEnabled     = kingpin.Flag("collector.mgs", "Set MGS metric level. Valid levels: [extended, core, disabled]").Default("extended").Enum("extended", "core", "disabled")
+		ostEnabled     = kingpin.Flag("collector.ost", "Set OST metric level. Valid levels: [extended, core, disabled]").Default("extended").Enum("extended", "core", "disabled")
+		listenAddress  = kingpin.Flag("web.listen-address", "Address to use to expose Lustre metrics.").Default(":9169").String()
+		metricsPath    = kingpin.Flag("web.telemetry-path", "Path to use to expose Lustre metrics.").Default("/metrics").String()
+	)
+
 	kingpin.Parse()
 
 	log.Infoln("Starting lustre_exporter", version.Info())
 	log.Infoln("Build context", version.BuildContext())
 
-	log.Infof("Enabled Components:")
+	log.Infof("Collector status:")
 	sources.OstEnabled = *ostEnabled
 	log.Infof(" - OST State: %s", sources.OstEnabled)
 	sources.MdtEnabled = *mdtEnabled
