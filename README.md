@@ -37,7 +37,7 @@ make
 
 All above flags default to the value "extended" when no argument is submitted by the user.
 
-Example: `./lustre_exporter -collector.ost=disabled -collector.mdt=core -collector.mgs=extended`
+Example: `./lustre_exporter --collector.ost=disabled --collector.mdt=core --collector.mgs=extended`
 
 The above example will result in a running instance of the Lustre Exporter with the following statuses:
 * collector.ost=disabled
