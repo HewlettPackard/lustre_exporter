@@ -116,7 +116,7 @@ func toggleCollectors(target string) {
 }
 
 func stringAlphabetize(str1 string, str2 string) (int, error) {
-	letterCount := 0
+	var letterCount int
 	if len(str1) > len(str2) {
 		letterCount = len(str2)
 	} else {
