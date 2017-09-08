@@ -1,0 +1,10 @@
+[Unit]
+Description=Lustre Exporter
+
+[Service]
+EnvironmentFile=/etc/sysconfig/lustre_exporter
+ExecStart=/usr/sbin/lustre_exporter $OPTIONS
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

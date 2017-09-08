@@ -1,0 +1,1 @@
+OPTIONS="--collector.ost=core --collector.mdt=core --collector.mgs=core --collector.mds=core --collector.client=core --collector.generic=core --collector.lnet=core"
