@@ -1,0 +1,20 @@
+fsname: lustrefs
+flags: 0x20     gen: 28
+lustrefs-MDT0000
+lustrefs-OST0000
+lustrefs-OST0001
+lustrefs-OST0002
+lustrefs-OST0003
+lustrefs-OST0004
+lustrefs-OST0005
+lustrefs-OST0006
+
+Secure RPC Config Rules:
+
+imperative_recovery_state:
+    state: full
+    nonir_clients: 0
+    nidtbl_version: 24
+    notify_duration_total: 0.006756186
+    notify_duation_max: 0.000853740
+    notify_count: 14
