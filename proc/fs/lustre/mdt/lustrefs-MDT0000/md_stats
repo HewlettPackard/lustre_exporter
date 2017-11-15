@@ -1,8 +1,0 @@
-snapshot_time             1497644932.679376 secs.usecs
-open                      9066 samples [reqs]
-close                     9064 samples [reqs]
-unlink                    20 samples [reqs]
-getattr                   9154 samples [reqs]
-setattr                   9958 samples [reqs]
-getxattr                  2 samples [reqs]
-statfs                    57434 samples [reqs]
