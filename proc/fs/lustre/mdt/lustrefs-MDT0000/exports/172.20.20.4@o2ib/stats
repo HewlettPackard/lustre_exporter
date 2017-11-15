@@ -1,0 +1,8 @@
+snapshot_time             1510781853.008878624 secs.nsecs
+open                      10 samples [reqs]
+close                     9 samples [reqs]
+mknod                     1 samples [reqs]
+getattr                   16 samples [reqs]
+setattr                   57 samples [reqs]
+getxattr                  2 samples [reqs]
+statfs                    1 samples [reqs]

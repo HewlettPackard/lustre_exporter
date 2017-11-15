@@ -1,0 +1,10 @@
+snapshot_time             1510781852.996042226 secs.nsecs
+granted                   15446 samples [locks] 1 4 38089 111001
+grant                     110 samples [locks] 1 1 110 110
+cancel                    108 samples [locks] 1 1 108 108
+grant_rate                15446 samples [locks/s] 0 23 110 1070
+cancel_rate               15446 samples [locks/s] 0 23 108 1118
+grant_plan                15446 samples [locks/s] 32064 961920 496213042 16805748105564
+slv                       15446 samples [slv] 115430400000 115430400000 1782937958400000 9384282236456534016
+recalc_freed              15663 samples [locks] 0 0 0 0
+recalc_timing             15446 samples [sec] 1 161890 177344 26208387644

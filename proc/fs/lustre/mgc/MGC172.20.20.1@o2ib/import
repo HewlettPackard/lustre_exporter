@@ -9,8 +9,8 @@ import:
        target_version: 2.10.1.0
     import_flags: [ pingable, connect_tried ]
     connection:
-       failover_nids: [ 0@lo ]
-       current_connection: 0@lo
+       failover_nids: [ 172.20.20.1@o2ib, 0@lo ]
+       current_connection: 172.20.20.1@o2ib
        connection_attempts: 1
        generation: 1
        in-progress_invalidations: 0
