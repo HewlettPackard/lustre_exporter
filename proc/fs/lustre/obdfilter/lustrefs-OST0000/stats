@@ -1,0 +1,11 @@
+snapshot_time             1510782606.789180921 secs.nsecs
+write_bytes               4298711 samples [bytes] 4096 4194304 16552048697344
+punch                     57 samples [reqs]
+create                    2 samples [reqs]
+statfs                    35359 samples [reqs]
+connect                   1 samples [reqs]
+reconnect                 1 samples [reqs]
+statfs                    124430 samples [reqs]
+preprw                    4298711 samples [reqs]
+commitrw                  4298710 samples [reqs]
+ping                      141 samples [reqs]

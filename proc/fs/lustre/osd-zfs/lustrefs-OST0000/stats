@@ -1,0 +1,4 @@
+snapshot_time             1510782606.797088286 secs.nsecs
+copy                      365013434 samples [pages] 1 1 365013434
+zerocopy                  3676014848 samples [pages] 1 1 3676014848
+tail                      20463 samples [pages] 1 1 20463
