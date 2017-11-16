@@ -1,5 +1,28 @@
 # Change Log
 
+## [v1.0.0](https://github.com/HewlettPackard/lustre_exporter/tree/v1.0.0) (2017-11-16)
+[Full Changelog](https://github.com/HewlettPackard/lustre_exporter/compare/v1.0.0-rc.1...v1.0.0)
+
+**Implemented enhancements:**
+
+- Introduce "Core" and "Extended" as flag concepts [\#116](https://github.com/HewlettPackard/lustre_exporter/issues/116)
+
+**Closed issues:**
+
+- Feature request: Switch to kingpin [\#120](https://github.com/HewlettPackard/lustre_exporter/issues/120)
+- Feature request: -collector Options [\#119](https://github.com/HewlettPackard/lustre_exporter/issues/119)
+- client: label dimensions inconsistent with previously collected metrics in the same metric family [\#100](https://github.com/HewlettPackard/lustre_exporter/issues/100)
+
+**Merged pull requests:**
+
+- Add systemd directory for service files [\#124](https://github.com/HewlettPackard/lustre_exporter/pull/124) ([joehandzik](https://github.com/joehandzik))
+- Clean up simple lint error [\#123](https://github.com/HewlettPackard/lustre_exporter/pull/123) ([joehandzik](https://github.com/joehandzik))
+- Add double-dash to example flags [\#122](https://github.com/HewlettPackard/lustre_exporter/pull/122) ([joehandzik](https://github.com/joehandzik))
+- Support Kingpin and improve help text [\#121](https://github.com/HewlettPackard/lustre_exporter/pull/121) ([joehandzik](https://github.com/joehandzik))
+- Labeling overhaul [\#118](https://github.com/HewlettPackard/lustre_exporter/pull/118) ([joehandzik](https://github.com/joehandzik))
+- Change flag behavior to introduce metric priority levels [\#117](https://github.com/HewlettPackard/lustre_exporter/pull/117) ([joehandzik](https://github.com/joehandzik))
+- Update version and CHANGELOG [\#115](https://github.com/HewlettPackard/lustre_exporter/pull/115) ([joehandzik](https://github.com/joehandzik))
+
 ## [v1.0.0-rc.1](https://github.com/HewlettPackard/lustre_exporter/tree/v1.0.0-rc.1) (2017-07-31)
 [Full Changelog](https://github.com/HewlettPackard/lustre_exporter/compare/v0.01.0...v1.0.0-rc.1)
 
