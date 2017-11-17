@@ -1,0 +1,10 @@
+snapshot_time             1510950459.787092770 secs.nsecs
+req_waittime              18215581 samples [usec] 69 1348857 110282569237 8342874290406023
+req_active                18215582 samples [reqs] 1 17 83626277 470089669
+write_bytes               18210280 samples [bytes] 4096 4194304 65298098221056 10009909738331963392
+ost_write                 18210286 samples [usec] 119 1348857 110277857878 8341476394008222
+ost_connect               1 samples [usec] 603 603 603 363609
+ost_punch                 134 samples [usec] 69 686367 2942876 1397147767330
+ost_statfs                2 samples [usec] 117 507 624 270738
+ldlm_cancel               2 samples [usec] 371 475 846 363266
+obd_ping                  5153 samples [usec] 141 6497 1765137 747091377
