@@ -1,5 +1,16 @@
 # Change Log
 
+## [v1.1.0](https://github.com/HewlettPackard/lustre_exporter/tree/v1.1.0) (2017-11-28)
+[Full Changelog](https://github.com/HewlettPackard/lustre_exporter/compare/v1.0.0...v1.1.0)
+
+**Closed issues:**
+
+- Replace govendor with dep [\#127](https://github.com/HewlettPackard/lustre_exporter/issues/127)
+
+**Merged pull requests:**
+
+- Updating to use dep instead of govendor [\#128](https://github.com/HewlettPackard/lustre_exporter/pull/128) ([joehandzik](https://github.com/joehandzik))
+
 ## [v1.0.0](https://github.com/HewlettPackard/lustre_exporter/tree/v1.0.0) (2017-11-16)
 [Full Changelog](https://github.com/HewlettPackard/lustre_exporter/compare/v1.0.0-rc.1...v1.0.0)
 
@@ -15,6 +26,7 @@
 
 **Merged pull requests:**
 
+- Update changelog to prepare for version 1.0.0 tag [\#126](https://github.com/HewlettPackard/lustre_exporter/pull/126) ([joehandzik](https://github.com/joehandzik))
 - Add systemd directory for service files [\#124](https://github.com/HewlettPackard/lustre_exporter/pull/124) ([joehandzik](https://github.com/joehandzik))
 - Clean up simple lint error [\#123](https://github.com/HewlettPackard/lustre_exporter/pull/123) ([joehandzik](https://github.com/joehandzik))
 - Add double-dash to example flags [\#122](https://github.com/HewlettPackard/lustre_exporter/pull/122) ([joehandzik](https://github.com/joehandzik))
