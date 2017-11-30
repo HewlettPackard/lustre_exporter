@@ -34,6 +34,7 @@ make
 * collector.client=disabled/core/extended
 * collector.generic=disabled/core/extended
 * collector.lnet=disabled/core/extended
+* collector.health=disabled/core/extended
 
 All above flags default to the value "extended" when no argument is submitted by the user.
 
@@ -47,6 +48,7 @@ The above example will result in a running instance of the Lustre Exporter with 
 * collector.client=extended
 * collector.generic=extended
 * collector.lnet=extended
+* collector.health=extended
 
 Flag Option Detailed Description
 

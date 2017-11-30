@@ -64,6 +64,7 @@ func toggleCollectors(target string) {
 		sources.ClientEnabled = "disabled"
 		sources.GenericEnabled = "disabled"
 		sources.LnetEnabled = "disabled"
+		sources.HealthStatusEnabled = "disabled"
 	case "MDT":
 		sources.OstEnabled = "disabled"
 		sources.MdtEnabled = "extended"
@@ -72,6 +73,7 @@ func toggleCollectors(target string) {
 		sources.ClientEnabled = "disabled"
 		sources.GenericEnabled = "disabled"
 		sources.LnetEnabled = "disabled"
+		sources.HealthStatusEnabled = "disabled"
 	case "MGS":
 		sources.OstEnabled = "disabled"
 		sources.MdtEnabled = "disabled"
@@ -80,6 +82,7 @@ func toggleCollectors(target string) {
 		sources.ClientEnabled = "disabled"
 		sources.GenericEnabled = "disabled"
 		sources.LnetEnabled = "disabled"
+		sources.HealthStatusEnabled = "disabled"
 	case "MDS":
 		sources.OstEnabled = "disabled"
 		sources.MdtEnabled = "disabled"
@@ -88,6 +91,7 @@ func toggleCollectors(target string) {
 		sources.ClientEnabled = "disabled"
 		sources.GenericEnabled = "disabled"
 		sources.LnetEnabled = "disabled"
+		sources.HealthStatusEnabled = "disabled"
 	case "Client":
 		sources.OstEnabled = "disabled"
 		sources.MdtEnabled = "disabled"
@@ -96,6 +100,7 @@ func toggleCollectors(target string) {
 		sources.ClientEnabled = "extended"
 		sources.GenericEnabled = "disabled"
 		sources.LnetEnabled = "disabled"
+		sources.HealthStatusEnabled = "disabled"
 	case "Generic":
 		sources.OstEnabled = "disabled"
 		sources.MdtEnabled = "disabled"
@@ -104,6 +109,7 @@ func toggleCollectors(target string) {
 		sources.ClientEnabled = "disabled"
 		sources.GenericEnabled = "extended"
 		sources.LnetEnabled = "disabled"
+		sources.HealthStatusEnabled = "disabled"
 	case "LNET":
 		sources.OstEnabled = "disabled"
 		sources.MdtEnabled = "disabled"
@@ -112,6 +118,16 @@ func toggleCollectors(target string) {
 		sources.ClientEnabled = "disabled"
 		sources.GenericEnabled = "disabled"
 		sources.LnetEnabled = "extended"
+		sources.HealthStatusEnabled = "disabled"
+	case "Health":
+		sources.OstEnabled = "disabled"
+		sources.MdtEnabled = "disabled"
+		sources.MgsEnabled = "disabled"
+		sources.MdsEnabled = "disabled"
+		sources.ClientEnabled = "disabled"
+		sources.GenericEnabled = "disabled"
+		sources.LnetEnabled = "disabled"
+		sources.HealthStatusEnabled = "extended"
 	}
 }
 
@@ -187,9 +203,10 @@ func blacklisted(blacklist []string, metricName string) bool {
 }
 
 func TestCollector(t *testing.T) {
-	targets := []string{"OST", "MDT", "MGS", "MDS", "Client", "Generic", "LNET"}
+	targets := []string{"OST", "MDT", "MGS", "MDS", "Client", "Generic", "LNET", "Health"}
 	// Override the default file location to the local proc directory
 	sources.ProcLocation = "proc"
+	sources.SysLocation = "sys"
 
 	expectedMetrics := []promType{
 		// OST Metrics
@@ -1420,24 +1437,20 @@ func TestCollector(t *testing.T) {
 		{"lustre_stats_total", "Number of operations the filesystem has performed.", counter, []labelPair{{"component", "mdt"}, {"operation", "statfs"}, {"target", "lustrefs-MDT0000"}}, 1, false},
 		{"lustre_stats_total", "Number of operations the filesystem has performed.", counter, []labelPair{{"component", "mdt"}, {"operation", "getxattr"}, {"target", "lustrefs-MDT0000"}}, 2, false},
 		{"lustre_exports_total", "Total number of times the pool has been exported", counter, []labelPair{{"component", "mdt"}, {"target", "lustrefs-MDT0000"}}, 10, false},
+		{"lustre_blocksize_bytes", "Filesystem block size in bytes", gauge, []labelPair{{"component", "mdt"}, {"target", "lustrefs-MDT0000"}}, 131072, false},
+		{"lustre_capacity_kilobytes", "Capacity of the pool in kilobytes", gauge, []labelPair{{"component", "mdt"}, {"target", "lustrefs-MDT0000"}}, 2.24150656e+09, false},
+		{"lustre_inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", gauge, []labelPair{{"component", "mdt"}, {"target", "lustrefs-MDT0000"}}, 4.30405522e+08, false},
+		{"lustre_available_kilobytes", "Number of kilobytes readily available in the pool", gauge, []labelPair{{"component", "mdt"}, {"target", "lustrefs-MDT0000"}}, 2.241498368e+09, false},
+		{"lustre_inodes_free", "The number of inodes (objects) available", gauge, []labelPair{{"component", "mdt"}, {"target", "lustrefs-MDT0000"}}, 4.30405292e+08, false},
+		{"lustre_free_kilobytes", "Number of kilobytes allocated to the pool", gauge, []labelPair{{"component", "mdt"}, {"target", "lustrefs-MDT0000"}}, 2.241500416e+09, false},
 
 		// MGS Metrics
 		{"lustre_available_kilobytes", "Number of kilobytes readily available in the pool", gauge, []labelPair{{"target", "osd"}, {"component", "mgs"}}, 1.12074688e+09, false},
 		{"lustre_blocksize_bytes", "Filesystem block size in bytes", gauge, []labelPair{{"component", "mgs"}, {"target", "osd"}}, 131072, false},
 		{"lustre_capacity_kilobytes", "Capacity of the pool in kilobytes", gauge, []labelPair{{"component", "mgs"}, {"target", "osd"}}, 1.12075328e+09, false},
-		{"lustre_quota_iused_estimate", "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated", gauge, []labelPair{{"component", "mgs"}, {"target", "osd"}}, 0, false},
 		{"lustre_inodes_free", "The number of inodes (objects) available", gauge, []labelPair{{"component", "mgs"}, {"target", "osd"}}, 2.31003975e+08, false},
 		{"lustre_inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", gauge, []labelPair{{"component", "mgs"}, {"target", "osd"}}, 2.31004127e+08, false},
 		{"lustre_free_kilobytes", "Number of kilobytes allocated to the pool", gauge, []labelPair{{"component", "mgs"}, {"target", "osd"}}, 1.120748928e+09, false},
-
-		// MDS Metrics
-		{"lustre_blocksize_bytes", "Filesystem block size in bytes", gauge, []labelPair{{"component", "mds"}, {"target", "osd"}}, 131072, false},
-		{"lustre_capacity_kilobytes", "Capacity of the pool in kilobytes", gauge, []labelPair{{"component", "mds"}, {"target", "osd"}}, 1.120748032e+09, false},
-		{"lustre_quota_iused_estimate", "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated", gauge, []labelPair{{"component", "mds"}, {"target", "osd"}}, 0, false},
-		{"lustre_inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", gauge, []labelPair{{"component", "mds"}, {"target", "osd"}}, 3.5981071e+07, false},
-		{"lustre_available_kilobytes", "Number of kilobytes readily available in the pool", gauge, []labelPair{{"component", "mds"}, {"target", "osd"}}, 1.120742144e+09, false},
-		{"lustre_inodes_free", "The number of inodes (objects) available", gauge, []labelPair{{"component", "mds"}, {"target", "osd"}}, 3.5980923e+07, false},
-		{"lustre_free_kilobytes", "Number of kilobytes allocated to the pool", gauge, []labelPair{{"component", "mds"}, {"target", "osd"}}, 1.120744192e+09, false},
 
 		// Client Metrics
 		{"lustre_pages_per_rpc_total", "Total number of pages per RPC.", counter, []labelPair{{"component", "client"}, {"operation", "read"}, {"size", "1"}, {"target", "lustrefs-OST0000-osc-ffff88105db50000"}}, 0, false},
@@ -1631,7 +1644,6 @@ func TestCollector(t *testing.T) {
 		{"lustre_rpcs_in_flight", "Current number of RPCs that are processing during the snapshot.", gauge, []labelPair{{"component", "client"}, {"operation", "write"}, {"size", "9"}, {"target", "lustrefs-OST0000-osc-ffff88105db50000"}, {"type", "osc"}}, 272560, false},
 
 		// Generic Metrics
-		{"lustre_health_check", "Current health status for the indicated instance: 1 refers to 'healthy', 0 refers to 'unhealthy'", gauge, []labelPair{{"component", "generic"}, {"target", "lustre"}}, 1, false},
 		{"lustre_cache_miss_total", "Total number of cache misses.", counter, []labelPair{{"component", "generic"}, {"target", "sptlrpc"}}, 0, false},
 		{"lustre_cache_access_total", "Total number of times cache has been accessed.", counter, []labelPair{{"component", "generic"}, {"target", "sptlrpc"}}, 0, false},
 		{"lustre_free_pages", "Current number of pages available.", gauge, []labelPair{{"component", "generic"}, {"target", "sptlrpc"}}, 0, false},
@@ -1671,6 +1683,9 @@ func TestCollector(t *testing.T) {
 		{"lustre_drop_count_total", "Total number of messages that have been dropped", counter, []labelPair{{"component", "lnet"}, {"target", "lnet"}}, 0, false},
 		{"lustre_fail_maximum", "Maximum number of times to fail", gauge, []labelPair{{"component", "lnet"}, {"target", "lnet"}}, 0, false},
 		{"lustre_panic_on_lbug_enabled", "Returns 1 if panic_on_lbug is enabled", gauge, []labelPair{{"component", "lnet"}, {"target", "lnet"}}, 1, false},
+
+		//Health metrics
+		{"lustre_health_check", "Current health status for the indicated instance: 1 refers to 'healthy', 0 refers to 'unhealthy'", gauge, []labelPair{{"component", "health"}, {"target", "lustre"}}, 1, false},
 	}
 
 	// These following metrics should be filtered out as they are specific to the deployment and will always change
@@ -1688,7 +1703,7 @@ func TestCollector(t *testing.T) {
 	for _, target := range targets {
 		toggleCollectors(target)
 		var missingMetrics []promType // Array of metrics that are missing for the given target
-		enabledSources := []string{"procfs", "procsys"}
+		enabledSources := []string{"procfs", "procsys", "sysfs"}
 
 		sourceList, err := loadSources(enabledSources)
 		if err != nil {
@@ -1769,4 +1784,5 @@ func TestCollector(t *testing.T) {
 
 	// Return the proc location to the default value
 	sources.ProcLocation = "/proc"
+	sources.SysLocation = "/sys"
 }
