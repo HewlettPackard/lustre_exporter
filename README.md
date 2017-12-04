@@ -62,6 +62,10 @@ All Lustre procfs and procsys data from all nodes running the Lustre Exporter th
 
 See the issues tab for all known issues. This project is actively maintained by HPE, so you should see a reasonably quick response if you identify a gap.
 
+## Troubleshooting
+
+In the event that you encounter issues with specific metrics (especially on versions of Lustre older than 2.7), please try disabling those specific troublesome metrics using the documented collector flags in the 'disabled' or 'core' state. Users have encountered bugs within Lustre where specific sysfs and procfs files miscommunicate their sizes, causing read calls to fail.
+
 ## Contributing
 
 To contribute to this HPE project, you'll need to fill out a CLA (Contributor License Agreement). If you would like to contribute anything more than a bug fix (feature, architectural change, etc), please file an issue and we'll get in touch with you to have you fill out the CLA. 
