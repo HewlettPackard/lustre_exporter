@@ -1,11 +1,11 @@
 job_stats:
-- job_id:          334
-  snapshot_time:   1497639286
+- job_id:          24
+  snapshot_time:   1510782606
   read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
-  write_bytes:     { samples:      199575, unit: bytes, min:    4096, max: 1048576, sum:    208901812224 }
+  write_bytes:     { samples:       64575, unit: bytes, min:    4096, max: 4194304, sum:    215147593728 }
   getattr:         { samples:           0, unit:  reqs }
   setattr:         { samples:           0, unit:  reqs }
-  punch:           { samples:          20, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   destroy:         { samples:           0, unit:  reqs }
   create:          { samples:           0, unit:  reqs }
@@ -13,13 +13,13 @@ job_stats:
   get_info:        { samples:           0, unit:  reqs }
   set_info:        { samples:           0, unit:  reqs }
   quotactl:        { samples:           0, unit:  reqs }
-- job_id:          335
-  snapshot_time:   1497639417
+- job_id:          26
+  snapshot_time:   1510782606
   read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
-  write_bytes:     { samples:      197501, unit: bytes, min:    4096, max: 1048576, sum:    206254907392 }
+  write_bytes:     { samples:       56048, unit: bytes, min:    4096, max: 4194304, sum:    185838792704 }
   getattr:         { samples:           0, unit:  reqs }
   setattr:         { samples:           0, unit:  reqs }
-  punch:           { samples:          20, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   destroy:         { samples:           0, unit:  reqs }
   create:          { samples:           0, unit:  reqs }
@@ -27,13 +27,13 @@ job_stats:
   get_info:        { samples:           0, unit:  reqs }
   set_info:        { samples:           0, unit:  reqs }
   quotactl:        { samples:           0, unit:  reqs }
-- job_id:          336
-  snapshot_time:   1497639414
+- job_id:          28
+  snapshot_time:   1510782606
   read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
-  write_bytes:     { samples:      198901, unit: bytes, min:    4096, max: 1048576, sum:    206309617664 }
+  write_bytes:     { samples:       64208, unit: bytes, min:    4096, max: 4194304, sum:    213963751424 }
   getattr:         { samples:           0, unit:  reqs }
   setattr:         { samples:           0, unit:  reqs }
-  punch:           { samples:          20, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   destroy:         { samples:           0, unit:  reqs }
   create:          { samples:           0, unit:  reqs }
@@ -41,13 +41,13 @@ job_stats:
   get_info:        { samples:           0, unit:  reqs }
   set_info:        { samples:           0, unit:  reqs }
   quotactl:        { samples:           0, unit:  reqs }
-- job_id:          337
-  snapshot_time:   1497639418
+- job_id:          29
+  snapshot_time:   1510782606
   read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
-  write_bytes:     { samples:      199384, unit: bytes, min:    4096, max: 1048576, sum:    209064738816 }
+  write_bytes:     { samples:       57773, unit: bytes, min:    4096, max: 4194304, sum:    190641672192 }
   getattr:         { samples:           0, unit:  reqs }
   setattr:         { samples:           0, unit:  reqs }
-  punch:           { samples:          20, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   destroy:         { samples:           0, unit:  reqs }
   create:          { samples:           0, unit:  reqs }
@@ -55,13 +55,13 @@ job_stats:
   get_info:        { samples:           0, unit:  reqs }
   set_info:        { samples:           0, unit:  reqs }
   quotactl:        { samples:           0, unit:  reqs }
-- job_id:          338
-  snapshot_time:   1497639732
+- job_id:          25
+  snapshot_time:   1510782606
   read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
-  write_bytes:     { samples:      199832, unit: bytes, min:    4096, max: 1048576, sum:    209531699200 }
+  write_bytes:     { samples:       71996, unit: bytes, min:    4096, max: 4194304, sum:    240823762944 }
   getattr:         { samples:           0, unit:  reqs }
   setattr:         { samples:           0, unit:  reqs }
-  punch:           { samples:          20, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   destroy:         { samples:           0, unit:  reqs }
   create:          { samples:           0, unit:  reqs }
@@ -69,13 +69,13 @@ job_stats:
   get_info:        { samples:           0, unit:  reqs }
   set_info:        { samples:           0, unit:  reqs }
   quotactl:        { samples:           0, unit:  reqs }
-- job_id:          339
-  snapshot_time:   1497639750
+- job_id:          23
+  snapshot_time:   1510782606
   read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
-  write_bytes:     { samples:      106178, unit: bytes, min:   45056, max: 1048576, sum:    111325073408 }
+  write_bytes:     { samples:       46956, unit: bytes, min:    4096, max: 4194304, sum:    155500642304 }
   getattr:         { samples:           0, unit:  reqs }
   setattr:         { samples:           0, unit:  reqs }
-  punch:           { samples:          11, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   destroy:         { samples:           0, unit:  reqs }
   create:          { samples:           0, unit:  reqs }
@@ -83,13 +83,13 @@ job_stats:
   get_info:        { samples:           0, unit:  reqs }
   set_info:        { samples:           0, unit:  reqs }
   quotactl:        { samples:           0, unit:  reqs }
-- job_id:          340
-  snapshot_time:   1497639749
+- job_id:          40
+  snapshot_time:   1510782606
   read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
-  write_bytes:     { samples:       92053, unit: bytes, min:    4096, max: 1048576, sum:     94739140608 }
+  write_bytes:     { samples:       55053, unit: bytes, min:    4096, max: 4194304, sum:    182426591232 }
   getattr:         { samples:           0, unit:  reqs }
   setattr:         { samples:           0, unit:  reqs }
-  punch:           { samples:           9, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   destroy:         { samples:           0, unit:  reqs }
   create:          { samples:           0, unit:  reqs }
@@ -97,13 +97,13 @@ job_stats:
   get_info:        { samples:           0, unit:  reqs }
   set_info:        { samples:           0, unit:  reqs }
   quotactl:        { samples:           0, unit:  reqs }
-- job_id:          341
-  snapshot_time:   1497639750
+- job_id:          27
+  snapshot_time:   1510782606
   read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
-  write_bytes:     { samples:       91140, unit: bytes, min:    4096, max: 1048576, sum:     94455115776 }
+  write_bytes:     { samples:       60729, unit: bytes, min:    4096, max: 4194304, sum:    201320374272 }
   getattr:         { samples:           0, unit:  reqs }
   setattr:         { samples:           0, unit:  reqs }
-  punch:           { samples:          10, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   destroy:         { samples:           0, unit:  reqs }
   create:          { samples:           0, unit:  reqs }
@@ -111,10 +111,374 @@ job_stats:
   get_info:        { samples:           0, unit:  reqs }
   set_info:        { samples:           0, unit:  reqs }
   quotactl:        { samples:           0, unit:  reqs }
-- job_id:          342
-  snapshot_time:   1497639746
+- job_id:          30
+  snapshot_time:   1510782606
   read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
-  write_bytes:     { samples:        9991, unit: bytes, min:  327680, max: 1048576, sum:     10474225664 }
+  write_bytes:     { samples:       30804, unit: bytes, min:    4096, max: 4194304, sum:    101291593728 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          36
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:       29390, unit: bytes, min:    4096, max: 4194304, sum:     96616685568 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          34
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:       27390, unit: bytes, min:    4096, max: 4194304, sum:     90951311360 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          32
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:       32411, unit: bytes, min:    4096, max: 4194304, sum:    108391518208 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          38
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:       25852, unit: bytes, min:    4096, max: 4194304, sum:     85505073152 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          37
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:       28191, unit: bytes, min:    4096, max: 4194304, sum:     94293942272 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          33
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:       29079, unit: bytes, min:    4096, max: 4194304, sum:     96846708736 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          39
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:       26061, unit: bytes, min:    4096, max: 4194304, sum:     86011281408 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          41
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:       27161, unit: bytes, min:    4096, max: 4194304, sum:     89955606528 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          42
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:       27210, unit: bytes, min:    4096, max: 4194304, sum:     90020810752 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          31
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:       28787, unit: bytes, min:    4096, max: 4194304, sum:     96291004416 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          35
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:       29417, unit: bytes, min:    4096, max: 4194304, sum:     98370088960 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          43
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:        7906, unit: bytes, min:    4096, max: 4194304, sum:     21711745024 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          44
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:        8254, unit: bytes, min:    4096, max: 4194304, sum:     23701565440 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          47
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:        8051, unit: bytes, min:    4096, max: 4194304, sum:     23049785344 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          46
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:        8579, unit: bytes, min:    4096, max: 4194304, sum:     24320741376 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          48
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:        8176, unit: bytes, min:    4096, max: 4194304, sum:     23314677760 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          45
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:        7810, unit: bytes, min:    4096, max: 4194304, sum:     21836828672 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          50
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:        8246, unit: bytes, min:    4096, max: 4194304, sum:     23387901952 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          51
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:        7887, unit: bytes, min:    4096, max: 4194304, sum:     21966520320 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          52
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:        7969, unit: bytes, min:    4096, max: 4194304, sum:     21969199104 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          56
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:        7656, unit: bytes, min:    4096, max: 4194304, sum:     21190914048 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          53
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:        7632, unit: bytes, min:    4096, max: 4194304, sum:     20787339264 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          55
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:        7609, unit: bytes, min:    4096, max: 4194304, sum:     20803461120 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          57
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:        7722, unit: bytes, min:    4096, max: 4194304, sum:     20557369344 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          54
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:        7786, unit: bytes, min:    4096, max: 4194304, sum:     21327118336 }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           0, unit:  reqs }
+  punch:           { samples:           1, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  destroy:         { samples:           0, unit:  reqs }
+  create:          { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  get_info:        { samples:           0, unit:  reqs }
+  set_info:        { samples:           0, unit:  reqs }
+  quotactl:        { samples:           0, unit:  reqs }
+- job_id:          49
+  snapshot_time:   1510782606
+  read_bytes:      { samples:           0, unit: bytes, min:       0, max:       0, sum:               0 }
+  write_bytes:     { samples:        7404, unit: bytes, min:    4096, max: 4194304, sum:     19928662016 }
   getattr:         { samples:           0, unit:  reqs }
   setattr:         { samples:           0, unit:  reqs }
   punch:           { samples:           1, unit:  reqs }

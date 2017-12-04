@@ -1,0 +1,16 @@
+snapshot_time             1510781853.000601035 secs.nsecs
+req_waittime              57267 samples [usec] 8 6033 4709981 1800908227
+req_qdepth                57267 samples [reqs] 0 3 234 464
+req_active                57267 samples [reqs] 1 7 119847 313587
+req_timeout               57267 samples [sec] 1 10 57294 57564
+reqbuf_avail              138779 samples [bufs] 63 64 8880960 568324992
+ldlm_ibits_enqueue        28 samples [reqs] 1 1 28 28
+mds_reint_setattr         57 samples [reqs] 1 1 57 57
+mds_reint_open            10 samples [reqs] 1 1 10 10
+mds_getattr               1 samples [usec] 37 37 37 1369
+mds_connect               15 samples [usec] 33 131964 133751 17414740975
+mds_disconnect            5 samples [usec] 85 110 509 52223
+mds_get_root              1 samples [usec] 13 13 13 169
+mds_statfs                1 samples [usec] 21 21 21 441
+mds_hsm_state_set         13 samples [usec] 39 365 1255 291361
+obd_ping                  57146 samples [usec] 4 4784 2428494 688223694

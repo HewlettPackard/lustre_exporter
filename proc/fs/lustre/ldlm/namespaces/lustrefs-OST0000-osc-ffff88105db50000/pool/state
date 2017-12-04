@@ -1,0 +1,9 @@
+LDLM pool state (ldlm-pool-lustrefs-OST0000-osc-ffff88105db50000-2):
+  SLV: 115943832000
+  CLV: 3894
+  LVF: 1
+  GR:  0
+  CR:  0
+  GS:  0
+  G:   1
+  L:   3220662

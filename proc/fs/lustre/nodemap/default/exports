@@ -1,0 +1,3 @@
+[
+ { nid: 172.20.20.4@o2ib, uuid: e874d9be-c166-afa0-2526-44586436510a }, { nid: 172.20.20.6@o2ib, uuid: lustrefs-MDT0000-lwp-OST0001_UUID }, { nid: 172.20.20.5@o2ib, uuid: lustrefs-MDT0000-lwp-OST0006_UUID }, { nid: 172.20.20.5@o2ib, uuid: lustrefs-MDT0000-lwp-OST0004_UUID }, { nid: 172.20.20.5@o2ib, uuid: lustrefs-MDT0000-lwp-OST0002_UUID }, { nid: 172.20.20.5@o2ib, uuid: lustrefs-MDT0000-lwp-OST0000_UUID }, { nid: 172.20.20.6@o2ib, uuid: lustrefs-MDT0000-lwp-OST0005_UUID }, { nid: 172.20.20.6@o2ib, uuid: lustrefs-MDT0000-lwp-OST0003_UUID }, { nid: 0@lo, uuid: lustrefs-MDT0000-lwp-MDT0000_UUID },
+]

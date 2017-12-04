@@ -1,160 +1,268 @@
 job_stats:
-- job_id:          343
-  snapshot_time:   1497644161
-  open:            { samples:          40, unit:  reqs }
-  close:           { samples:          33, unit:  reqs }
+- job_id:          43
+  snapshot_time:   1510781837
+  open:            { samples:           0, unit:  reqs }
+  close:           { samples:           0, unit:  reqs }
   mknod:           { samples:           0, unit:  reqs }
   link:            { samples:           0, unit:  reqs }
   unlink:          { samples:           0, unit:  reqs }
   mkdir:           { samples:           0, unit:  reqs }
   rmdir:           { samples:           0, unit:  reqs }
   rename:          { samples:           0, unit:  reqs }
-  getattr:         { samples:          38, unit:  reqs }
-  setattr:         { samples:          40, unit:  reqs }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           1, unit:  reqs }
   getxattr:        { samples:           0, unit:  reqs }
   setxattr:        { samples:           0, unit:  reqs }
   statfs:          { samples:           0, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   samedir_rename:  { samples:           0, unit:  reqs }
   crossdir_rename: { samples:           0, unit:  reqs }
-- job_id:          344
-  snapshot_time:   1497644215
-  open:            { samples:          33, unit:  reqs }
-  close:           { samples:          31, unit:  reqs }
+- job_id:          44
+  snapshot_time:   1510781837
+  open:            { samples:           0, unit:  reqs }
+  close:           { samples:           0, unit:  reqs }
   mknod:           { samples:           0, unit:  reqs }
   link:            { samples:           0, unit:  reqs }
   unlink:          { samples:           0, unit:  reqs }
   mkdir:           { samples:           0, unit:  reqs }
   rmdir:           { samples:           0, unit:  reqs }
   rename:          { samples:           0, unit:  reqs }
-  getattr:         { samples:          38, unit:  reqs }
-  setattr:         { samples:          40, unit:  reqs }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           1, unit:  reqs }
   getxattr:        { samples:           0, unit:  reqs }
   setxattr:        { samples:           0, unit:  reqs }
   statfs:          { samples:           0, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   samedir_rename:  { samples:           0, unit:  reqs }
   crossdir_rename: { samples:           0, unit:  reqs }
-- job_id:          345
-  snapshot_time:   1497644242
-  open:            { samples:          31, unit:  reqs }
-  close:           { samples:          40, unit:  reqs }
+- job_id:          47
+  snapshot_time:   1510781846
+  open:            { samples:           0, unit:  reqs }
+  close:           { samples:           0, unit:  reqs }
   mknod:           { samples:           0, unit:  reqs }
   link:            { samples:           0, unit:  reqs }
   unlink:          { samples:           0, unit:  reqs }
   mkdir:           { samples:           0, unit:  reqs }
   rmdir:           { samples:           0, unit:  reqs }
   rename:          { samples:           0, unit:  reqs }
-  getattr:         { samples:          39, unit:  reqs }
-  setattr:         { samples:          40, unit:  reqs }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           1, unit:  reqs }
   getxattr:        { samples:           0, unit:  reqs }
   setxattr:        { samples:           0, unit:  reqs }
   statfs:          { samples:           0, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   samedir_rename:  { samples:           0, unit:  reqs }
   crossdir_rename: { samples:           0, unit:  reqs }
-- job_id:          346
-  snapshot_time:   1497644426
-  open:            { samples:          40, unit:  reqs }
-  close:           { samples:          40, unit:  reqs }
+- job_id:          46
+  snapshot_time:   1510781846
+  open:            { samples:           0, unit:  reqs }
+  close:           { samples:           0, unit:  reqs }
   mknod:           { samples:           0, unit:  reqs }
   link:            { samples:           0, unit:  reqs }
   unlink:          { samples:           0, unit:  reqs }
   mkdir:           { samples:           0, unit:  reqs }
   rmdir:           { samples:           0, unit:  reqs }
   rename:          { samples:           0, unit:  reqs }
-  getattr:         { samples:          29, unit:  reqs }
-  setattr:         { samples:          40, unit:  reqs }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           1, unit:  reqs }
   getxattr:        { samples:           0, unit:  reqs }
   setxattr:        { samples:           0, unit:  reqs }
   statfs:          { samples:           0, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   samedir_rename:  { samples:           0, unit:  reqs }
   crossdir_rename: { samples:           0, unit:  reqs }
-- job_id:          347
-  snapshot_time:   1497644681
-  open:            { samples:          40, unit:  reqs }
-  close:           { samples:          40, unit:  reqs }
+- job_id:          48
+  snapshot_time:   1510781846
+  open:            { samples:           0, unit:  reqs }
+  close:           { samples:           0, unit:  reqs }
   mknod:           { samples:           0, unit:  reqs }
   link:            { samples:           0, unit:  reqs }
   unlink:          { samples:           0, unit:  reqs }
   mkdir:           { samples:           0, unit:  reqs }
   rmdir:           { samples:           0, unit:  reqs }
   rename:          { samples:           0, unit:  reqs }
-  getattr:         { samples:          31, unit:  reqs }
-  setattr:         { samples:          40, unit:  reqs }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           1, unit:  reqs }
   getxattr:        { samples:           0, unit:  reqs }
   setxattr:        { samples:           0, unit:  reqs }
   statfs:          { samples:           0, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   samedir_rename:  { samples:           0, unit:  reqs }
   crossdir_rename: { samples:           0, unit:  reqs }
-- job_id:          348
-  snapshot_time:   1497644924
-  open:            { samples:          38, unit:  reqs }
-  close:           { samples:          10, unit:  reqs }
+- job_id:          45
+  snapshot_time:   1510781846
+  open:            { samples:           0, unit:  reqs }
+  close:           { samples:           0, unit:  reqs }
   mknod:           { samples:           0, unit:  reqs }
   link:            { samples:           0, unit:  reqs }
   unlink:          { samples:           0, unit:  reqs }
   mkdir:           { samples:           0, unit:  reqs }
   rmdir:           { samples:           0, unit:  reqs }
   rename:          { samples:           0, unit:  reqs }
-  getattr:         { samples:          37, unit:  reqs }
-  setattr:         { samples:          38, unit:  reqs }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           1, unit:  reqs }
   getxattr:        { samples:           0, unit:  reqs }
   setxattr:        { samples:           0, unit:  reqs }
   statfs:          { samples:           0, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   samedir_rename:  { samples:           0, unit:  reqs }
   crossdir_rename: { samples:           0, unit:  reqs }
-- job_id:          349
-  snapshot_time:   1497644931
-  open:            { samples:          10, unit:  reqs }
-  close:           { samples:          35, unit:  reqs }
+- job_id:          50
+  snapshot_time:   1510781846
+  open:            { samples:           0, unit:  reqs }
+  close:           { samples:           0, unit:  reqs }
   mknod:           { samples:           0, unit:  reqs }
   link:            { samples:           0, unit:  reqs }
   unlink:          { samples:           0, unit:  reqs }
   mkdir:           { samples:           0, unit:  reqs }
   rmdir:           { samples:           0, unit:  reqs }
   rename:          { samples:           0, unit:  reqs }
-  getattr:         { samples:          30, unit:  reqs }
-  setattr:         { samples:          38, unit:  reqs }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           1, unit:  reqs }
   getxattr:        { samples:           0, unit:  reqs }
   setxattr:        { samples:           0, unit:  reqs }
   statfs:          { samples:           0, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   samedir_rename:  { samples:           0, unit:  reqs }
   crossdir_rename: { samples:           0, unit:  reqs }
-- job_id:          350
-  snapshot_time:   1497644929
-  open:            { samples:          27, unit:  reqs }
-  close:           { samples:          29, unit:  reqs }
+- job_id:          51
+  snapshot_time:   1510781846
+  open:            { samples:           0, unit:  reqs }
+  close:           { samples:           0, unit:  reqs }
   mknod:           { samples:           0, unit:  reqs }
   link:            { samples:           0, unit:  reqs }
   unlink:          { samples:           0, unit:  reqs }
   mkdir:           { samples:           0, unit:  reqs }
   rmdir:           { samples:           0, unit:  reqs }
   rename:          { samples:           0, unit:  reqs }
-  getattr:         { samples:          32, unit:  reqs }
-  setattr:         { samples:          38, unit:  reqs }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           1, unit:  reqs }
   getxattr:        { samples:           0, unit:  reqs }
   setxattr:        { samples:           0, unit:  reqs }
   statfs:          { samples:           0, unit:  reqs }
   sync:            { samples:           0, unit:  reqs }
   samedir_rename:  { samples:           0, unit:  reqs }
   crossdir_rename: { samples:           0, unit:  reqs }
-- job_id:          351
-  snapshot_time:   1497644927
-  open:            { samples:          24, unit:  reqs }
-  close:           { samples:          23, unit:  reqs }
+- job_id:          52
+  snapshot_time:   1510781846
+  open:            { samples:           0, unit:  reqs }
+  close:           { samples:           0, unit:  reqs }
   mknod:           { samples:           0, unit:  reqs }
   link:            { samples:           0, unit:  reqs }
   unlink:          { samples:           0, unit:  reqs }
   mkdir:           { samples:           0, unit:  reqs }
   rmdir:           { samples:           0, unit:  reqs }
   rename:          { samples:           0, unit:  reqs }
-  getattr:         { samples:          12, unit:  reqs }
-  setattr:         { samples:          24, unit:  reqs }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           1, unit:  reqs }
+  getxattr:        { samples:           0, unit:  reqs }
+  setxattr:        { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  samedir_rename:  { samples:           0, unit:  reqs }
+  crossdir_rename: { samples:           0, unit:  reqs }
+- job_id:          56
+  snapshot_time:   1510781846
+  open:            { samples:           0, unit:  reqs }
+  close:           { samples:           0, unit:  reqs }
+  mknod:           { samples:           0, unit:  reqs }
+  link:            { samples:           0, unit:  reqs }
+  unlink:          { samples:           0, unit:  reqs }
+  mkdir:           { samples:           0, unit:  reqs }
+  rmdir:           { samples:           0, unit:  reqs }
+  rename:          { samples:           0, unit:  reqs }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           1, unit:  reqs }
+  getxattr:        { samples:           0, unit:  reqs }
+  setxattr:        { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  samedir_rename:  { samples:           0, unit:  reqs }
+  crossdir_rename: { samples:           0, unit:  reqs }
+- job_id:          53
+  snapshot_time:   1510781846
+  open:            { samples:           0, unit:  reqs }
+  close:           { samples:           0, unit:  reqs }
+  mknod:           { samples:           0, unit:  reqs }
+  link:            { samples:           0, unit:  reqs }
+  unlink:          { samples:           0, unit:  reqs }
+  mkdir:           { samples:           0, unit:  reqs }
+  rmdir:           { samples:           0, unit:  reqs }
+  rename:          { samples:           0, unit:  reqs }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           1, unit:  reqs }
+  getxattr:        { samples:           0, unit:  reqs }
+  setxattr:        { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  samedir_rename:  { samples:           0, unit:  reqs }
+  crossdir_rename: { samples:           0, unit:  reqs }
+- job_id:          55
+  snapshot_time:   1510781846
+  open:            { samples:           0, unit:  reqs }
+  close:           { samples:           0, unit:  reqs }
+  mknod:           { samples:           0, unit:  reqs }
+  link:            { samples:           0, unit:  reqs }
+  unlink:          { samples:           0, unit:  reqs }
+  mkdir:           { samples:           0, unit:  reqs }
+  rmdir:           { samples:           0, unit:  reqs }
+  rename:          { samples:           0, unit:  reqs }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           1, unit:  reqs }
+  getxattr:        { samples:           0, unit:  reqs }
+  setxattr:        { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  samedir_rename:  { samples:           0, unit:  reqs }
+  crossdir_rename: { samples:           0, unit:  reqs }
+- job_id:          57
+  snapshot_time:   1510781846
+  open:            { samples:           0, unit:  reqs }
+  close:           { samples:           0, unit:  reqs }
+  mknod:           { samples:           0, unit:  reqs }
+  link:            { samples:           0, unit:  reqs }
+  unlink:          { samples:           0, unit:  reqs }
+  mkdir:           { samples:           0, unit:  reqs }
+  rmdir:           { samples:           0, unit:  reqs }
+  rename:          { samples:           0, unit:  reqs }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           1, unit:  reqs }
+  getxattr:        { samples:           0, unit:  reqs }
+  setxattr:        { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  samedir_rename:  { samples:           0, unit:  reqs }
+  crossdir_rename: { samples:           0, unit:  reqs }
+- job_id:          54
+  snapshot_time:   1510781846
+  open:            { samples:           0, unit:  reqs }
+  close:           { samples:           0, unit:  reqs }
+  mknod:           { samples:           0, unit:  reqs }
+  link:            { samples:           0, unit:  reqs }
+  unlink:          { samples:           0, unit:  reqs }
+  mkdir:           { samples:           0, unit:  reqs }
+  rmdir:           { samples:           0, unit:  reqs }
+  rename:          { samples:           0, unit:  reqs }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           1, unit:  reqs }
+  getxattr:        { samples:           0, unit:  reqs }
+  setxattr:        { samples:           0, unit:  reqs }
+  statfs:          { samples:           0, unit:  reqs }
+  sync:            { samples:           0, unit:  reqs }
+  samedir_rename:  { samples:           0, unit:  reqs }
+  crossdir_rename: { samples:           0, unit:  reqs }
+- job_id:          49
+  snapshot_time:   1510781846
+  open:            { samples:           0, unit:  reqs }
+  close:           { samples:           0, unit:  reqs }
+  mknod:           { samples:           0, unit:  reqs }
+  link:            { samples:           0, unit:  reqs }
+  unlink:          { samples:           0, unit:  reqs }
+  mkdir:           { samples:           0, unit:  reqs }
+  rmdir:           { samples:           0, unit:  reqs }
+  rename:          { samples:           0, unit:  reqs }
+  getattr:         { samples:           0, unit:  reqs }
+  setattr:         { samples:           1, unit:  reqs }
   getxattr:        { samples:           0, unit:  reqs }
   setxattr:        { samples:           0, unit:  reqs }
   statfs:          { samples:           0, unit:  reqs }

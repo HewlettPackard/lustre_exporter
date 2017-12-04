@@ -21,6 +21,9 @@ import (
 // but for testing purposes, specify 'proc' (without the leading '/') for the local files.
 var ProcLocation = "/proc"
 
+// SysLocation is the source to pull sys files from.
+var SysLocation = "/sys"
+
 //Namespace defines the namespace shared by all Lustre metrics.
 const Namespace = "lustre"
 

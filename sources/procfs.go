@@ -65,10 +65,6 @@ const (
 	maxWaitQueueDepthHelp string = "Maximum waitqueue length."
 	outOfMemHelp          string = "Total number of out of memory requests."
 
-	// string mappings for 'health_check' values
-	healthCheckHealthy   string = "1"
-	healthCheckUnhealthy string = "0"
-
 	//repeated strings replaced by constants
 	mdStats          string = "md_stats"
 	encryptPagePools string = "encrypt_page_pools"
@@ -192,6 +188,14 @@ func (s *lustreProcfsSource) generateOSTMetricTemplates(filter string) {
 
 func (s *lustreProcfsSource) generateMDTMetricTemplates(filter string) {
 	metricMap := map[string][]lustreHelpStruct{
+		"osd-*/*-MDT*": {
+			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric, false, core},
+			{"filesfree", "inodes_free", "The number of inodes (objects) available", s.gaugeMetric, false, core},
+			{"filestotal", "inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", s.gaugeMetric, false, core},
+			{"kbytesavail", "available_kilobytes", "Number of kilobytes readily available in the pool", s.gaugeMetric, false, core},
+			{"kbytesfree", "free_kilobytes", "Number of kilobytes allocated to the pool", s.gaugeMetric, false, core},
+			{"kbytestotal", "capacity_kilobytes", "Capacity of the pool in kilobytes", s.gaugeMetric, false, core},
+		},
 		"mdt/*": {
 			{mdStats, "stats_total", statsHelp, s.counterMetric, true, core},
 			{"num_exports", "exports_total", "Total number of times the pool has been exported", s.counterMetric, false, core},
@@ -217,7 +221,6 @@ func (s *lustreProcfsSource) generateMGSMetricTemplates(filter string) {
 			{"kbytesavail", "available_kilobytes", "Number of kilobytes readily available in the pool", s.gaugeMetric, false, core},
 			{"kbytesfree", "free_kilobytes", "Number of kilobytes allocated to the pool", s.gaugeMetric, false, core},
 			{"kbytestotal", "capacity_kilobytes", "Capacity of the pool in kilobytes", s.gaugeMetric, false, core},
-			{"quota_iused_estimate", "quota_iused_estimate", "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated", s.gaugeMetric, false, extended},
 		},
 	}
 	for path := range metricMap {
@@ -231,17 +234,7 @@ func (s *lustreProcfsSource) generateMGSMetricTemplates(filter string) {
 }
 
 func (s *lustreProcfsSource) generateMDSMetricTemplates(filter string) {
-	metricMap := map[string][]lustreHelpStruct{
-		"mds/MDS/osd": {
-			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric, false, core},
-			{"filesfree", "inodes_free", "The number of inodes (objects) available", s.gaugeMetric, false, core},
-			{"filestotal", "inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", s.gaugeMetric, false, core},
-			{"kbytesavail", "available_kilobytes", "Number of kilobytes readily available in the pool", s.gaugeMetric, false, core},
-			{"kbytesfree", "free_kilobytes", "Number of kilobytes allocated to the pool", s.gaugeMetric, false, core},
-			{"kbytestotal", "capacity_kilobytes", "Capacity of the pool in kilobytes", s.gaugeMetric, false, core},
-			{"quota_iused_estimate", "quota_iused_estimate", "Returns '1' if a valid address is returned within the pool, referencing whether free space can be allocated", s.gaugeMetric, false, extended},
-		},
-	}
+	metricMap := map[string][]lustreHelpStruct{}
 	for path := range metricMap {
 		for _, item := range metricMap[path] {
 			if filter == extended || item.priorityLevel == core {
@@ -302,9 +295,6 @@ func (s *lustreProcfsSource) generateClientMetricTemplates(filter string) {
 
 func (s *lustreProcfsSource) generateGenericMetricTemplates(filter string) {
 	metricMap := map[string][]lustreHelpStruct{
-		"": {
-			{"health_check", "health_check", "Current health status for the indicated instance: " + healthCheckHealthy + " refers to 'healthy', " + healthCheckUnhealthy + " refers to 'unhealthy'", s.gaugeMetric, false, core},
-		},
 		"sptlrpc": {
 			{"encrypt_page_pools", "physical_pages", physicalPagesHelp, s.gaugeMetric, false, extended},
 			{"encrypt_page_pools", "pages_per_pool", pagesPerPoolHelp, s.gaugeMetric, false, extended},
@@ -374,13 +364,6 @@ func (s *lustreProcfsSource) Update(ch chan<- prometheus.Metric) (err error) {
 		for _, path := range paths {
 			metricType = single
 			switch metric.filename {
-			case "health_check":
-				err = s.parseTextFile(metric.source, "health_check", path, directoryDepth, metric.helpText, metric.promName, func(nodeType string, nodeName string, name string, helpText string, value float64) {
-					ch <- metric.metricFunc([]string{"component", "target"}, []string{nodeType, nodeName}, name, helpText, value)
-				})
-				if err != nil {
-					return err
-				}
 			case "brw_stats", "rpc_stats":
 				err = s.parseBRWStats(metric.source, "stats", path, directoryDepth, metric.helpText, metric.promName, metric.hasMultipleVals, func(nodeType string, brwOperation string, brwSize string, nodeName string, name string, helpText string, value float64, extraLabel string, extraLabelValue string) {
 					if extraLabelValue == "" {
@@ -765,35 +748,6 @@ func (s *lustreProcfsSource) parseBRWStats(nodeType string, metricType string, p
 			return err
 		}
 		handler(nodeType, item.operation, convertToBytes(item.size), nodeName, promName, helpText, value, extraLabel, extraLabelValue)
-	}
-	return nil
-}
-
-func (s *lustreProcfsSource) parseTextFile(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, handler func(string, string, string, string, float64)) (err error) {
-	filename, nodeName, err := parseFileElements(path, directoryDepth)
-	if err != nil {
-		return err
-	}
-	fileBytes, err := ioutil.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	fileString := string(fileBytes[:])
-	switch filename {
-	case "health_check":
-		if strings.TrimSpace(fileString) == "healthy" {
-			value, err := strconv.ParseFloat(strings.TrimSpace(healthCheckHealthy), 64)
-			if err != nil {
-				return err
-			}
-			handler(nodeType, nodeName, promName, helpText, value)
-		} else {
-			value, err := strconv.ParseFloat(strings.TrimSpace(healthCheckUnhealthy), 64)
-			if err != nil {
-				return err
-			}
-			handler(nodeType, nodeName, promName, helpText, value)
-		}
 	}
 	return nil
 }

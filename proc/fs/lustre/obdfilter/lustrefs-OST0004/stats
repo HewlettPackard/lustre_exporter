@@ -1,0 +1,7 @@
+snapshot_time             1510782606.793514645 secs.nsecs
+create                    2 samples [reqs]
+statfs                    35350 samples [reqs]
+connect                   1 samples [reqs]
+reconnect                 1 samples [reqs]
+statfs                    124430 samples [reqs]
+ping                      645 samples [reqs]
