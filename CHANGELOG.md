@@ -1,5 +1,18 @@
 # Change Log
 
+## [v2.0.0](https://github.com/HewlettPackard/lustre_exporter/tree/v2.0.0) (2017-12-05)
+[Full Changelog](https://github.com/HewlettPackard/lustre_exporter/compare/v1.1.0...v2.0.0)
+
+**Closed issues:**
+
+- can not get like lustre\_capacity\_kilobytes in mds node [\#125](https://github.com/HewlettPackard/lustre_exporter/issues/125)
+- lustre\_exporter crash after query from cURL [\#110](https://github.com/HewlettPackard/lustre_exporter/issues/110)
+
+**Merged pull requests:**
+
+- Update README to include troubleshooting [\#131](https://github.com/HewlettPackard/lustre_exporter/pull/131) ([joehandzik](https://github.com/joehandzik))
+- Update Lustre test data and fix metrics for 2.10.1 [\#130](https://github.com/HewlettPackard/lustre_exporter/pull/130) ([joehandzik](https://github.com/joehandzik))
+
 ## [v1.1.0](https://github.com/HewlettPackard/lustre_exporter/tree/v1.1.0) (2017-11-28)
 [Full Changelog](https://github.com/HewlettPackard/lustre_exporter/compare/v1.0.0...v1.1.0)
 
@@ -9,6 +22,7 @@
 
 **Merged pull requests:**
 
+- Update changelog for 1.1.0 release [\#129](https://github.com/HewlettPackard/lustre_exporter/pull/129) ([joehandzik](https://github.com/joehandzik))
 - Updating to use dep instead of govendor [\#128](https://github.com/HewlettPackard/lustre_exporter/pull/128) ([joehandzik](https://github.com/joehandzik))
 
 ## [v1.0.0](https://github.com/HewlettPackard/lustre_exporter/tree/v1.0.0) (2017-11-16)
