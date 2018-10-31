@@ -606,11 +606,11 @@ func getJobStatsIOMetrics(jobBlock string, jobID string, promName string, helpTe
 
 func getJobNum(jobBlock string) (jobID string, err error) {
 	jobID = regexCaptureString("job_id: .*", jobBlock)
-	jobIDlist := regexCaptureNumbers(jobID)
-	if len(jobIDlist) < 1 {
+	matched := regexCaptureJobids(jobID)
+	if len(matched) < 2 {
 		return "", nil
 	}
-	return strings.Trim(jobIDlist[0], " "), nil
+	return matched[1], nil
 }
 
 func getJobStatsOperationMetrics(jobBlock string, jobID string, promName string, helpText string) (metricList []lustreJobsMetric, err error) {
@@ -662,7 +662,7 @@ func getJobStatsOperationMetrics(jobBlock string, jobID string, promName string,
 }
 
 func parseJobStatsText(jobStats string, promName string, helpText string, hasMultipleVals bool) (metricList []lustreJobsMetric, err error) {
-	jobs := regexCaptureStrings("(?ms:job_id:.*?(-|\\z))", jobStats)
+	jobs := regexCaptureStrings("(?ms:job_id:.*?$.*?(-|\\z))", jobStats)
 	if len(jobs) < 1 {
 		return nil, nil
 	}
