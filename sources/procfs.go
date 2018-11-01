@@ -543,7 +543,7 @@ func splitBRWStats(statBlock string) (metricList []lustreBRWMetric, err error) {
 }
 
 func parseStatsFile(helpText string, promName string, path string, hasMultipleVals bool) (metricList []lustreStatsMetric, err error) {
-	statsFileBytes, err := ioutil.ReadFile(path)
+	statsFileBytes, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return nil, err
 	}
@@ -692,7 +692,7 @@ func (s *lustreProcfsSource) parseJobStats(nodeType string, metricType string, p
 	if err != nil {
 		return err
 	}
-	jobStatsBytes, err := ioutil.ReadFile(path)
+	jobStatsBytes, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return err
 	}
@@ -725,7 +725,7 @@ func (s *lustreProcfsSource) parseBRWStats(nodeType string, metricType string, p
 		rpcsInFlightHelp:       "rpcs in flight",
 		offsetHelp:             "offset",
 	}
-	statsFileBytes, err := ioutil.ReadFile(path)
+	statsFileBytes, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return err
 	}
@@ -759,7 +759,7 @@ func (s *lustreProcfsSource) parseFile(nodeType string, metricType string, path 
 	}
 	switch metricType {
 	case single:
-		value, err := ioutil.ReadFile(path)
+		value, err := ioutil.ReadFile(filepath.Clean(path))
 		if err != nil {
 			return err
 		}
