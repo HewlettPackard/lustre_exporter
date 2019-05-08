@@ -543,7 +543,7 @@ func splitBRWStats(statBlock string) (metricList []lustreBRWMetric, err error) {
 }
 
 func parseStatsFile(helpText string, promName string, path string, hasMultipleVals bool) (metricList []lustreStatsMetric, err error) {
-	statsFileBytes, err := ioutil.ReadFile(path)
+	statsFileBytes, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return nil, err
 	}
@@ -606,11 +606,11 @@ func getJobStatsIOMetrics(jobBlock string, jobID string, promName string, helpTe
 
 func getJobNum(jobBlock string) (jobID string, err error) {
 	jobID = regexCaptureString("job_id: .*", jobBlock)
-	jobIDlist := regexCaptureNumbers(jobID)
-	if len(jobIDlist) < 1 {
+	matched := regexCaptureJobids(jobID)
+	if len(matched) < 2 {
 		return "", nil
 	}
-	return strings.Trim(jobIDlist[0], " "), nil
+	return matched[1], nil
 }
 
 func getJobStatsOperationMetrics(jobBlock string, jobID string, promName string, helpText string) (metricList []lustreJobsMetric, err error) {
@@ -662,7 +662,7 @@ func getJobStatsOperationMetrics(jobBlock string, jobID string, promName string,
 }
 
 func parseJobStatsText(jobStats string, promName string, helpText string, hasMultipleVals bool) (metricList []lustreJobsMetric, err error) {
-	jobs := regexCaptureStrings("(?ms:job_id:.*?(-|\\z))", jobStats)
+	jobs := regexCaptureStrings("(?ms:job_id:.*?$.*?(-|\\z))", jobStats)
 	if len(jobs) < 1 {
 		return nil, nil
 	}
@@ -692,7 +692,7 @@ func (s *lustreProcfsSource) parseJobStats(nodeType string, metricType string, p
 	if err != nil {
 		return err
 	}
-	jobStatsBytes, err := ioutil.ReadFile(path)
+	jobStatsBytes, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return err
 	}
@@ -725,7 +725,7 @@ func (s *lustreProcfsSource) parseBRWStats(nodeType string, metricType string, p
 		rpcsInFlightHelp:       "rpcs in flight",
 		offsetHelp:             "offset",
 	}
-	statsFileBytes, err := ioutil.ReadFile(path)
+	statsFileBytes, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return err
 	}
@@ -759,7 +759,7 @@ func (s *lustreProcfsSource) parseFile(nodeType string, metricType string, path 
 	}
 	switch metricType {
 	case single:
-		value, err := ioutil.ReadFile(path)
+		value, err := ioutil.ReadFile(filepath.Clean(path))
 		if err != nil {
 			return err
 		}

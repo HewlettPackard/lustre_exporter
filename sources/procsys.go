@@ -167,7 +167,7 @@ func (s *lustreProcsysSource) parseFile(nodeType string, metricType string, path
 	}
 	switch metricType {
 	case single:
-		value, err := ioutil.ReadFile(path)
+		value, err := ioutil.ReadFile(filepath.Clean(path))
 		if err != nil {
 			return err
 		}
@@ -177,7 +177,7 @@ func (s *lustreProcsysSource) parseFile(nodeType string, metricType string, path
 		}
 		handler(nodeType, nodeName, promName, helpText, convertedValue)
 	case stats:
-		statsFileBytes, err := ioutil.ReadFile(path)
+		statsFileBytes, err := ioutil.ReadFile(filepath.Clean(path))
 		if err != nil {
 			return err
 		}

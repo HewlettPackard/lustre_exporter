@@ -39,6 +39,17 @@ func TestGetJobNum(t *testing.T) {
 	if jobID != expected {
 		t.Fatalf("Retrieved an unexpected Job ID. Expected: %s, Got: %s", expected, jobID)
 	}
+
+	testString = "job_id:  abc .0123 .-_+ AB.1000  "
+	expected = "abc .0123 .-_+ AB.1000"
+
+	jobID, err = getJobNum(testString)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if jobID != expected {
+		t.Fatalf("Retrieved an unexpected Job ID. Expected: %s, Got: %s", expected, jobID)
+	}
 }
 
 func TestGetJobStats(t *testing.T) {
