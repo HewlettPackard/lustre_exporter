@@ -60,7 +60,7 @@ Flag Option Detailed Description
 
 All Lustre procfs and procsys data from all nodes running the Lustre Exporter that we perceive as valuable data is exported or can be added to be exported (we don't have any known major gaps that anyone cares about, so if you see something missing, please file an issue!).
 
-See the issues tab for all known issues. This project is actively maintained by HPE, so you should see a reasonably quick response if you identify a gap.
+See the issues tab for all known issues.
 
 ## Troubleshooting
 
