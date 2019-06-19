@@ -126,9 +126,6 @@ func (s *lustreProcsysSource) Update(ch chan<- prometheus.Metric) (err error) {
 }
 
 func parseSysStatsFile(helpText string, promName string, statsFile string) (metric lustreStatsMetric, err error) {
-	if err != nil {
-		return metric, err
-	}
 	// statsMap contains the index mapping for the provided statistic
 	statsMap := map[string]int{
 		lnetAllocatedHelp:     0,

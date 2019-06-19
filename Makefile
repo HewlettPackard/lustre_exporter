@@ -14,9 +14,8 @@
 GO              ?= GO15VENDOREXPERIMENT=1 go
 GOPATH          := $(firstword $(subst :, ,$(shell $(GO) env GOPATH)))
 PROMU           ?= $(GOPATH)/bin/promu
-GOLINTER        ?= $(GOPATH)/bin/gometalinter
+GOLINTER        ?= $(GOPATH)/bin/golangci-lint
 #aligncheck and gosimple took unfortunately too long at travisCI
-GOLINTER_OPT    ?= --vendor --deadline 6m --cyclo-over=20 --disable=aligncheck --disable=gosimple --disable=gotype
 pkgs            = $(shell $(GO) list ./... | grep -v /vendor/)
 TARGET          ?= lustre_exporter
 
@@ -35,8 +34,7 @@ format:
 
 gometalinter: $(GOLINTER)
 	@echo ">> linting code"
-	@$(GOLINTER) --install --update > /dev/null
-	@$(GOLINTER) $(GOLINTER_OPT) ./...
+	@$(GOLINTER) run
 
 build: $(PROMU)
 	@echo ">> building binaries"
@@ -51,9 +49,9 @@ $(GOPATH)/bin/promu promu:
 		GOARCH=$(subst x86_64,amd64,$(patsubst i%86,386,$(shell uname -m))) \
 		$(GO) get -u github.com/prometheus/promu
 
-$(GOPATH)/bin/gometalinter lint:
+$(GOPATH)/bin/golangci-lint lint:
 	@GOOS=$(shell uname -s | tr A-Z a-z) \
 		GOARCH=$(subst x86_64,amd64,$(patsubst i%86,386,$(shell uname -m))) \
-		$(GO) get -u github.com/alecthomas/gometalinter
+		$(GO) get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 
 .PHONY: all format vet build test promu clean $(GOPATH)/bin/promu $(GOPATH)/bin/gometalinter lint
