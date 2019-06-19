@@ -120,7 +120,7 @@ func convertToBytes(s string) string {
 	}
 	numericS := ""
 	uppercaseS := strings.ToUpper(s)
-	multiplier := float64(1)
+	var multiplier float64
 	switch finalChar := uppercaseS[len(uppercaseS)-1:]; finalChar {
 	case "K":
 		numericS = strings.TrimSuffix(uppercaseS, "K")
