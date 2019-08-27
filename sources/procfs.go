@@ -112,17 +112,22 @@ type lustreProcfsSource struct {
 
 func (s *lustreProcfsSource) generateOSTMetricTemplates(filter string) {
 	metricMap := map[string][]lustreHelpStruct{
-		"obdfilter/*": {
+		"osd-*/*OST*": {
 			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric, false, core},
-			{"brw_size", "brw_size_megabytes", "Block read/write size in megabytes", s.gaugeMetric, false, extended},
 			{"brw_stats", "pages_per_bulk_rw_total", pagesPerBlockRWHelp, s.counterMetric, false, extended},
 			{"brw_stats", "discontiguous_pages_total", discontiguousPagesHelp, s.counterMetric, false, extended},
 			{"brw_stats", "disk_io", diskIOsInFlightHelp, s.gaugeMetric, false, core},
 			{"brw_stats", "io_time_milliseconds_total", ioTimeHelp, s.counterMetric, false, core},
 			{"brw_stats", "disk_io_total", diskIOSizeHelp, s.counterMetric, false, core},
-			{"degraded", "degraded", "Binary indicator as to whether or not the pool is degraded - 0 for not degraded, 1 for degraded", s.gaugeMetric, false, core},
 			{"filesfree", "inodes_free", "The number of inodes (objects) available", s.gaugeMetric, false, core},
 			{"filestotal", "inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", s.gaugeMetric, false, core},
+			{"kbytesavail", "available_kilobytes", "Number of kilobytes readily available in the pool", s.gaugeMetric, false, core},
+			{"kbytesfree", "free_kilobytes", "Number of kilobytes allocated to the pool", s.gaugeMetric, false, core},
+			{"kbytestotal", "capacity_kilobytes", "Capacity of the pool in kilobytes", s.gaugeMetric, false, core},
+		},
+		"obdfilter/*": {
+			{"brw_size", "brw_size_megabytes", "Block read/write size in megabytes", s.gaugeMetric, false, extended},
+			{"degraded", "degraded", "Binary indicator as to whether or not the pool is degraded - 0 for not degraded, 1 for degraded", s.gaugeMetric, false, core},
 			{"grant_compat_disable", "grant_compat_disabled", "Binary indicator as to whether clients with OBD_CONNECT_GRANT_PARAM setting will be granted space", s.gaugeMetric, false, extended},
 			{"grant_precreate", "grant_precreate_capacity_bytes", "Maximum space in bytes that clients can preallocate for objects", s.gaugeMetric, false, extended},
 			{"job_cleanup_interval", "job_cleanup_interval_seconds", "Interval in seconds between cleanup of tuning statistics", s.gaugeMetric, false, extended},
@@ -135,9 +140,6 @@ func (s *lustreProcfsSource) generateOSTMetricTemplates(filter string) {
 			{"job_stats", "job_write_maximum_size_bytes", writeMaximumHelp, s.gaugeMetric, false, extended},
 			{"job_stats", "job_write_bytes_total", writeTotalHelp, s.counterMetric, false, core},
 			{"job_stats", "job_stats_total", jobStatsHelp, s.counterMetric, true, core},
-			{"kbytesavail", "available_kilobytes", "Number of kilobytes readily available in the pool", s.gaugeMetric, false, core},
-			{"kbytesfree", "free_kilobytes", "Number of kilobytes allocated to the pool", s.gaugeMetric, false, core},
-			{"kbytestotal", "capacity_kilobytes", "Capacity of the pool in kilobytes", s.gaugeMetric, false, core},
 			{"lfsck_speed_limit", "lfsck_speed_limit", "Maximum operations per second LFSCK (Lustre filesystem verification) can run", s.gaugeMetric, false, extended},
 			{"num_exports", "exports_total", "Total number of times the pool has been exported", s.counterMetric, false, core},
 			{"precreate_batch", "precreate_batch", "Maximum number of objects that can be included in a single transaction", s.gaugeMetric, false, extended},
