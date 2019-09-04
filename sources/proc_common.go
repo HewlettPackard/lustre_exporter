@@ -30,7 +30,8 @@ const (
 )
 
 var (
-	numRegexPattern = regexp.MustCompile(`[0-9]*\.[0-9]+|[0-9]+`)
+	numRegexPattern   = regexp.MustCompile(`[0-9]*\.[0-9]+|[0-9]+`)
+	jobidRegexPattern = regexp.MustCompile(`job_id:\s*(.*\.[0-9]+|[0-9_]+)`)
 )
 
 type prometheusType func([]string, []string, string, string, float64) prometheus.Metric
@@ -95,6 +96,11 @@ func regexCaptureNumbers(textToMatch string) (matchedNumbers []string) {
 	return matchedNumbers
 }
 
+func regexCaptureJobids(textToMatch string) (matchedJobids []string) {
+	matchedJobids = jobidRegexPattern.FindStringSubmatch(textToMatch)
+	return
+}
+
 func parseFileElements(path string, directoryDepth int) (name string, nodeName string, err error) {
 	pathElements := strings.Split(path, "/")
 	pathLen := len(pathElements)
@@ -114,7 +120,7 @@ func convertToBytes(s string) string {
 	}
 	numericS := ""
 	uppercaseS := strings.ToUpper(s)
-	multiplier := float64(1)
+	var multiplier float64
 	switch finalChar := uppercaseS[len(uppercaseS)-1:]; finalChar {
 	case "K":
 		numericS = strings.TrimSuffix(uppercaseS, "K")

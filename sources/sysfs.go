@@ -99,7 +99,7 @@ func (s *lustreSysSource) parseTextFile(nodeType string, metricType string, path
 	if err != nil {
 		return err
 	}
-	fileBytes, err := ioutil.ReadFile(path)
+	fileBytes, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return err
 	}
