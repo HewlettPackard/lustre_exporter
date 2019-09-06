@@ -31,7 +31,7 @@ const (
 
 var (
 	numRegexPattern   = regexp.MustCompile(`[0-9]*\.[0-9]+|[0-9]+`)
-	jobidRegexPattern = regexp.MustCompile(`job_id:\s*(.*\.[0-9]+|[0-9_]+)`)
+	jobidRegexPattern = regexp.MustCompile(`job_id:\s*(.*[0-9]+|[0-9_]+)`)
 )
 
 type prometheusType func([]string, []string, string, string, float64) prometheus.Metric
