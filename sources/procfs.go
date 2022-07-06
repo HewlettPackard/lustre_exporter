@@ -610,7 +610,7 @@ func getJobNum(jobBlock string) (jobID string, err error) {
 	if len(matched) < 2 {
 		return "", nil
 	}
-	return matched[1], nil
+	return getValidUtf8String(matched[1]), nil
 }
 
 func getJobStatsOperationMetrics(jobBlock string, jobID string, promName string, helpText string) (metricList []lustreJobsMetric, err error) {
