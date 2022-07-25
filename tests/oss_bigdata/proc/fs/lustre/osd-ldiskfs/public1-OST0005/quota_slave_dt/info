@@ -1,0 +1,9 @@
+target name:    public1-OST0005
+pool ID:        0
+type:           dt
+quota enabled:  ug
+conn to master: setup
+space acct:     ug
+user uptodate:  glb[1],slv[1],reint[0]
+group uptodate: glb[1],slv[1],reint[0]
+project uptodate: glb[0],slv[0],reint[0]

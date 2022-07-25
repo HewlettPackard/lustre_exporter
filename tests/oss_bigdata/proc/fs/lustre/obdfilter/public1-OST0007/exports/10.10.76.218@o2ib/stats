@@ -1,0 +1,4 @@
+snapshot_time             1652255689.031487232 secs.nsecs
+read_bytes                110 samples [bytes] 4096 4190208 10502144
+write_bytes               931 samples [bytes] 435 4194304 3734279441
+punch                     43 samples [reqs]

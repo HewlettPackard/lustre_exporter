@@ -1,0 +1,37 @@
+global_index_copy:
+- id:      0
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:               604800 }
+- id:      5386
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:      281474976710656 }
+- id:      4885
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:      281474976710656 }
+- id:      5432
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:      281474976710656 }
+- id:      4922
+  limits:  { hard:            536870912, soft:            536870912, granted:                    0, time:           1647916087 }
+- id:      1097
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:      281474976710656 }
+- id:      5453
+  limits:  { hard:          22011707392, soft:          22011707392, granted:                    0, time:           1639279544 }
+- id:      3414
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:      281474976710656 }
+- id:      4695
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:      281474976710656 }
+- id:      4701
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:      281474976710656 }
+- id:      4702
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:      281474976710656 }
+- id:      1405
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:      281474976710656 }
+- id:      4481
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:      281474976710656 }
+- id:      4754
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:      281474976710656 }
+- id:      2748
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:                    0 }
+- id:      4306
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:      281474976710656 }
+- id:      5849
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:      281474976710656 }
+- id:      1517
+  limits:  { hard:                    0, soft:                    0, granted:                    0, time:      281474976710656 }

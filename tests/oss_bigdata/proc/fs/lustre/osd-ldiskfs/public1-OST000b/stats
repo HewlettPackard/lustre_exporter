@@ -1,0 +1,5 @@
+snapshot_time             1652255693.555707774 secs.nsecs
+get_page                  1935931 samples [usec] 0 231 3407346 171426028
+cache_access              1750532 samples [pages] 1 1024 52568490
+cache_hit                 1669026 samples [pages] 1 1024 23710295
+cache_miss                82237 samples [pages] 1 1024 28858195

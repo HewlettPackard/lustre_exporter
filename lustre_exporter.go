@@ -110,6 +110,9 @@ func main() {
 		healthStatusEnabled = kingpin.Flag("collector.health", "Set Health metric level. Valid levels: [extended, core, disabled]").Default("extended").Enum("extended", "core", "disabled")
 		listenAddress       = kingpin.Flag("web.listen-address", "Address to use to expose Lustre metrics.").Default(":9169").String()
 		metricsPath         = kingpin.Flag("web.telemetry-path", "Path to use to expose Lustre metrics.").Default("/metrics").String()
+
+		procPath            = kingpin.Flag("collector.path.proc", "Path to collect data from proc").Default("/proc").String()
+		sysPath             = kingpin.Flag("collector.path.sys" , "Path to collect data from sys").Default("/sys").String()
 	)
 
 	kingpin.Parse()
@@ -134,6 +137,10 @@ func main() {
 	log.Infof(" - Lnet State: %s", sources.LnetEnabled)
 	sources.HealthStatusEnabled = *healthStatusEnabled
 	log.Infof(" - Health State: %s", sources.HealthStatusEnabled)
+	sources.ProcLocation = *procPath
+	log.Infof(" - Proc Path: %s", sources.ProcLocation)
+	sources.SysLocation = *sysPath
+	log.Infof(" - Sys  Path: %s", sources.SysLocation)
 
 	enabledSources := []string{"procfs", "procsys", "sysfs"}
 

@@ -1,0 +1,17 @@
+e0301f81-a133-01bf-6be7-daca341ce0df:
+    name: public1-OST000b
+    client: 10.10.59.214@o2ib
+    connect_flags: [ write_grant, server_lock, version, request_portal, truncate_lock, max_byte_per_rpc, early_lock_cancel, adaptive_timeouts, lru_resize, alt_checksum_algorithm, fid_is_enabled, version_recovery, grant_shrink, full20, layout_lock, 64bithash, object_max_bytes, jobstats, einprogress, grant_param, lvb_type, short_io, lfsck, bulk_mbits, second_flags, lockaheadv2 ]
+    connect_data:
+       flags: 0xa0425af2e3440478
+       instance: 6
+       target_version: 2.12.6.0
+       initial_grant: 8388608
+       max_brw_size: 4194304
+       grant_block_size: 4096
+       grant_inode_size: 32
+       grant_max_extent_size: 67108864
+       grant_extent_tax: 24576
+       cksum_types: 0xf7
+       max_object_bytes: 17592186040320
+    export_flags: [  ]
