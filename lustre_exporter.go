@@ -20,12 +20,12 @@ import (
 	"time"
 
 	"gopkg.in/alecthomas/kingpin.v2"
-
-	"github.com/HewlettPackard/lustre_exporter/sources"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/log"
 	"github.com/prometheus/common/version"
+
+	"lustre_exporter/sources"
+	"lustre_exporter/log"
 )
 
 var (
@@ -150,7 +150,7 @@ func main() {
 	prometheus.MustRegister(LustreSource{sourceList: sourceList})
 	handler := promhttp.HandlerFor(prometheus.DefaultGatherer, promhttp.HandlerOpts{ErrorLog: log.NewErrorLogger()})
 
-	http.Handle(*metricsPath, prometheus.InstrumentHandler("prometheus", handler))
+	http.Handle(*metricsPath, handler)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		var num int
 		num, err = w.Write([]byte(`<html>
