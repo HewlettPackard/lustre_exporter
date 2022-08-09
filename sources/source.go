@@ -24,6 +24,9 @@ var ProcLocation = "/proc"
 // SysLocation is the source to pull sys files from.
 var SysLocation = "/sys"
 
+// collect version, v2 is a much more efficient version
+var CollectVersion = "v2"
+
 //Namespace defines the namespace shared by all Lustre metrics.
 const Namespace = "lustre"
 
@@ -33,4 +36,11 @@ var Factories = make(map[string]func() LustreSource)
 //LustreSource is the interface that each source implements.
 type LustreSource interface {
 	Update(ch chan<- prometheus.Metric) (err error)
+	newCtx()                            collectorCtx
+}
+
+type collectorCtx interface {
+	collect()  error
+	update(ch chan<- prometheus.Metric)
+	release()
 }

@@ -822,3 +822,7 @@ func (s *lustreProcfsSource) untypedMetric(labels []string, labelValues []string
 		labelValues...,
 	)
 }
+
+func (s *lustreProcfsSource)newCtx() collectorCtx {
+	return insProcfsV2.newCtx(s)
+}

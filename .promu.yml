@@ -1,9 +1,10 @@
 go:
-    cgo: true
-repository:
-    path: github.com/HewlettPackard/lustre_exporter
+    cgo: false
+
+repository: 
+    path: lustre_exporter
+
 build:
-    flags: -a -tags 'netgo static_build'
     ldflags: |
         -X github.com/prometheus/common/version.Version={{.Version}}
         -X github.com/prometheus/common/version.Revision={{.Revision}}

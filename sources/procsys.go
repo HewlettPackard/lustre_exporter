@@ -215,3 +215,7 @@ func (s *lustreProcsysSource) gaugeMetric(labels []string, labelValues []string,
 		labelValues...,
 	)
 }
+
+func (s *lustreProcsysSource)newCtx() collectorCtx {
+	return insProcsysV2.newCtx(s)
+}

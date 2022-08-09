@@ -136,3 +136,7 @@ func (s *lustreSysSource) gaugeMetric(labels []string, labelValues []string, nam
 		labelValues...,
 	)
 }
+
+func (s *lustreSysSource)newCtx() collectorCtx {
+	return insSysfsV2.newCtx(s)
+}

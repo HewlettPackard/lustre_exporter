@@ -16,13 +16,12 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"sync"
-	"time"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/version"
+  _ "net/http/pprof"
 
 	"lustre_exporter/sources"
 	"lustre_exporter/log"
@@ -40,6 +39,9 @@ var (
 	)
 )
 
+
+var MaxMultiRun = 4
+
 //LustreSource is a list of all sources that the user would like to collect.
 type LustreSource struct {
 	sourceList map[string]sources.LustreSource
@@ -52,30 +54,7 @@ func (l LustreSource) Describe(ch chan<- *prometheus.Desc) {
 
 //Collect implements the prometheus.Collect interface
 func (l LustreSource) Collect(ch chan<- prometheus.Metric) {
-	wg := sync.WaitGroup{}
-	wg.Add(len(l.sourceList))
-	for name, c := range l.sourceList {
-		go func(name string, c sources.LustreSource) {
-			collectFromSource(name, c, ch)
-			wg.Done()
-		}(name, c)
-	}
-	wg.Wait()
-	scrapeDurations.Collect(ch)
-}
-
-func collectFromSource(name string, s sources.LustreSource, ch chan<- prometheus.Metric) {
-	result := "success"
-	begin := time.Now()
-	err := s.Update(ch)
-	duration := time.Since(begin)
-	if err != nil {
-		log.Errorf("ERROR: %q source failed after %f seconds: %s", name, duration.Seconds(), err)
-		result = "error"
-	} else {
-		log.Debugf("OK: %q source succeeded after %f seconds: %s", name, duration.Seconds(), err)
-	}
-	scrapeDurations.WithLabelValues(name, result).Observe(duration.Seconds())
+	sources.Runner().Update(l.sourceList, scrapeDurations, ch)
 }
 
 func loadSources(list []string) (map[string]sources.LustreSource, error) {
@@ -113,6 +92,8 @@ func main() {
 
 		procPath            = kingpin.Flag("collector.path.proc", "Path to collect data from proc").Default("/proc").String()
 		sysPath             = kingpin.Flag("collector.path.sys" , "Path to collect data from sys").Default("/sys").String()
+		collectVer          = kingpin.Flag("collector.collect.ver" , "collect version").Default("v2").String()
+		maxWorker           = kingpin.Flag("collector.maxWorker"   , "max runtime can create in the same time, only support for v2").Default("4").Int()
 	)
 
 	kingpin.Parse()
@@ -141,6 +122,17 @@ func main() {
 	log.Infof(" - Proc Path: %s", sources.ProcLocation)
 	sources.SysLocation = *sysPath
 	log.Infof(" - Sys  Path: %s", sources.SysLocation)
+	sources.CollectVersion = *collectVer
+	if sources.CollectVersion != "v2"{
+		sources.CollectVersion = "v1"
+	}
+	log.Infof(" - Collect Ver: %s", sources.CollectVersion)
+
+	sources.MAX_WORKER = *maxWorker
+	if sources.MAX_WORKER <= 0 {
+		sources.MAX_WORKER = 4
+	}
+	log.Infof(" - Max Worker : %d", sources.MAX_WORKER)
 
 	enabledSources := []string{"procfs", "procsys", "sysfs"}
 
