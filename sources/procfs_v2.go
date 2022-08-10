@@ -15,6 +15,7 @@ import (
 
 type procfsV2 struct {
 	reNum *regexp.Regexp
+
 }
 
 type procfsV2Ctx struct {
@@ -130,12 +131,7 @@ func (ctx *procfsV2Ctx)collect() error {
 	return nil
 }
 
-func (ctx *procfsV2Ctx) parseBRWStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, hasMultipleVals bool, handler func(string, string, string, string, string, string, float64, string, string)) (err error) {
-	_, nodeName, err := parseFileElements(path, directoryDepth)
-	if err != nil {
-		return err
-	}
-	metricBlocks := map[string]string{
+var	brwStatsMetricBlocks = map[string]string{
 		pagesPerBlockRWHelp:    "pages per bulk r/w",
 		discontiguousPagesHelp: "discontiguous pages",
 		diskIOsInFlightHelp:    "disk I/Os in flight",
@@ -145,12 +141,19 @@ func (ctx *procfsV2Ctx) parseBRWStats(nodeType string, metricType string, path s
 		rpcsInFlightHelp:       "rpcs in flight",
 		offsetHelp:             "offset",
 	}
+
+func (ctx *procfsV2Ctx) parseBRWStats(nodeType string, metricType string, path string, directoryDepth int, helpText string, promName string, hasMultipleVals bool, handler func(string, string, string, string, string, string, float64, string, string)) (err error) {
+	_, nodeName, err := parseFileElements(path, directoryDepth)
+	if err != nil {
+		return err
+	}
+
 	statsFileBytes, err := ctx.fr.readFile(filepath.Clean(path))
 	if err != nil {
 		return err
 	}
 	statsFile := string(statsFileBytes[:])
-	block := regexCaptureString("(?ms:^"+metricBlocks[helpText]+".*?(\n\n|\\z))", statsFile)
+	block := regexCaptureString("(?ms:^"+brwStatsMetricBlocks[helpText]+".*?(\n\n|\\z))", statsFile)
 	metricList, err := splitBRWStats(block)
 	if err != nil {
 		return err
@@ -229,7 +232,7 @@ func (ctx *procfsV2Ctx) parseJobStats(nodeType string, metricType string, path s
 		return err
 	}
 
-	metricList, err := ctx.parseJobStatsTextV2(path, promName, helpText, hasMultipleVals)
+	metricList, err := ctx.parseJobStatsText(path, promName, helpText, hasMultipleVals)
 	if err != nil {
 		return err
 	}
@@ -240,7 +243,7 @@ func (ctx *procfsV2Ctx) parseJobStats(nodeType string, metricType string, path s
 	return nil
 }
 
-func (ctx *procfsV2Ctx)parseJobStatsTextV2(path string, promName string, helpText string, hasMultipleVals bool) (metricList []lustreJobsMetric, err error){
+func (ctx *procfsV2Ctx)parseJobStatsText(path string, promName string, helpText string, hasMultipleVals bool) (metricList []lustreJobsMetric, err error){
 
 	var jobList []lustreJobsMetric
 
@@ -270,48 +273,12 @@ func (ctx *procfsV2Ctx)parseJobStatsTextV2(path string, promName string, helpTex
 	}
 
 	if hasMultipleVals {
-		jobList, err = ctx.getJobStatsOperationMetricsV2(jobsStats, promName, helpText)
+		jobList, err = ctx.getJobStatsOperationMetrics(jobsStats, promName, helpText)
 	} else {
-		jobList, err = ctx.getJobStatsIOMetricsV2(jobsStats, promName, helpText)
+		jobList, err = ctx.getJobStatsIOMetrics(jobsStats, promName, helpText)
 	}
 	if jobList != nil {
 		metricList = append(metricList, jobList...)
-	}
-	return metricList, nil
-}
-
-func (ctx *procfsV2Ctx)parseJobStatsText(path string, promName string, helpText string, hasMultipleVals bool) (metricList []lustreJobsMetric, err error){
-
-	jobStatsBytes, err := ctx.fr.readFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	var jobList []lustreJobsMetric
-
-	jobStatsContent := string(jobStatsBytes[:])
-	splits := strings.Split(jobStatsContent, "- ")
-	if len(splits) <= 1{
-		return nil, nil
-	}
-	jobs := splits[1:]
-
-	for _, job := range jobs {
-		jobID, err := getJobNum(job)
-		if err != nil {
-			return nil, err
-		}
-		if hasMultipleVals {
-			jobList, err = ctx.getJobStatsOperationMetrics(job, jobID, promName, helpText)
-		} else {
-			jobList, err = ctx.getJobStatsIOMetrics(job, jobID, promName, helpText)
-		}
-		if err != nil {
-			return nil, err
-		}
-		if jobList != nil {
-			metricList = append(metricList, jobList...)
-		}
 	}
 	return metricList, nil
 }
@@ -368,8 +335,7 @@ func (ctx *procfsV2Ctx)parsingJobStats(job string) (string, map[string][]int64, 
 	return jobid, j, nil
 }
 
-func (ctx *procfsV2Ctx)getJobStatsOperationMetricsV2(jobsStats map[string]map[string][]int64, promName string, helpText string) (metricList []lustreJobsMetric, err error) {
-	operationSlice := []multistatParsingStruct{
+var jobStatsOperationSlice []multistatParsingStruct = []multistatParsingStruct{
 		{index: 0, pattern: "open"},
 		{index: 0, pattern: "close"},
 		{index: 0, pattern: "mknod"},
@@ -394,8 +360,9 @@ func (ctx *procfsV2Ctx)getJobStatsOperationMetricsV2(jobsStats map[string]map[st
 		{index: 0, pattern: "quotactl"},
 	}
 
+func (ctx *procfsV2Ctx)getJobStatsOperationMetrics(jobsStats map[string]map[string][]int64, promName string, helpText string) (metricList []lustreJobsMetric, err error) {
 	for jobid, stats := range jobsStats {
-		for _, operation := range operationSlice {
+		for _, operation := range jobStatsOperationSlice {
 			vals, ok := stats[operation.pattern]
 			if !ok || len(vals) <= operation.index {
 				continue
@@ -414,59 +381,7 @@ func (ctx *procfsV2Ctx)getJobStatsOperationMetricsV2(jobsStats map[string]map[st
 	return metricList, err
 }
 
-func (ctx *procfsV2Ctx)getJobStatsOperationMetrics(jobBlock string, jobID string, promName string, helpText string) (metricList []lustreJobsMetric, err error) {
-	operationSlice := []multistatParsingStruct{
-		{index: 0, pattern: "open"},
-		{index: 0, pattern: "close"},
-		{index: 0, pattern: "mknod"},
-		{index: 0, pattern: "link"},
-		{index: 0, pattern: "unlink"},
-		{index: 0, pattern: "mkdir"},
-		{index: 0, pattern: "rmdir"},
-		{index: 0, pattern: "rename"},
-		{index: 0, pattern: "getattr"},
-		{index: 0, pattern: "setattr"},
-		{index: 0, pattern: "getxattr"},
-		{index: 0, pattern: "setxattr"},
-		{index: 0, pattern: "statfs"},
-		{index: 0, pattern: "sync"},
-		{index: 0, pattern: "samedir_rename"},
-		{index: 0, pattern: "crossdir_rename"},
-		{index: 0, pattern: "punch"},
-		{index: 0, pattern: "destroy"},
-		{index: 0, pattern: "create"},
-		{index: 0, pattern: "get_info"},
-		{index: 0, pattern: "set_info"},
-		{index: 0, pattern: "quotactl"},
-	}
-	for _, operation := range operationSlice {
-		opStat := regexCaptureString(operation.pattern+": .*", jobBlock)
-		opNumbers := regexCaptureStrings("[0-9]*\\.[0-9]+|[0-9]+", opStat)
-		if len(opNumbers) < 1 {
-			continue
-		}
-		var result float64
-		result, err = strconv.ParseFloat(strings.TrimSpace(opNumbers[operation.index]), 64)
-		if err != nil {
-			return nil, err
-		}
-		l := lustreStatsMetric{
-			title:           promName,
-			help:            helpText,
-			value:           result,
-			extraLabel:      "operation",
-			extraLabelValue: operation.pattern,
-		}
-		metricList = append(metricList, lustreJobsMetric{jobID, l})
-	}
-	return metricList, err
-}
-
-func (ctx *procfsV2Ctx)getJobStatsIOMetricsV2(jobsStats map[string]map[string][]int64, promName string, helpText string) (metricList []lustreJobsMetric, err error){
-	// opMap matches the given helpText value with the placement of the numeric fields within each metric line.
-	// For example, the number of samples is the first number in the line and has a helpText of readSamplesHelp,
-	// hence the 'index' value of 0. 'pattern' is the regex capture pattern for the desired line.
-	opMap := map[string]multistatParsingStruct{
+var jobStatsMultistatParsingStruct map[string]multistatParsingStruct = map[string]multistatParsingStruct{
 		readSamplesHelp:  {index: 0, pattern: "read_bytes"},
 		readMinimumHelp:  {index: 1, pattern: "read_bytes"},
 		readMaximumHelp:  {index: 2, pattern: "read_bytes"},
@@ -476,6 +391,12 @@ func (ctx *procfsV2Ctx)getJobStatsIOMetricsV2(jobsStats map[string]map[string][]
 		writeMaximumHelp: {index: 2, pattern: "write_bytes"},
 		writeTotalHelp:   {index: 3, pattern: "write_bytes"},
 	}
+
+func (ctx *procfsV2Ctx)getJobStatsIOMetrics(jobsStats map[string]map[string][]int64, promName string, helpText string) (metricList []lustreJobsMetric, err error){
+	// opMap matches the given helpText value with the placement of the numeric fields within each metric line.
+	// For example, the number of samples is the first number in the line and has a helpText of readSamplesHelp,
+	// hence the 'index' value of 0. 'pattern' is the regex capture pattern for the desired line.
+	opMap := jobStatsMultistatParsingStruct
 	// If the metric isn't located in the map, don't try to parse a value for it.
 	if _, exists := opMap[helpText]; !exists {
 		return nil, nil
@@ -501,48 +422,6 @@ func (ctx *procfsV2Ctx)getJobStatsIOMetricsV2(jobsStats map[string]map[string][]
 	return 
 }
 
-func (ctx *procfsV2Ctx)getJobStatsIOMetrics(jobBlock string, jobID string, promName string, helpText string) (metricList []lustreJobsMetric, err error) {
-	// opMap matches the given helpText value with the placement of the numeric fields within each metric line.
-	// For example, the number of samples is the first number in the line and has a helpText of readSamplesHelp,
-	// hence the 'index' value of 0. 'pattern' is the regex capture pattern for the desired line.
-	opMap := map[string]multistatParsingStruct{
-		readSamplesHelp:  {index: 0, pattern: "read_bytes"},
-		readMinimumHelp:  {index: 1, pattern: "read_bytes"},
-		readMaximumHelp:  {index: 2, pattern: "read_bytes"},
-		readTotalHelp:    {index: 3, pattern: "read_bytes"},
-		writeSamplesHelp: {index: 0, pattern: "write_bytes"},
-		writeMinimumHelp: {index: 1, pattern: "write_bytes"},
-		writeMaximumHelp: {index: 2, pattern: "write_bytes"},
-		writeTotalHelp:   {index: 3, pattern: "write_bytes"},
-	}
-	// If the metric isn't located in the map, don't try to parse a value for it.
-	if _, exists := opMap[helpText]; !exists {
-		return nil, nil
-	}
-	pattern := opMap[helpText].pattern
-	opStat := regexCaptureString(pattern+": .*", jobBlock)
-	opNumbers := regexCaptureNumbers(opStat)
-	if len(opNumbers) < 1 {
-		return nil, nil
-	}
-	result, err := strconv.ParseFloat(strings.TrimSpace(opNumbers[opMap[helpText].index]), 64)
-	if err != nil {
-		return nil, err
-	}
-	l := lustreStatsMetric{
-		title:           promName,
-		help:            helpText,
-		value:           result,
-		extraLabel:      "",
-		extraLabelValue: "",
-	}
-	metricList = append(metricList, lustreJobsMetric{jobID, l})
-
-	return metricList, err
-}
-
 func init(){
-
 	insProcfsV2.reNum = regexp.MustCompile("[0-9]*\\.[0-9]+|[0-9]+")
-
 }
