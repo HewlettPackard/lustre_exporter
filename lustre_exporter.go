@@ -149,7 +149,7 @@ func main() {
 	prometheus.MustRegister(LustreSource{sourceList: sourceList})
 	handler := promhttp.HandlerFor(prometheus.DefaultGatherer, promhttp.HandlerOpts{ErrorLog: log.NewErrorLogger()})
 
-	http.Handle(*metricsPath, handler)
+	http.Handle(*metricsPath, promhttp.InstrumentMetricHandler(prometheus.DefaultRegisterer, handler))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		var num int
 		num, err = w.Write([]byte(`<html>

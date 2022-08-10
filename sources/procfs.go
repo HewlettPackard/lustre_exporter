@@ -112,6 +112,19 @@ type lustreProcfsSource struct {
 
 func (s *lustreProcfsSource) generateOSTMetricTemplates(filter string) {
 	metricMap := map[string][]lustreHelpStruct{
+		"osd-*/*OST*": {
+			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric, false, core},
+			{"brw_stats", "pages_per_bulk_rw_total", pagesPerBlockRWHelp, s.counterMetric, false, extended},
+			{"brw_stats", "discontiguous_pages_total", discontiguousPagesHelp, s.counterMetric, false, extended},
+			{"brw_stats", "disk_io", diskIOsInFlightHelp, s.gaugeMetric, false, core},
+			{"brw_stats", "io_time_milliseconds_total", ioTimeHelp, s.counterMetric, false, core},
+			{"brw_stats", "disk_io_total", diskIOSizeHelp, s.counterMetric, false, core},
+			{"filesfree", "inodes_free", "The number of inodes (objects) available", s.gaugeMetric, false, core},
+			{"filestotal", "inodes_maximum", "The maximum number of inodes (objects) the filesystem can hold", s.gaugeMetric, false, core},
+			{"kbytesavail", "available_kilobytes", "Number of kilobytes readily available in the pool", s.gaugeMetric, false, core},
+			{"kbytesfree", "free_kilobytes", "Number of kilobytes allocated to the pool", s.gaugeMetric, false, core},
+			{"kbytestotal", "capacity_kilobytes", "Capacity of the pool in kilobytes", s.gaugeMetric, false, core},
+		},
 		"obdfilter/*": {
 			{"blocksize", "blocksize_bytes", "Filesystem block size in bytes", s.gaugeMetric, false, core},
 			{"brw_size", "brw_size_megabytes", "Block read/write size in megabytes", s.gaugeMetric, false, extended},
